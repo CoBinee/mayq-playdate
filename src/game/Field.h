@@ -107,5 +107,5 @@ extern bool FieldIsSpace(int x, int y);
 extern bool FieldIsClimb(int x, int y);
 extern bool FieldIsLand(int x, int y);
 extern bool FieldIsFall(int x, int y);
-extern bool FieldIsWalk(int x, int y, int direction, struct Vector *move);
+extern bool FieldIsWalk(int x, int y, int direction, bool step, struct Vector *move);
 

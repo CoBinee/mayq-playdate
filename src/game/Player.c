@@ -156,7 +156,7 @@ static void PlayerActorPlayOnField(struct PlayerActor *actor)
         actor->move = actor->position;
 
         // ジャンプの設定
-        actor->jump = 0;
+        actor->jump = -1;
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, "player", playerAnimationNames_Walk[actor->direction], true);
@@ -168,69 +168,69 @@ static void PlayerActorPlayOnField(struct PlayerActor *actor)
     // 移動の操作
     if (actor->move.x == actor->position.x && actor->move.y == actor->position.y) {
         int direction = actor->direction;
-        int move = -1;
+        bool land = FieldIsLand(actor->position.x, actor->position.y);
         if (IocsIsButtonPush(kButtonUp)) {
             if (IocsIsButtonPush(kButtonLeft)) {
-                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUpLeft, &actor->move)) {
+                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUpLeft, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUp, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUp, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionLeft, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionLeft, land, &actor->move)) {
                     ;
                 }
                 actor->direction = kDirectionLeft;
             } else if (IocsIsButtonPush(kButtonRight)) {
-                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUpRight, &actor->move)) {
+                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUpRight, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUp, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUp, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionRight, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionRight, land, &actor->move)) {
                     ;
                 }
                 actor->direction = kDirectionRight;
             } else {
-                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUp, &actor->move)) {
+                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUp, land, &actor->move)) {
                     ;
                 }
                 actor->direction = kDirectionUp;
             }
         } else if (IocsIsButtonPush(kButtonDown)) {
             if (IocsIsButtonPush(kButtonLeft)) {
-                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDownLeft, &actor->move)) {
+                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDownLeft, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDown, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDown, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionLeft, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionLeft, land, &actor->move)) {
                     ;
                 }
                 actor->direction = kDirectionLeft;
             } else if (IocsIsButtonPush(kButtonRight)) {
-                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDownRight, &actor->move)) {
+                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDownRight, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDown, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDown, land, &actor->move)) {
                     ;
-                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionRight, &actor->move)) {
+                } else if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionRight, land, &actor->move)) {
                     ;
                 }
                 actor->direction = kDirectionRight;
             } else {
-                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDown, &actor->move)) {
+                if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDown, land, &actor->move)) {
                     ;
                 }
                 actor->direction = kDirectionDown;
             }
         } else if (IocsIsButtonPush(kButtonLeft)) {
-            if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionLeft, &actor->move)) {
+            if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionLeft, land, &actor->move)) {
                 actor->direction = kDirectionLeft;
             }
         } else if (IocsIsButtonPush(kButtonRight)) {
-            if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionRight, &actor->move)) {
+            if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionRight, land, &actor->move)) {
                 actor->direction = kDirectionRight;
             }
         }
         if (actor->position.y == actor->move.y) {
             if (FieldIsFall(actor->move.x, actor->move.y)) {
-                if (FieldIsWalk(actor->move.x, actor->move.y, kDirectionDown, &actor->move)) {
+                if (FieldIsWalk(actor->move.x, actor->move.y, kDirectionDown, land, &actor->move)) {
                     ;
                 }
             }
