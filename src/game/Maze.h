@@ -15,6 +15,7 @@
 enum {
     kMazeMapNull = 0x00, 
     kMazeMapBlock = 0x80, 
+    kMazeMapLock = 0x40, 
 };
 
 // 経路

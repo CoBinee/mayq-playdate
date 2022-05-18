@@ -87,6 +87,12 @@ static void FieldLoadMap(int seed)
         // 初期化
         field->maze = MazeLoad(kFieldMazeSizeX, kFieldMazeSizeY, seed);
 
+        // 
+        field->maze->maps[3 * field->maze->mapSize.x + 3] |= kMazeMapLock;
+        field->maze->maps[3 * field->maze->mapSize.x + 5] |= kMazeMapLock;
+        field->maze->maps[5 * field->maze->mapSize.x + 3] |= kMazeMapLock;
+        field->maze->maps[5 * field->maze->mapSize.x + 5] |= kMazeMapLock;
+
         // 穴を掘る
         MazeDig(field->maze, 1, 1);
 
@@ -118,7 +124,13 @@ static void FieldLoadMap(int seed)
             for (int routex = 0; routex < field->maze->routeSize.x; routex++) {
                 int mapx = routex * kFieldMazeSectionSizeX;
                 unsigned char route = field->maze->routes[routey * field->maze->routeSize.x + routex];
-                if (route == (kMazeRouteUp | kMazeRouteDown)) {
+                if (route == 0) {
+                    for (int y = 0; y < kFieldMazeSectionSizeY; y++) {
+                        for (int x = 0; x < kFieldMazeSectionSizeX; x++) {
+                            field->maps[mapy + y][mapx + x] = kFieldMapBlock;
+                        }
+                    }
+                } else if (route == (kMazeRouteUp | kMazeRouteDown)) {
                     int x = field->os[routey - 1][routex].x;
                     int y = 0;
                     while (y < field->os[routey][routex].y) {
