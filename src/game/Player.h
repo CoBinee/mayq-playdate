@@ -38,6 +38,7 @@ struct PlayerActor {
 
     // ジャンプ
     int jump;
+    int step;
 
     // アニメーション
     struct AsepriteSpriteAnimation animation;

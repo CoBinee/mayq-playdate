@@ -505,13 +505,16 @@ bool FieldIsFall(int x, int y)
 
 // フィールドを指定した方向に移動できるかどうかを判定する
 //
-bool FieldIsWalk(int x, int y, int direction, bool land, struct Vector *move)
+bool FieldIsWalk(int x, int y, int direction, struct Vector *move)
+{
+    return FieldIsWalkAndJump(x, y, direction, FieldIsLand(x, y), move);
+}
+bool FieldIsWalkAndJump(int x, int y, int direction, bool jump, struct Vector *move)
 {
     bool result = false;
     if (direction == kDirectionUp) {
         if (
-            // (step || FieldIsLand(x, y)) && 
-            land && 
+            jump && 
             FieldIsSpace(x, y - kFieldSizePixel)
         ) {
             if (move != NULL) {
@@ -522,8 +525,7 @@ bool FieldIsWalk(int x, int y, int direction, bool land, struct Vector *move)
         }
     } else if (direction == kDirectionUpLeft) {
         if (
-            // (step || FieldIsLand(x, y)) && 
-            land && 
+            jump && 
             FieldIsSpace(x - kFieldSizePixel, y - kFieldSizePixel) && 
             FieldIsSpace(x - kFieldSizePixel, y) &&
             FieldIsSpace(x, y - kFieldSizePixel)
@@ -536,8 +538,7 @@ bool FieldIsWalk(int x, int y, int direction, bool land, struct Vector *move)
         }
     } else if (direction == kDirectionUpRight) {
         if (
-            // (step || FieldIsLand(x, y)) && 
-            land && 
+            jump && 
             FieldIsSpace(x + kFieldSizePixel, y - kFieldSizePixel) && 
             FieldIsSpace(x + kFieldSizePixel, y) && 
             FieldIsSpace(x, y - kFieldSizePixel)
