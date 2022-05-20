@@ -14,7 +14,10 @@
 
 // 内部関数
 //
-static void FieldLoadMap(int seed);
+static void FieldLoadLocation(void);
+static void FieldLoadMap(void);
+static void FieldLockLocation(int location);
+static void FieldDigLocation(int location);
 static void FieldUnloadMap(void);
 static void FieldActorUnload(struct FieldActor *actor);
 static void FieldActorDraw(struct FieldActor *actor);
@@ -23,8 +26,8 @@ static void FieldActorLoop(struct FieldActor *actor);
 // 内部変数
 //
 static struct Field *field = NULL;
-static const char *fieldAnimationNames[] = {
-    "Null", 
+static const char *fieldAnimationNames[kFieldAnimationSize] = {
+    "Wall", 
     "Wall", 
     "Block", 
     "Ladder", 
@@ -54,8 +57,19 @@ void FieldInitialize(void)
         playdate->system->error("%s: %d: field instance is not created.", __FILE__, __LINE__);
     }
 
-    // マップの作成
-    FieldLoadMap(123456789);
+    // フィールドの初期化
+    {
+        // 乱数の設定
+        IocsSetRandomSeed(&field->xorshift, 123456789);
+
+        // 配置の作成
+        FieldLoadLocation();
+
+        // マップの作成
+        FieldLoadMap();
+
+    }
+
 }
 
 // フィールドを解放する
@@ -78,20 +92,59 @@ void FieldRelease(void)
     }
 }
 
+// 配置を作成する
+//
+static void FieldLoadLocation(void)
+{
+    // 配置の初期化
+    for (int i = 0; i < kFieldLocationSize; i++) {
+        field->locations[i].left = i % kFieldLocationSizeX;
+        field->locations[i].top = i % kFieldLocationSizeY;
+        field->locations[i].right = field->locations[i].left;
+        field->locations[i].bottom = field->locations[i].top;
+    }
+    for (int i = 0; i < kFieldLocationSize; i++) {
+        int j = IocsGetRandom(&field->xorshift) % kFieldLocationSize;
+        struct Rect r = field->locations[j];
+        field->locations[j] = field->locations[i];
+        field->locations[i] = r;
+    }
+
+    // 開始位置の大きさの設定
+    ++field->locations[kFieldLocationStart].right;
+    ++field->locations[kFieldLocationStart].bottom;
+
+    // ダンジョンの大きさの設定
+
+    // 配置の範囲でランダムに設定
+    for (int i = 0; i < kFieldLocationSize; i++) {
+        int locationx = field->locations[i].left;
+        int locationy = field->locations[i].top;
+        int sizex = field->locations[i].right - locationx + 1;
+        int sizey = field->locations[i].bottom - locationy + 1;
+        int mazex = (IocsGetRandom(&field->xorshift) % (kFieldLocationMazeSizeX - (sizex - 1))) + locationx * kFieldLocationMazeSizeX;
+        int mazey = (IocsGetRandom(&field->xorshift) % (kFieldLocationMazeSizeY - (sizey - 1))) + locationy * kFieldLocationMazeSizeY;
+        field->locations[i].left = mazex * kFieldSectionSizeX;
+        field->locations[i].top = mazey * kFieldSectionSizeY;
+        field->locations[i].right = field->locations[i].left + sizex * kFieldSectionSizeX- 1;
+        field->locations[i].bottom = field->locations[i].top + sizey * kFieldSectionSizeY- 1;
+    }
+}
+
 // マップを作成する
 //
-static void FieldLoadMap(int seed)
+static void FieldLoadMap(void)
 {
     // 迷路の作成
     {
         // 初期化
-        field->maze = MazeLoad(kFieldMazeSizeX, kFieldMazeSizeY, seed);
+        field->maze = MazeLoad(kFieldMazeSizeX, kFieldMazeSizeY, &field->xorshift);
 
-        // 
-        field->maze->maps[3 * field->maze->mapSize.x + 3] |= kMazeMapLock;
-        field->maze->maps[3 * field->maze->mapSize.x + 5] |= kMazeMapLock;
-        field->maze->maps[5 * field->maze->mapSize.x + 3] |= kMazeMapLock;
-        field->maze->maps[5 * field->maze->mapSize.x + 5] |= kMazeMapLock;
+        // ロック
+        {
+            // 開始位置をロック
+            FieldLockLocation(kFieldLocationStart);
+        }
 
         // 穴を掘る
         MazeDig(field->maze, 1, 1);
@@ -102,8 +155,8 @@ static void FieldLoadMap(int seed)
         // 中心の設定
         for (int routey = 0; routey < field->maze->routeSize.y; routey++) {
             for (int routex = 0; routex < field->maze->routeSize.x; routex++) {
-                field->os[routey][routex].x = IocsGetRandom(&field->maze->xorshift) % (kFieldMazeSectionSizeX - 1) + 1;
-                field->os[routey][routex].y = IocsGetRandom(&field->maze->xorshift) % (kFieldMazeSectionSizeY - 1) + 1;
+                field->os[routey][routex].x = IocsGetRandom(&field->xorshift) % (kFieldSectionSizeX - 1) + 1;
+                field->os[routey][routex].y = IocsGetRandom(&field->xorshift) % (kFieldSectionSizeY - 1) + 1;
             }
         }
     }
@@ -120,13 +173,13 @@ static void FieldLoadMap(int seed)
     // マップの作成
     {
         for (int routey = 0; routey < field->maze->routeSize.y; routey++) {
-            int mapy = routey * kFieldMazeSectionSizeY;
+            int mapy = routey * kFieldSectionSizeY;
             for (int routex = 0; routex < field->maze->routeSize.x; routex++) {
-                int mapx = routex * kFieldMazeSectionSizeX;
+                int mapx = routex * kFieldSectionSizeX;
                 unsigned char route = field->maze->routes[routey * field->maze->routeSize.x + routex];
                 if (route == 0) {
-                    for (int y = 0; y < kFieldMazeSectionSizeY; y++) {
-                        for (int x = 0; x < kFieldMazeSectionSizeX; x++) {
+                    for (int y = 0; y < kFieldSectionSizeY; y++) {
+                        for (int x = 0; x < kFieldSectionSizeX; x++) {
                             field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                         }
                     }
@@ -141,7 +194,7 @@ static void FieldLoadMap(int seed)
                         field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                         x = x + (x < field->os[routey][routex].x ? 1 : -1);
                     } while (x != field->os[routey][routex].x);
-                    while (y < kFieldMazeSectionSizeY) {
+                    while (y < kFieldSectionSizeY) {
                         field->maps[mapy + y][mapx + x] = kFieldMapLadder;
                         ++y;
                     }
@@ -154,20 +207,20 @@ static void FieldLoadMap(int seed)
                     }
                     {
                         int y = field->os[routey][routex].y;
-                        for (int x = 0; x < kFieldMazeSectionSizeX; x++) {
+                        for (int x = 0; x < kFieldSectionSizeX; x++) {
                             field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                         }
                     }
                 } else if (route == kMazeRouteDown) {
                     {
                         int y = field->os[routey][routex].y;
-                        for (int x = 0; x < kFieldMazeSectionSizeX; x++) {
+                        for (int x = 0; x < kFieldSectionSizeX; x++) {
                             field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                         }
                     }
                     {
                         int x = field->os[routey][routex].x;
-                        for (int y = field->os[routey][routex].y; y < kFieldMazeSectionSizeY; y++) {
+                        for (int y = field->os[routey][routex].y; y < kFieldSectionSizeY; y++) {
                             field->maps[mapy + y][mapx + x] = kFieldMapLadder;
                         }
                     }
@@ -195,7 +248,7 @@ static void FieldLoadMap(int seed)
                             ++x;
                         }
                         if (routey >= field->maze->routeSize.y - 1) {
-                            while (y < kFieldMazeSectionSizeY) {
+                            while (y < kFieldSectionSizeY) {
                                 field->maps[mapy + y][mapx + t] = kFieldMapLadder;
                                 ++y;
                             }
@@ -203,11 +256,11 @@ static void FieldLoadMap(int seed)
                     } else if (lr == kMazeRouteRight) {
                         int y = field->os[routey][routex].y;
                         int t = routey > 0 && field->os[routey - 1][routex].x < field->os[routey][routex].x ? field->os[routey - 1][routex].x : field->os[routey][routex].x;
-                        for (int x = t; x < kFieldMazeSectionSizeX; x++) {
+                        for (int x = t; x < kFieldSectionSizeX; x++) {
                             field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                         }
                         if (routey >= field->maze->routeSize.y - 1) {
-                            while (y < kFieldMazeSectionSizeY) {
+                            while (y < kFieldSectionSizeY) {
                                 field->maps[mapy + y][mapx + t] = kFieldMapLadder;
                                 ++y;
                             }
@@ -227,7 +280,7 @@ static void FieldLoadMap(int seed)
                                     field->maps[mapy + y][mapx + x] = kFieldMapLadder;
                                     ++y;
                                 }
-                                while (x < kFieldMazeSectionSizeX) {
+                                while (x < kFieldSectionSizeX) {
                                     field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                                     ++x;
                                 }
@@ -239,7 +292,7 @@ static void FieldLoadMap(int seed)
                                     field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                                     ++x;
                                 } while (y < field->os[routey][routex].y);
-                                while (x < kFieldMazeSectionSizeX) {
+                                while (x < kFieldSectionSizeX) {
                                     field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                                     ++x;
                                 }
@@ -257,7 +310,7 @@ static void FieldLoadMap(int seed)
                                     field->maps[mapy + y][mapx + x] = kFieldMapLadder;
                                 }
                                 ++x;
-                                while (x < kFieldMazeSectionSizeX) {
+                                while (x < kFieldSectionSizeX) {
                                     field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                                     ++x;
                                 }
@@ -269,13 +322,13 @@ static void FieldLoadMap(int seed)
                                     field->maps[mapy + y][mapx + x] = kFieldMapLadder;
                                     ++x;
                                 } while (y > field->os[routey][routex].y);
-                                while (x < kFieldMazeSectionSizeX) {
+                                while (x < kFieldSectionSizeX) {
                                     field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                                     ++x;
                                 }
                             }
                         } else {
-                            for (int x = 0; x < kFieldMazeSectionSizeX; x++) {
+                            for (int x = 0; x < kFieldSectionSizeX; x++) {
                                 field->maps[mapy + y][mapx + x] = kFieldMapBlock;
                             }
                         }
@@ -288,13 +341,19 @@ static void FieldLoadMap(int seed)
                     }
                     if ((route & kMazeRouteDown) != 0) {
                         int x = field->os[routey][routex].x;
-                        for (int y = field->os[routey][routex].y; y < kFieldMazeSectionSizeY; y++) {
+                        for (int y = field->os[routey][routex].y; y < kFieldSectionSizeY; y++) {
                             field->maps[mapy + y][mapx + x] = kFieldMapLadder;
                         }
                     }
                 }
             }
         }
+    }
+
+    // ロックした場所を開ける
+    {
+        // 開始位置を開ける
+        FieldDigLocation(kFieldLocationStart);
     }
 
     // 柱を立てる
@@ -328,13 +387,93 @@ static void FieldLoadMap(int seed)
         for (int x = 0; x < kFieldSizeX; x++) {
             if (
                 (y == 0 || field->maps[y - 1][x] == kFieldMapBlock) && 
-                field->maps[y + 0][x + 0] == kFieldMapWall && 
-                field->maps[y + 1][x + 0] == kFieldMapWall && 
+                field->maps[y + 0][x + 0] <= kFieldMapWall && 
+                field->maps[y + 1][x + 0] <= kFieldMapWall && 
                 field->maps[y + 1][x - 1] != kFieldMapBlock && 
                 field->maps[y + 1][x + 1] != kFieldMapBlock
             ) {
                 field->maps[y][x] = kFieldMapIcicle;
             }
+        }
+    }
+}
+
+// 指定した配置をロックする
+//
+static void FieldLockLocation(int location)
+{
+    int left = (field->locations[location].left / kFieldSectionSizeX) * 2 + 1;
+    int top = (field->locations[location].top / kFieldSectionSizeY) * 2 + 1;
+    int right = (field->locations[location].right / kFieldSectionSizeX) * 2 + 1;
+    int bottom = (field->locations[location].bottom / kFieldSectionSizeY) * 2 + 1;
+    for (int y = top; y <= bottom; y += 2) {
+        for (int x = left; x <= right; x += 2) {
+            field->maze->maps[y * field->maze->mapSize.x + x] |= kMazeMapLock;
+        }
+    }
+}
+
+// 指定した配置に空間を作る
+//
+static void FieldDigLocation(int location)
+{
+    // 空間の作成
+    for (int y = field->locations[location].top; y < field->locations[location].bottom; y++) {
+        for (int x = field->locations[location].left; x <= field->locations[location].right; x++) {
+            field->maps[y][x] = kFieldMapNull;
+        }
+    }
+    for (int x = field->locations[location].left; x <= field->locations[location].right; x++) {
+        field->maps[field->locations[location].bottom][x] = kFieldMapBlock;
+    }
+
+    // 左側をつなげる
+    if (field->locations[location].left > 0) {
+        int x = field->locations[location].left - 1;
+        int y = field->locations[location].bottom;
+        while (field->maps[y][x] != kFieldMapBlock && field->maps[y][x] != kFieldMapLadder) {
+            --y;
+            if (y < field->locations[location].top) {
+                y = field->locations[location].bottom;
+                --x;
+                if (x < 0) {
+                    break;
+                }
+            }
+        }
+        ++x;
+        while (x < field->locations[location].left) {
+            field->maps[y][x] = kFieldMapBlock;
+            ++x;
+        }
+        while (y < field->locations[location].bottom) {
+            field->maps[y][x] = kFieldMapLadder;
+            ++y;
+        }
+    }
+
+    // 右側をつなげる
+    if (field->locations[location].right < kFieldSizeX - 1) {
+        int x = field->locations[location].right + 1;
+        int y = field->locations[location].bottom;
+        while (field->maps[y][x] != kFieldMapBlock && field->maps[y][x] != kFieldMapLadder) {
+            --y;
+            if (y < field->locations[location].top) {
+                y = field->locations[location].bottom;
+                ++x;
+                if (x >= kFieldSizeX) {
+                    break;
+                }
+            }
+        }
+        --x;
+        while (x > field->locations[location].right) {
+            field->maps[y][x] = kFieldMapBlock;
+            --x;
+        }
+        while (y < field->locations[location].bottom) {
+            field->maps[y][x] = kFieldMapLadder;
+            ++y;
         }
     }
 }
@@ -427,18 +566,6 @@ static void FieldActorDraw(struct FieldActor *actor)
             ++my;
         }
         playdate->graphics->clearClipRect();
-    }
-
-    // 
-    {
-        playdate->graphics->setDrawMode(kDrawModeCopy);
-        for (int y = 0; y < field->maze->mapSize.y; y++) {
-            for (int x = 0; x < field->maze->mapSize.x; x++) {
-                if (field->maze->maps[y * field->maze->mapSize.x + x] != 0) {
-                    playdate->graphics->fillRect(x * 4 + 248, y * 4 + 8, 4, 4, kColorWhite);
-                }
-            }
-        }
     }
 }
 
@@ -612,3 +739,20 @@ bool FieldIsWalkAndJump(int x, int y, int direction, bool jump, struct Vector *m
     }
     return result;
 }
+
+// 開始位置を取得する
+//
+void FieldGetStartPosition(struct Vector *position)
+{
+    int x = (field->locations[kFieldLocationStart].left + field->locations[kFieldLocationStart].right + 1) / 2;
+    int y = field->locations[kFieldLocationStart].top;
+    while (!FieldIsSpace(x * kFieldSizePixel, y * kFieldSizePixel)) {
+        ++y;
+    }
+    while (FieldIsSpace(x * kFieldSizePixel, y * kFieldSizePixel)) {
+        ++y;
+    }
+    position->x = x * kFieldSizePixel + kFieldSizePixel / 2;
+    position->y = y * kFieldSizePixel - 1;
+}
+

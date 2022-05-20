@@ -41,13 +41,13 @@ struct Maze {
     struct Vector routeSize;
 
     // 乱数
-    struct XorShift xorshift;
+    struct XorShift *xorshift;
 
 };
 
 // 外部参照関数
 //
-extern struct Maze *MazeLoad(int sizex, int sizey, int seed);
+extern struct Maze *MazeLoad(int sizex, int sizey, struct XorShift *xorshift);
 extern void MazeUnload(struct Maze *maze);
 extern void MazeDig(struct Maze *maze, int x, int y);
 extern void MazeSetRoute(struct Maze *maze);

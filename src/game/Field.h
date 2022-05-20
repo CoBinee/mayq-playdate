@@ -18,15 +18,20 @@
 enum {
     kFieldMazeSizeX = 32, 
     kFieldMazeSizeY = 32, 
-    kFieldMazeSectionSizeX = 6, 
-    kFieldMazeSectionSizeY = 4, 
+};
+
+// 区画
+//
+enum {
+    kFieldSectionSizeX = 6, 
+    kFieldSectionSizeY = 4, 
 };
 
 // フィールド
 //
 enum {
-    kFieldSizeX = kFieldMazeSizeX * kFieldMazeSectionSizeX, 
-    kFieldSizeY = kFieldMazeSizeY * kFieldMazeSectionSizeY, 
+    kFieldSizeX = kFieldMazeSizeX * kFieldSectionSizeX, 
+    kFieldSizeY = kFieldMazeSizeY * kFieldSectionSizeY, 
     kFieldSizePixel = 24, 
 };
 
@@ -41,15 +46,39 @@ enum {
     kFieldMapPole, 
 };
 
-// ロック
+// ダンジョン
 //
 enum {
-    kFieldLockSize = 8, 
+    kFieldDungeonSize = 8, 
+};
+
+// エネミー
+//
+enum {
+    kFieldEnemySize = 8, 
+};
+
+// 配置
+//
+enum {
+    kFieldLocationSizeX = 8, 
+    kFieldLocationSizeY = 8, 
+    kFieldLocationSize = kFieldLocationSizeX * kFieldLocationSizeY, 
+    kFieldLocationMazeSizeX = 4, 
+    kFieldLocationMazeSizeY = 4, 
+    kFieldLocationStart = 0, 
+    kFieldLocationDungeon, 
+    kFieldLocationDungeonSize = 8, 
+    kFieldLocationEnemy = kFieldLocationDungeon + kFieldLocationDungeonSize, 
+    kFieldLocationEnemtSize = 8, 
 };
 
 // フィールド
 //
 struct Field {
+
+    // 乱数
+    struct XorShift xorshift;
 
     // 迷路
     struct Maze *maze;
@@ -60,16 +89,19 @@ struct Field {
     // マップ
     unsigned char maps[kFieldSizeY][kFieldSizeX];
 
+    // 配置
+    struct Rect locations[kFieldLocationSize];
+
 };
 
 // 視界
 //
 enum {
-    kFieldViewSizeX = 240, 
+    kFieldViewSizeX = 400, 
     kFieldViewSizeY = 240, 
     kFieldViewLeft = 0, 
     kFieldViewTop = 0, 
-    kFieldViewRight = 239, 
+    kFieldViewRight = 399, 
     kFieldViewBottom = 239, 
 };
 
@@ -109,4 +141,5 @@ extern bool FieldIsLand(int x, int y);
 extern bool FieldIsFall(int x, int y);
 extern bool FieldIsWalk(int x, int y, int direction, struct Vector *move);
 extern bool FieldIsWalkAndJump(int x, int y, int direction, bool jump, struct Vector *move);
+extern void FieldGetStartPosition(struct Vector *position);
 

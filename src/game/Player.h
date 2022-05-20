@@ -48,7 +48,7 @@ struct PlayerActor {
 // カメラ
 //
 enum {
-    kPlayerCameraX = -120, 
+    kPlayerCameraX = -200, 
     kPlayerCameraY = -131, 
 };
 

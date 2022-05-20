@@ -1,4 +1,4 @@
-// Player.c - プレイヤ
+// Enemy.c - エネミー
 //
 
 // 外部参照
@@ -9,28 +9,20 @@
 #include "Actor.h"
 #include "Game.h"
 #include "Field.h"
-#include "Player.h"
+#include "Enemy.h"
 
 // 内部関数
 //
-static void PlayerActorUnload(struct PlayerActor *actor);
-static void PlayerActorDraw(struct PlayerActor *actor);
-static void PlayerActorPlayOnField(struct PlayerActor *actor);
+static void EnemyLocateOnField(void);
 
 // 内部変数
 //
-static struct Player *player = NULL;
-static const char *playerAnimationNames_Walk[] = {
-    "WalkUp", 
-    "WalkDown", 
-    "WalkLeft", 
-    "WalkRight", 
-};
+static struct Enemy *enemy = NULL;
 
 
-// プレイヤを初期化する
+// エネミーを初期化する
 //
-void PlayerInitialize(void)
+void EnemyInitialize(void)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -39,20 +31,26 @@ void PlayerInitialize(void)
     }
 
     // アクタの確認
-    if (sizeof (struct PlayerActor) > kActorBlockSize) {
-        playdate->system->error("%s: %d: player actor size is over: %d bytes.", __FILE__, __LINE__, sizeof (struct PlayerActor));
+    if (sizeof (struct EnemyActor) > kActorBlockSize) {
+        playdate->system->error("%s: %d: enemy actor size is over: %d bytes.", __FILE__, __LINE__, sizeof (struct EnemyActor));
     }
 
-    // プレイヤの作成
-    player = (struct Player *)playdate->system->realloc(NULL, sizeof (struct Player));
-    if (player == NULL) {
-        playdate->system->error("%s: %d: player instance is not created.", __FILE__, __LINE__);
+    // エネミーの作成
+    enemy = (struct Enemy *)playdate->system->realloc(NULL, sizeof (struct Enemy));
+    if (enemy == NULL) {
+        playdate->system->error("%s: %d: enemy instance is not created.", __FILE__, __LINE__);
+    }
+
+    // エネミーの初期化
+    {
+        // フィールドへの配置
+        EnemyLocateOnField();
     }
 }
 
-// プレイヤを解放する
+// エネミーを解放する
 //
-void PlayerRelease(void)
+void EnemyRelease(void)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -60,16 +58,33 @@ void PlayerRelease(void)
         return;
     }
 
-    // プレイヤの解放
-    if (player != NULL) {
-        playdate->system->realloc(player, 0);
-        player = NULL;
+    // エネミーの解放
+    if (enemy != NULL) {
+        playdate->system->realloc(enemy, 0);
+        enemy = NULL;
     }
 }
 
-// プレイヤアクタを読み込む
+// エネミーをフィールドに配置する
 //
-void PlayerActorLoadOnField(void)
+static void EnemyLocateOnField(void)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // プールされたエネミーの配置
+    {
+    }
+}
+
+
+#if 0
+// エネミーアクタを読み込む
+//
+void EnemyActorLoadOnField(void)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -78,30 +93,28 @@ void PlayerActorLoadOnField(void)
     }
 
     // アクタの登録
-    struct PlayerActor *actor = (struct PlayerActor *)ActorLoad((ActorFunction)PlayerActorPlayOnField, kGamePriorityPlayer);
+    struct EnemyActor *actor = (struct EnemyActor *)ActorLoad((ActorFunction)EnemyActorPlayOnField, kGamePriorityEnemy);
     if (actor == NULL) {
-        playdate->system->error("%s: %d: player actor is not loaded.", __FILE__, __LINE__);
+        playdate->system->error("%s: %d: enemy actor is not loaded.", __FILE__, __LINE__);
     }
 
-    // プレイヤの初期化
+    // エネミーの初期化
     {
         // 解放処理の設定
-        ActorSetUnload(&actor->actor, (ActorFunction)PlayerActorUnload);
+        ActorSetUnload(&actor->actor, (ActorFunction)EnemyActorUnload);
 
         // タグの設定
-        ActorSetTag(&actor->actor, kGameTagPlayer);
+        ActorSetTag(&actor->actor, kGameTagEnemy);
 
         // 位置の設定
-        {
-            struct Vector position;
-            FieldGetStartPosition(&actor->position);
-        }
+        actor->position.x = 2 * kFieldSizePixel + (kFieldSizePixel / 2);
+        actor->position.y = 3 * kFieldSizePixel + (kFieldSizePixel - 1);
     }
 }
 
-// プレイヤアクタを解放する
+// エネミーアクタを解放する
 //
-static void PlayerActorUnload(struct PlayerActor *actor)
+static void EnemyActorUnload(struct EnemyActor *actor)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -110,9 +123,9 @@ static void PlayerActorUnload(struct PlayerActor *actor)
     }
 }
 
-// プレイヤアクタを描画する
+// エネミーアクタを描画する
 //
-static void PlayerActorDraw(struct PlayerActor *actor)
+static void EnemyActorDraw(struct EnemyActor *actor)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -129,11 +142,18 @@ static void PlayerActorDraw(struct PlayerActor *actor)
         int y = actor->position.y - camera->y;
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, x, y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
     }
+
+    // 
+    {
+        int x = ((actor->position.x / (kFieldMazeSectionSizeX * kFieldSizePixel)) * 2 + 1);
+        int y = ((actor->position.y / (kFieldMazeSectionSizeY * kFieldSizePixel)) * 2 + 1);
+        playdate->graphics->fillRect(x * 4 + 248 + 1, y * 4 + 8 + 1, 2, 2, kColorWhite);
+    }
 }
 
-// プレイヤアクタがフィールドをプレイする
+// エネミーアクタがフィールドをプレイする
 //
-static void PlayerActorPlayOnField(struct PlayerActor *actor)
+static void EnemyActorPlayOnField(struct EnemyActor *actor)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -155,7 +175,7 @@ static void PlayerActorPlayOnField(struct PlayerActor *actor)
         actor->step = 1;
 
         // アニメーションの開始
-        AsepriteStartSpriteAnimation(&actor->animation, "player", playerAnimationNames_Walk[actor->direction], true);
+        AsepriteStartSpriteAnimation(&actor->animation, "enemy", enemyAnimationNames_Walk[actor->direction], true);
 
         // 初期化の完了
         ++actor->actor.state;
@@ -252,7 +272,7 @@ static void PlayerActorPlayOnField(struct PlayerActor *actor)
             }
         }
         if (actor->direction != direction) {
-            AsepriteStartSpriteAnimation(&actor->animation, "player", playerAnimationNames_Walk[actor->direction], true);
+            AsepriteStartSpriteAnimation(&actor->animation, "enemy", enemyAnimationNames_Walk[actor->direction], true);
         }
         if (actor->position.y == actor->move.y) {
             actor->jump = 0;
@@ -264,26 +284,26 @@ static void PlayerActorPlayOnField(struct PlayerActor *actor)
     {
         bool move = false;
         if (actor->position.x < actor->move.x) {
-            actor->position.x += kPlayerMoveSpeed;
+            actor->position.x += kEnemyMoveSpeed;
             if (actor->position.x > actor->move.x) {
                 actor->position.x = actor->move.x;
             }
             move = true;
         } else if (actor->position.x > actor->move.x) {
-            actor->position.x -= kPlayerMoveSpeed;
+            actor->position.x -= kEnemyMoveSpeed;
             if (actor->position.x < actor->move.x) {
                 actor->position.x = actor->move.x;
             }
             move = true;
         }
         if (actor->position.y < actor->move.y) {
-            actor->position.y += kPlayerMoveSpeed;
+            actor->position.y += kEnemyMoveSpeed;
             if (actor->position.y > actor->move.y) {
                 actor->position.y = actor->move.y;
             }
             move = true;
         } else if (actor->position.y > actor->move.y) {
-            actor->position.y -= kPlayerMoveSpeed;
+            actor->position.y -= kEnemyMoveSpeed;
             if (actor->position.y < actor->move.y) {
                 actor->position.y = actor->move.y;
             }
@@ -295,12 +315,12 @@ static void PlayerActorPlayOnField(struct PlayerActor *actor)
     }
 
     // カメラの設定
-    GameSetCamera(actor->position.x + kPlayerCameraX, actor->position.y + kPlayerCameraY);
+    GameSetCamera(actor->position.x + kEnemyCameraX, actor->position.y + kEnemyCameraY);
 
     // スプライトの更新
     // AsepriteUpdateSpriteAnimation(&actor->animation);
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)PlayerActorDraw, kGameOrderPlayer);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
 }
-
+#endif

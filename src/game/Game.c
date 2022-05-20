@@ -11,16 +11,17 @@
 #include "Aseprite.h"
 #include "Application.h"
 #include "Game.h"
-#include "Player.h"
 #include "Field.h"
+#include "Player.h"
+#include "Enemy.h"
 
 // 内部関数
 //
 static void GameUnload(struct Game *game);
 static void GameTransition(struct Game *game, GameFunction function);
-static void GameLoad(struct Game *game);
-static void GameStart(struct Game *game);
-static void GameField(struct Game *game);
+static void GameLoadField(struct Game *game);
+static void GameStartField(struct Game *game);
+static void GamePlayField(struct Game *game);
 static void GameDone(struct Game *game);
 static void GameLoadField(struct Game *game);
 static void GameUnloadField(struct Game *game);
@@ -79,8 +80,11 @@ void GameUpdate(struct Game *game)
         // プレイヤの初期化
         PlayerInitialize();
 
+        // エネミーの初期化
+        EnemyInitialize();
+
         // 処理の設定
-        GameTransition(game, (GameFunction)GameLoad);
+        GameTransition(game, (GameFunction)GameLoadField);
     }
 
     // 処理の更新
@@ -95,6 +99,9 @@ static void GameUnload(struct Game *game)
 {
     // アクタの解放
     ActorUnloadAll();
+
+    // エネミーの解放
+    EnemyRelease();
 
     // プレイヤの解放
     PlayerRelease();
@@ -118,9 +125,9 @@ static void GameTransition(struct Game *game, GameFunction function)
     game->state = 0;
 }
 
-// ゲームを読み込む
+// フィールドを読み込む
 //
-static void GameLoad(struct Game *game)
+static void GameLoadField(struct Game *game)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -130,24 +137,26 @@ static void GameLoad(struct Game *game)
 
     // 初期化
     if (game->state == 0) {
-
-        // プレイヤアクタの読み込み
-        PlayerActorLoadOnField();
 
         // フィールドアクタの読み込み
         FieldActorLoad();
 
+        // プレイヤアクタの読み込み
+        PlayerActorLoadOnField();
+
+        // エネミー芥の読み込み
+
         // 初期化の完了
         ++game->state;
     }
 
     // 処理の遷移
-    GameTransition(game, (GameFunction)GameStart);
+    GameTransition(game, (GameFunction)GameStartField);
 }
 
-// ゲームを開始する
+// フィールドを開始する
 //
-static void GameStart(struct Game *game)
+static void GameStartField(struct Game *game)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -163,12 +172,12 @@ static void GameStart(struct Game *game)
     }
 
     // 処理の遷移
-    GameTransition(game, (GameFunction)GameField);
+    GameTransition(game, (GameFunction)GamePlayField);
 }
 
 // フィールドをプレイする
 //
-static void GameField(struct Game *game)
+static void GamePlayField(struct Game *game)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();

@@ -28,8 +28,9 @@ SRC = \
 	src/title/Title.c \
 	src/game/Game.c \
 	src/game/Maze.c \
+	src/game/Field.c \
 	src/game/Player.c \
-	src/game/Field.c
+	src/game/Enemy.c src/game/EnemyTable.c
 
 # List all user directories here
 UINCDIR = src src/title src/game
@@ -56,8 +57,8 @@ include $(SDK)/C_API/buildsupport/common.mk
 
 # Build tools
 tool:	
-	@g++ -o tools/ttf2fnt `sdl2-config --cflags --libs` -lSDL2_image -lSDL2_ttf -std=c++11 -Wno-format-security tools/src/ttf2fnt.cpp
-	@g++ -o tools/chr2png -lpng -std=c++11 -Wno-format-security tools/src/chr2png.cpp
+	@g++ -o tools/ttf2fnt `sdl2-config --cflags --libs` -lSDL2_image -lSDL2_ttf -std=c++11 -Wno-format-security -I/opt/homebrew/include -L/opt/homebrew/lib tools/src/ttf2fnt.cpp
+	@g++ -o tools/chr2png -lpng -std=c++11 -Wno-format-security -I/opt/homebrew/include -L/opt/homebrew/lib tools/src/chr2png.cpp
 
 # Build resource
 resource:	font image sound launcher
@@ -78,3 +79,6 @@ sound:
 
 launcher:
 	@cp res/launcher/*.png Source/launcher/
+
+# install
+# sdl2, sdl2_image, sdl2_ttf libpng ffmpeg

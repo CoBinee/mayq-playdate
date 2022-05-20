@@ -17,7 +17,7 @@
 
 // 迷路を初期化する
 //
-struct Maze *MazeLoad(int sizex, int sizey, int seed)
+struct Maze *MazeLoad(int sizex, int sizey, struct XorShift *xorshift)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -31,8 +31,8 @@ struct Maze *MazeLoad(int sizex, int sizey, int seed)
         playdate->system->error("%s: %d: maze is not created.", __FILE__, __LINE__);
     }
 
-    // 乱数の初期化
-    IocsSetRandomSeed(&maze->xorshift, seed);
+    // 乱数の設定
+    maze->xorshift = xorshift;
 
     // マップの作成
     maze->mapSize.x = sizex * 2 + 1;
@@ -104,7 +104,7 @@ void MazeDig(struct Maze *maze, int x, int y)
     while (up == 0 || down == 0 || left == 0 || right == 0) {
 
         // ランダムに方向を選択
-        int d = IocsGetRandom(&maze->xorshift) & 0x03;
+        int d = IocsGetRandom(maze->xorshift) & 0x03;
 
         // 上に掘る
         if (d == 0) {
