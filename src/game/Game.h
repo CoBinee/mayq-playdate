@@ -32,8 +32,9 @@ struct Game {
 // スプライト
 //
 enum {
-    kGameSpriteTile = 0, 
+    kGameSpriteField = 0, 
     kGameSpritePlayer, 
+    kGameSpriteMob, 
     kGameSpriteNameSize, 
 };
 
@@ -49,6 +50,7 @@ enum {
     kGamePriorityNull = 0, 
     kGamePriorityField, 
     kGamePriorityPlayer, 
+    kGamePriorityEnemy, 
 };
 
 // タグ
@@ -57,6 +59,7 @@ enum {
     kGameTagNull = 0, 
     kGameTagField, 
     kGameTagPlayer, 
+    kGameTagEnemy, 
 };
 
 // 描画順
@@ -64,6 +67,7 @@ enum {
 enum {
     kGameOrderNull = 0, 
     kGameOrderField, 
+    kGameOrderEnemy, 
     kGameOrderPlayer, 
 };
 
@@ -73,4 +77,5 @@ enum {
 extern void GameUpdate(struct Game *game);
 extern struct Vector *GameGetCamera(void);
 extern void GameSetCamera(int x, int y);
+extern void GameGetCameraPosition(int x, int y, struct Vector *position);
 

@@ -128,5 +128,6 @@ extern void IocsStopMusicAudio(void);
 extern int IocsGetCharByte(char c);
 extern int IocsGetTextLength(const char *text);
 extern void IocsSetRandomSeed(struct XorShift *xorshift, uint32_t seed);
-extern int IocsGetRandom(struct XorShift *xorshift);
+extern int IocsGetRandomNumber(struct XorShift *xorshift);
+extern bool IocsGetRandomBool(struct XorShift *xorshift);
 

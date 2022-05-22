@@ -778,7 +778,7 @@ void IocsSetRandomSeed(struct XorShift *xorshift, uint32_t seed)
 
 // 乱数を取得する
 //
-int IocsGetRandom(struct XorShift *xorshift)
+int IocsGetRandomNumber(struct XorShift *xorshift)
 {
     uint32_t value = 0;
     if (xorshift == NULL) {
@@ -790,4 +790,8 @@ int IocsGetRandom(struct XorShift *xorshift)
     value = value ^ (value << 5);
     xorshift->seed = value;
     return (int)(value & 0x7fffffff);
+}
+bool IocsGetRandomBool(struct XorShift *xorshift)
+{
+    return (IocsGetRandomNumber(xorshift) & 0x10) != 0 ? true : false;
 }

@@ -104,7 +104,7 @@ void MazeDig(struct Maze *maze, int x, int y)
     while (up == 0 || down == 0 || left == 0 || right == 0) {
 
         // ランダムに方向を選択
-        int d = IocsGetRandom(maze->xorshift) & 0x03;
+        int d = IocsGetRandomNumber(maze->xorshift) & 0x03;
 
         // 上に掘る
         if (d == 0) {

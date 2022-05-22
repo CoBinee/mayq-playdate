@@ -29,10 +29,17 @@ static struct Field *field = NULL;
 static const char *fieldAnimationNames[kFieldAnimationSize] = {
     "Wall", 
     "Wall", 
+    "Wall", 
     "Block", 
     "Ladder", 
     "Icicle", 
     "Pole", 
+    "Cave00", 
+    "Cave01", 
+    "Cave02", 
+    "Cave10", 
+    "Cave11", 
+    "Cave12", 
 };
 
 
@@ -99,22 +106,24 @@ static void FieldLoadLocation(void)
     // 配置の初期化
     for (int i = 0; i < kFieldLocationSize; i++) {
         field->locations[i].left = i % kFieldLocationSizeX;
-        field->locations[i].top = i % kFieldLocationSizeY;
+        field->locations[i].top = i / kFieldLocationSizeY;
         field->locations[i].right = field->locations[i].left;
         field->locations[i].bottom = field->locations[i].top;
     }
+    /*
     for (int i = 0; i < kFieldLocationSize; i++) {
-        int j = IocsGetRandom(&field->xorshift) % kFieldLocationSize;
+        int j = IocsGetRandomNumber(&field->xorshift) % kFieldLocationSize;
         struct Rect r = field->locations[j];
         field->locations[j] = field->locations[i];
         field->locations[i] = r;
     }
+    */
 
     // 開始位置の大きさの設定
-    ++field->locations[kFieldLocationStart].right;
-    ++field->locations[kFieldLocationStart].bottom;
-
-    // ダンジョンの大きさの設定
+    {
+        ++field->locations[kFieldLocationStart].right;
+        ++field->locations[kFieldLocationStart].bottom;
+    }
 
     // 配置の範囲でランダムに設定
     for (int i = 0; i < kFieldLocationSize; i++) {
@@ -122,13 +131,16 @@ static void FieldLoadLocation(void)
         int locationy = field->locations[i].top;
         int sizex = field->locations[i].right - locationx + 1;
         int sizey = field->locations[i].bottom - locationy + 1;
-        int mazex = (IocsGetRandom(&field->xorshift) % (kFieldLocationMazeSizeX - (sizex - 1))) + locationx * kFieldLocationMazeSizeX;
-        int mazey = (IocsGetRandom(&field->xorshift) % (kFieldLocationMazeSizeY - (sizey - 1))) + locationy * kFieldLocationMazeSizeY;
+        int mazex = (IocsGetRandomNumber(&field->xorshift) % ((kFieldLocationMazeSizeX - 1) - sizex)) + locationx * kFieldLocationMazeSizeX;
+        int mazey = (IocsGetRandomNumber(&field->xorshift) % ((kFieldLocationMazeSizeY - 1) - sizey)) + locationy * kFieldLocationMazeSizeY;
         field->locations[i].left = mazex * kFieldSectionSizeX;
         field->locations[i].top = mazey * kFieldSectionSizeY;
         field->locations[i].right = field->locations[i].left + sizex * kFieldSectionSizeX- 1;
         field->locations[i].bottom = field->locations[i].top + sizey * kFieldSectionSizeY- 1;
     }
+
+    // エネミーの設定
+    field->locationEnemy = kFieldLocationEnemy;
 }
 
 // マップを作成する
@@ -144,10 +156,20 @@ static void FieldLoadMap(void)
         {
             // 開始位置をロック
             FieldLockLocation(kFieldLocationStart);
+
+            // 洞窟をロック
+            for (int i = 0; i < kFieldLocationCaveSize; i++) {
+                FieldLockLocation(kFieldLocationCave + i);
+            }
         }
 
         // 穴を掘る
-        MazeDig(field->maze, 1, 1);
+        {
+            int x = field->locations[kFieldLocationDig].left * kFieldLocationMazeSizeX * 2 + 1;
+            int y = field->locations[kFieldLocationDig].top * kFieldLocationMazeSizeY * 2 + 1;
+            MazeDig(field->maze, x, y);
+
+        }
 
         // 経路の設定
         MazeSetRoute(field->maze);
@@ -155,8 +177,8 @@ static void FieldLoadMap(void)
         // 中心の設定
         for (int routey = 0; routey < field->maze->routeSize.y; routey++) {
             for (int routex = 0; routex < field->maze->routeSize.x; routex++) {
-                field->os[routey][routex].x = IocsGetRandom(&field->xorshift) % (kFieldSectionSizeX - 1) + 1;
-                field->os[routey][routex].y = IocsGetRandom(&field->xorshift) % (kFieldSectionSizeY - 1) + 1;
+                field->os[routey][routex].x = IocsGetRandomNumber(&field->xorshift) % (kFieldSectionSizeX - 1) + 1;
+                field->os[routey][routex].y = IocsGetRandomNumber(&field->xorshift) % (kFieldSectionSizeY - 1) + 1;
             }
         }
     }
@@ -354,6 +376,11 @@ static void FieldLoadMap(void)
     {
         // 開始位置を開ける
         FieldDigLocation(kFieldLocationStart);
+
+        // 洞窟を開ける
+        for (int i = 0; i < kFieldLocationCaveSize; i++) {
+            FieldDigLocation(kFieldLocationCave + i);
+        }
     }
 
     // 柱を立てる
@@ -387,8 +414,8 @@ static void FieldLoadMap(void)
         for (int x = 0; x < kFieldSizeX; x++) {
             if (
                 (y == 0 || field->maps[y - 1][x] == kFieldMapBlock) && 
-                field->maps[y + 0][x + 0] <= kFieldMapWall && 
-                field->maps[y + 1][x + 0] <= kFieldMapWall && 
+                (field->maps[y + 0][x + 0] == kFieldMapLock || field->maps[y + 0][x + 0] == kFieldMapWall) && 
+                (field->maps[y + 1][x + 0] == kFieldMapLock || field->maps[y + 1][x + 0] == kFieldMapWall) && 
                 field->maps[y + 1][x - 1] != kFieldMapBlock && 
                 field->maps[y + 1][x + 1] != kFieldMapBlock
             ) {
@@ -420,7 +447,7 @@ static void FieldDigLocation(int location)
     // 空間の作成
     for (int y = field->locations[location].top; y < field->locations[location].bottom; y++) {
         for (int x = field->locations[location].left; x <= field->locations[location].right; x++) {
-            field->maps[y][x] = kFieldMapNull;
+            field->maps[y][x] = kFieldMapLock;
         }
     }
     for (int x = field->locations[location].left; x <= field->locations[location].right; x++) {
@@ -474,6 +501,17 @@ static void FieldDigLocation(int location)
         while (y < field->locations[location].bottom) {
             field->maps[y][x] = kFieldMapLadder;
             ++y;
+        }
+    }
+
+    // 洞窟の入り口を置く
+    if (location >= kFieldLocationCave && location < kFieldLocationCave + kFieldLocationCaveSize) {
+        int x = ((field->locations[location].right - field->locations[location].left + 1) - kFieldCaveSizeX) / 2 + field->locations[location].left;
+        int y = field->locations[location].bottom - kFieldCaveSizeY;
+        for (int h = 0; h < kFieldCaveSizeY; h++) {
+            for (int w = 0; w < kFieldCaveSizeX; w++) {
+                field->maps[y + h][x + w] = kFieldMapCave00 + h * kFieldCaveSizeX + w;
+            }
         }
     }
 }
@@ -584,7 +622,7 @@ static void FieldActorLoop(struct FieldActor *actor)
 
         // アニメーションの開始
         for (int i = 0; i < kFieldAnimationSize; i++) {
-            AsepriteStartSpriteAnimation(&actor->animations[i], "tile", fieldAnimationNames[i], false);
+            AsepriteStartSpriteAnimation(&actor->animations[i], "field", fieldAnimationNames[i], false);
         }
 
         // 初期化の完了
@@ -623,9 +661,9 @@ bool FieldIsSpace(int x, int y)
     return m != kFieldMapBlock && m != kFieldMapIcicle ? true : false;
 }
 
-// フィールドを登れるかどうかを判定する
+// フィールドが梯子かどうかを判定する
 //
-bool FieldIsClimb(int x, int y)
+bool FieldIsLadder(int x, int y)
 {
     unsigned char m = FieldGetMap(x, y);
     return m == kFieldMapLadder ? true : false;
@@ -635,7 +673,7 @@ bool FieldIsClimb(int x, int y)
 //
 bool FieldIsLand(int x, int y)
 {
-    return !FieldIsSpace(x, y + kFieldSizePixel) || FieldIsClimb(x, y) || FieldIsClimb(x, y + kFieldSizePixel) ? true : false;
+    return !FieldIsSpace(x, y + kFieldSizePixel) || FieldIsLadder(x, y) || FieldIsLadder(x, y + kFieldSizePixel) ? true : false;
 }
 bool FieldIsFall(int x, int y)
 {
@@ -644,100 +682,164 @@ bool FieldIsFall(int x, int y)
 
 // フィールドを指定した方向に移動できるかどうかを判定する
 //
-bool FieldIsWalk(int x, int y, int direction, struct Vector *move)
-{
-    return FieldIsWalkAndJump(x, y, direction, FieldIsLand(x, y), move);
-}
-bool FieldIsWalkAndJump(int x, int y, int direction, bool jump, struct Vector *move)
+bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall, struct Vector *to)
 {
     bool result = false;
     if (direction == kDirectionUp) {
         if (
-            jump && 
-            FieldIsSpace(x, y - kFieldSizePixel)
+            FieldIsSpace(x, y - kFieldSizePixel) && 
+            (
+                jump || 
+                FieldIsLadder(x, y)
+            )
         ) {
-            if (move != NULL) {
-                move->x = x;
-                move->y = y - kFieldSizePixel;
+            if (to != NULL) {
+                to->x = x;
+                to->y = y - kFieldSizePixel;
             }
             result = true;
         }
     } else if (direction == kDirectionUpLeft) {
         if (
-            jump && 
-            FieldIsSpace(x - kFieldSizePixel, y - kFieldSizePixel) && 
             FieldIsSpace(x - kFieldSizePixel, y) &&
-            FieldIsSpace(x, y - kFieldSizePixel)
+            FieldIsSpace(x, y - kFieldSizePixel) && 
+            (
+                (
+                    jump && 
+                    FieldIsSpace(x - kFieldSizePixel, y - kFieldSizePixel) 
+                ) || 
+                (
+                    FieldIsLadder(x, y) &&
+                    FieldIsLadder(x - kFieldSizePixel, y - kFieldSizePixel) 
+                )
+            )
         ) {
-            if (move != NULL) {
-                move->x = x - kFieldSizePixel;
-                move->y = y - kFieldSizePixel;
+            if (to != NULL) {
+                to->x = x - kFieldSizePixel;
+                to->y = y - kFieldSizePixel;
             }
             result = true;
         }
     } else if (direction == kDirectionUpRight) {
         if (
-            jump && 
-            FieldIsSpace(x + kFieldSizePixel, y - kFieldSizePixel) && 
             FieldIsSpace(x + kFieldSizePixel, y) && 
-            FieldIsSpace(x, y - kFieldSizePixel)
+            FieldIsSpace(x, y - kFieldSizePixel) && 
+            (
+                (
+                    jump && 
+                    FieldIsSpace(x + kFieldSizePixel, y - kFieldSizePixel)
+                ) || 
+                (
+                    FieldIsLadder(x, y) && 
+                    FieldIsLadder(x + kFieldSizePixel, y - kFieldSizePixel)
+                )
+            )
         ) {
-            if (move != NULL) {
-                move->x = x + kFieldSizePixel;
-                move->y = y - kFieldSizePixel;
+            if (to != NULL) {
+                to->x = x + kFieldSizePixel;
+                to->y = y - kFieldSizePixel;
             }
             result = true;
         }
     } else if (direction == kDirectionDown) {
-        if (FieldIsSpace(x, y + kFieldSizePixel)) {
-            if (move != NULL) {
-                move->x = x;
-                move->y = y + kFieldSizePixel;
+        if (
+            (
+                fall && 
+                FieldIsSpace(x, y + kFieldSizePixel)
+            ) || 
+            FieldIsLadder(x, y + kFieldSizePixel)
+        ) {
+            if (to != NULL) {
+                to->x = x;
+                to->y = y + kFieldSizePixel;
             }
             result = true;
         }
     } else if (direction == kDirectionDownLeft) {
         if (
-            FieldIsSpace(x - kFieldSizePixel, y + kFieldSizePixel) && 
             FieldIsSpace(x - kFieldSizePixel, y) && 
-            FieldIsSpace(x, y + kFieldSizePixel)
+            FieldIsSpace(x, y + kFieldSizePixel) && 
+            (
+                (
+                    fall &&
+                    FieldIsSpace(x - kFieldSizePixel, y + kFieldSizePixel)
+                ) || 
+                (
+                    FieldIsLadder(x, y) && 
+                    FieldIsLadder(x - kFieldSizePixel, y + kFieldSizePixel)
+                )
+            )
         ) {
-            if (move != NULL) {
-                move->x = x - kFieldSizePixel;
-                move->y = y + kFieldSizePixel;
+            if (to != NULL) {
+                to->x = x - kFieldSizePixel;
+                to->y = y + kFieldSizePixel;
             }
             result = true;
         }
     } else if (direction == kDirectionDownRight) {
         if (
-            FieldIsSpace(x + kFieldSizePixel, y + kFieldSizePixel) && 
             FieldIsSpace(x + kFieldSizePixel, y) && 
-            FieldIsSpace(x, y + kFieldSizePixel)
+            FieldIsSpace(x, y + kFieldSizePixel) && 
+            (
+                (
+                    fall && 
+                    FieldIsSpace(x + kFieldSizePixel, y + kFieldSizePixel)
+                ) || 
+                (
+                    FieldIsLadder(x, y) && 
+                    FieldIsLadder(x + kFieldSizePixel, y + kFieldSizePixel)
+                )
+            )
         ) {
-            if (move != NULL) {
-                move->x = x + kFieldSizePixel;
-                move->y = y + kFieldSizePixel;
+            if (to != NULL) {
+                to->x = x + kFieldSizePixel;
+                to->y = y + kFieldSizePixel;
             }
             result = true;
         }
     } else if (direction == kDirectionLeft) {
-        if (FieldIsSpace(x - kFieldSizePixel, y)) {
-            if (move != NULL) {
-                move->x = x - kFieldSizePixel;
-                move->y = y;
+        if (
+            FieldIsSpace(x - kFieldSizePixel, y) && 
+            (
+                fall || 
+                FieldIsLand(x - kFieldSizePixel, y)
+            )
+        ) {
+            if (to != NULL) {
+                to->x = x - kFieldSizePixel;
+                to->y = y;
             }
             result = true;
         }
     } else if (direction == kDirectionRight) {
-        if (FieldIsSpace(x + kFieldSizePixel, y)) {
-            if (move != NULL) {
-                move->x = x + kFieldSizePixel;
-                move->y = y;
+        if (
+            FieldIsSpace(x + kFieldSizePixel, y) && 
+            (
+                fall || 
+                FieldIsLand(x + kFieldSizePixel, y)
+            )
+        ) {
+            if (to != NULL) {
+                to->x = x + kFieldSizePixel;
+                to->y = y;
             }
             result = true;
         }
     }
     return result;
+}
+
+// 移動する位置を調整する
+//
+void FieldAdjustMovePosition(struct Vector *from, struct Vector *to)
+{
+    if (to->x < 0) {
+        to->x += kFieldSizeX * kFieldSizePixel;
+        from->x += kFieldSizeX * kFieldSizePixel;
+    } else if (to->x >= kFieldSizeX * kFieldSizePixel) {
+        to->x -= kFieldSizeX * kFieldSizePixel;
+        from->x -= kFieldSizeX * kFieldSizePixel;
+    }
 }
 
 // 開始位置を取得する
@@ -754,5 +856,29 @@ void FieldGetStartPosition(struct Vector *position)
     }
     position->x = x * kFieldSizePixel + kFieldSizePixel / 2;
     position->y = y * kFieldSizePixel - 1;
+}
+
+// エネミーの配置位置を取得する
+//
+void FieldGetEnemyPosition(struct Vector *position, bool land)
+{
+    int x = (field->locations[field->locationEnemy].left + field->locations[field->locationEnemy].right + 1) / 2;
+    int y = field->locations[field->locationEnemy].top;
+    while (!FieldIsSpace(x * kFieldSizePixel, y * kFieldSizePixel)) {
+        ++y;
+    }
+    while (FieldIsSpace(x * kFieldSizePixel, y * kFieldSizePixel)) {
+        ++y;
+    }
+    position->x = x * kFieldSizePixel + kFieldSizePixel / 2;
+    if (land) {
+        position->y = y * kFieldSizePixel - 1;
+    } else {
+        position->y = ((y + field->locations[field->locationEnemy].top) / 2) * kFieldSizePixel - 1;
+    }
+    ++field->locationEnemy;
+    if (field->locationEnemy >= kFieldLocationSize) {
+        field->locationEnemy = kFieldLocationEnemy;
+    }
 }
 

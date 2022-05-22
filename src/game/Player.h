@@ -30,11 +30,11 @@ struct PlayerActor {
     // 位置
     struct Vector position;
 
+    // 目的地
+    struct Vector destination;
+
     // 向き
     int direction;
-
-    // 移動
-    struct Vector move;
 
     // ジャンプ
     int jump;

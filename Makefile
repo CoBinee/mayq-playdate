@@ -30,7 +30,7 @@ SRC = \
 	src/game/Maze.c \
 	src/game/Field.c \
 	src/game/Player.c \
-	src/game/Enemy.c src/game/EnemyTable.c
+	src/game/Enemy.c src/game/EnemyTable.c src/game/EnemyField.c
 
 # List all user directories here
 UINCDIR = src src/title src/game

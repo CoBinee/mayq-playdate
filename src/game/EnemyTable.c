@@ -10,6 +10,7 @@
 #include "Game.h"
 #include "Enemy.h"
 
+
 // 内部関数
 //
 
@@ -29,19 +30,14 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
         .type = kEnemyTypeSkeleton, 
         .life = 100, 
         .fieldAction = kEnemyFieldActionWalk, 
+        .fieldSpeed = kEnemyFieldSpeedNormal, 
+        .animation = "Skeleton", 
     }, 
 };
 
 // フィールドプール
 //
-const struct EnemyPool enemyPoolOnFields[kEnemyFieldSize] = {
-    {.type = kEnemyTypeSkeleton, 1, }, 
-    {.type = kEnemyTypeSkeleton, 1, }, 
-    {.type = kEnemyTypeSkeleton, 1, }, 
-    {.type = kEnemyTypeSkeleton, 1, }, 
-    {.type = kEnemyTypeSkeleton, 1, }, 
-    {.type = kEnemyTypeSkeleton, 1, }, 
-    {.type = kEnemyTypeSkeleton, 1, }, 
+const struct EnemyPool enemyPoolFields[kEnemyPoolFieldSize] = {
     {.type = kEnemyTypeSkeleton, 1, }, 
 };
 

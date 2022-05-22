@@ -39,11 +39,18 @@ enum {
 //
 enum {
     kFieldMapNull = 0, 
+    kFieldMapLock, 
     kFieldMapWall, 
     kFieldMapBlock, 
     kFieldMapLadder, 
     kFieldMapIcicle, 
     kFieldMapPole, 
+    kFieldMapCave00, 
+    kFieldMapCave01, 
+    kFieldMapCave02, 
+    kFieldMapCave10, 
+    kFieldMapCave11, 
+    kFieldMapCave12, 
 };
 
 // ダンジョン
@@ -66,11 +73,18 @@ enum {
     kFieldLocationSize = kFieldLocationSizeX * kFieldLocationSizeY, 
     kFieldLocationMazeSizeX = 4, 
     kFieldLocationMazeSizeY = 4, 
-    kFieldLocationStart = 0, 
-    kFieldLocationDungeon, 
-    kFieldLocationDungeonSize = 8, 
-    kFieldLocationEnemy = kFieldLocationDungeon + kFieldLocationDungeonSize, 
-    kFieldLocationEnemtSize = 8, 
+    kFieldLocationDig = 0, 
+    kFieldLocationStart, 
+    kFieldLocationCave, 
+    kFieldLocationCaveSize = 7, 
+    kFieldLocationEnemy = kFieldLocationCave + kFieldLocationCaveSize, 
+};
+
+// 洞窟
+//
+enum {
+    kFieldCaveSizeX = 3, 
+    kFieldCaveSizeY = 2, 
 };
 
 // フィールド
@@ -91,6 +105,7 @@ struct Field {
 
     // 配置
     struct Rect locations[kFieldLocationSize];
+    int locationEnemy;
 
 };
 
@@ -109,11 +124,18 @@ enum {
 //
 enum {
     kFieldAnimationNull = 0, 
+    kFieldAnimationLock, 
     kFieldAnimationWall, 
     kFieldAnimationBlock, 
     kFieldAnimationLadder, 
     kFieldAnimationIcicle, 
     kFieldAnimationPole, 
+    kFieldAniamtionCave00, 
+    kFieldAniamtionCave01, 
+    kFieldAniamtionCave02, 
+    kFieldAniamtionCave10, 
+    kFieldAniamtionCave11, 
+    kFieldAniamtionCave12, 
     kFieldAnimationSize, 
 };
 
@@ -136,10 +158,11 @@ extern void FieldRelease(void);
 extern void FieldActorLoad(void);
 extern unsigned char FieldGetMap(int x, int y);
 extern bool FieldIsSpace(int x, int y);
-extern bool FieldIsClimb(int x, int y);
+extern bool FieldIsLadder(int x, int y);
 extern bool FieldIsLand(int x, int y);
 extern bool FieldIsFall(int x, int y);
-extern bool FieldIsWalk(int x, int y, int direction, struct Vector *move);
-extern bool FieldIsWalkAndJump(int x, int y, int direction, bool jump, struct Vector *move);
+extern bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall, struct Vector *to);
+extern void FieldAdjustMovePosition(struct Vector *from, struct Vector *to);
 extern void FieldGetStartPosition(struct Vector *position);
+extern void FieldGetEnemyPosition(struct Vector *position, bool land);
 

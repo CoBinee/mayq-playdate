@@ -25,15 +25,20 @@ enum {
     kEnemyLifeNull = 0, 
 };
 
-// フィールドでの行動
+// フィールド
 //
 enum {
     kEnemyFieldActionNull = 0, 
-    kEnemyFieldActionStay, 
+    kEnemyFieldActionIdle, 
     kEnemyFieldActionWalk, 
-    kEnemyFieldActionFly, 
-    kEnemyFieldActionSlime, 
+    kEnemyFieldActionFree, 
+    kEnemyFieldActionStep, 
     kEnemyFieldActionSize, 
+};
+enum {
+    kEnemyFieldSpeedSlow = 1, 
+    kEnemyFieldSpeedNormal = 2, 
+    kEnemyFieldSpeedFast = 3, 
 };
 
 // データ
@@ -49,13 +54,20 @@ struct EnemyData {
     // 体力
     int life;
 
-    // フィールドでの行動
+    // フィールド
     int fieldAction;
+    int fieldSpeed;
+
+    // アニメーション
+    const char *animation;
 
 };
 
 // プール
 //
+enum {
+    kEnemyPoolFieldSize = 1, 
+};
 struct EnemyPool {
 
     // 種類
@@ -68,13 +80,10 @@ struct EnemyPool {
 
 // フィールド
 //
-enum {
-    kEnemyFieldSize = 8, 
-};
 struct EnemyField {
 
-    // データ
-    const struct EnemyData *data;
+    // 種類
+    int type;
 
     // 数
     int entry;
@@ -92,7 +101,7 @@ struct EnemyField {
 struct Enemy {
 
     // フィールド
-    struct EnemyField *fields[kEnemyFieldSize];
+    struct EnemyField fields[kEnemyPoolFieldSize];
 
 };
 
@@ -103,26 +112,30 @@ struct EnemyActor {
     // アクタ
     struct Actor actor;
 
+    // インデックス
+    int index;
+
+    // データ
+    const struct EnemyData *data;
+
     // 位置
     struct Vector position;
+
+    // 目的地
+    struct Vector destination;
 
     // 向き
     int direction;
 
-    // 移動
-    struct Vector move;
+    // 待機
+    int idle;
+
+    // 歩数
+    int step;
 
     // アニメーション
     struct AsepriteSpriteAnimation animation;
 
-};
-
-// 移動
-//
-enum {
-    kEnemyMoveSpeedSlow = 1, 
-    kEnemyMoveSpeedNormal = 2, 
-    kEnemyMoveSpeedFast = 3, 
 };
 
 // 外部参照関数
@@ -130,9 +143,14 @@ enum {
 extern void EnemyInitialize(void);
 extern void EnemyRelease(void);
 extern void EnemyActorLoadOnField(void);
+extern void EnemyActorDraw(struct EnemyActor *actor);
+extern void EnemyFieldActorIdle(struct EnemyActor *actor);
+extern void EnemyFieldActorWalk(struct EnemyActor *actor);
+extern void EnemyFieldActorFree(struct EnemyActor *actor);
+extern void EnemyFieldActorStep(struct EnemyActor *actor);
 
 // 外部参照変数
 //
 extern const struct EnemyData enemyDatas[kEnemyTypeSize];
-extern const struct EnemyPool enemyPoolOnFields[kEnemyFieldSize];
+extern const struct EnemyPool enemyPoolFields[kEnemyPoolFieldSize];
 

@@ -29,8 +29,9 @@ static void GameUnloadField(struct Game *game);
 // 内部変数
 //
 static const char *gameSpriteNames[] = {
-    "tile", 
+    "field", 
     "player", 
+    "mob", 
 };
 static const char *gameAudioSamplePaths[] = {
     "", 
@@ -144,7 +145,8 @@ static void GameLoadField(struct Game *game)
         // プレイヤアクタの読み込み
         PlayerActorLoadOnField();
 
-        // エネミー芥の読み込み
+        // エネミーアクタの読み込み
+        EnemyActorLoadOnField();
 
         // 初期化の完了
         ++game->state;
@@ -228,9 +230,31 @@ void GameSetCamera(int x, int y)
 {
     struct Game *game = (struct Game *)SceneGetUserdata();
     if (game != NULL) {
+        while (x < 0) {
+            x += kFieldSizeX * kFieldSizePixel;
+        }
+        while (x >= kFieldSizeX * kFieldSizePixel) {
+            x -= kFieldSizeX * kFieldSizePixel;
+        }
+        while (y < 0) {
+            y += kFieldSizeY * kFieldSizePixel;
+        }
+        while (y >= kFieldSizeY * kFieldSizePixel) {
+            y -= kFieldSizeY * kFieldSizePixel;
+        }
         game->camera.x = x;
         game->camera.y = y;
     }
 }
+
+// カメラからの位置を取得する
+//
+void GameGetCameraPosition(int x, int y, struct Vector *position)
+{
+    struct Game *game = (struct Game *)SceneGetUserdata();
+    if (game != NULL) {
+    }
+}
+
 
 
