@@ -48,6 +48,14 @@ void PlayerInitialize(void)
     if (player == NULL) {
         playdate->system->error("%s: %d: player instance is not created.", __FILE__, __LINE__);
     }
+
+    // プレイヤの初期化
+    {
+        // フィールドの設定
+        FieldGetStartPosition(&player->fieldPosition);
+
+    }
+
 }
 
 // プレイヤを解放する
@@ -92,10 +100,7 @@ void PlayerActorLoadOnField(void)
         ActorSetTag(&actor->actor, kGameTagPlayer);
 
         // 位置の設定
-        {
-            struct Vector position;
-            FieldGetStartPosition(&actor->position);
-        }
+        actor->position = player->fieldPosition;
     }
 }
 
@@ -108,6 +113,9 @@ static void PlayerActorUnload(struct PlayerActor *actor)
     if (playdate == NULL) {
         return;
     }
+
+    // 位置の保存
+    player->fieldPosition = actor->destination;
 }
 
 // プレイヤアクタを描画する

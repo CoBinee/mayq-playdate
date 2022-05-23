@@ -135,6 +135,9 @@ static void EnemyActorUnloadOnField(struct EnemyActor *actor)
     if (playdate == NULL) {
         return;
     }
+
+    // 位置の保存
+    enemy->fields[actor->index].position = actor->destination;
 }
 
 // エネミーアクタが何もしない

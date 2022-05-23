@@ -207,8 +207,39 @@ static void GamePlayField(struct Game *game)
     if (IocsIsButtonEdge(kButtonA)) {
         game->play = !game->play;
     }
+    if (IocsIsButtonEdge(kButtonB)) {
+        GameTransition(game, (GameFunction)GameUnloadField);
+    }
 
 }
+
+// フィールドを解放する
+//
+static void GameUnloadField(struct Game *game)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // 初期化
+    if (game->state == 0) {
+
+        // ゲームの停止
+        game->play = false;
+
+        // 初期化の完了
+        ++game->state;
+    }
+
+    // アクタの解放
+    ActorUnloadAll();
+
+    // 処理の遷移
+    GameTransition(game, (GameFunction)GameLoadField);
+}
+
 
 // ゲームを完了する
 //
