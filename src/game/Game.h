@@ -24,6 +24,9 @@ struct Game {
     // 状態
     int state;
 
+    // プレイ中
+    bool play;
+
     // カメラ
     struct Vector camera;
 
@@ -75,6 +78,7 @@ enum {
 // 外部参照関数
 //
 extern void GameUpdate(struct Game *game);
+extern bool GameIsPlay(void);
 extern struct Vector *GameGetCamera(void);
 extern void GameSetCamera(int x, int y);
 extern void GameGetCameraPosition(int x, int y, struct Vector *position);

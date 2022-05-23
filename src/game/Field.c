@@ -638,9 +638,13 @@ static void FieldActorLoop(struct FieldActor *actor)
         ++actor->actor.state;
     }
 
-    // スプライトの更新
-    for (int i = 0; i < kFieldAnimationSize; i++) {
-        AsepriteUpdateSpriteAnimation(&actor->animations[i]);
+    // プレイ中
+    if (GameIsPlay()) {
+
+        // スプライトの更新
+        for (int i = 0; i < kFieldAnimationSize; i++) {
+            AsepriteUpdateSpriteAnimation(&actor->animations[i]);
+        }
     }
 
     // 描画処理の設定

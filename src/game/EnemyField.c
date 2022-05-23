@@ -47,8 +47,12 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
         ++actor->actor.state;
     }
 
-    // スプライトの更新
-    AsepriteUpdateSpriteAnimation(&actor->animation);
+    // プレイ中
+    if (GameIsPlay()) {
+
+        // スプライトの更新
+        AsepriteUpdateSpriteAnimation(&actor->animation);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
@@ -80,58 +84,62 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
         ++actor->actor.state;
     }
 
-    // 移動の設定
-    if (actor->position.x == actor->destination.x && actor->position.y == actor->destination.y) {
-        static const int reverses[] = {
-            kDirectionDown, 
-            kDirectionUp, 
-            kDirectionRight, 
-            kDirectionLeft, 
-        };
-        int way = -1;
-        int d = EnemyFieldGetWalkableDirection(actor);
-        if (d == (1 << kDirectionUp)) {
-            way = kDirectionUp;
-        } else if (d == (1 << kDirectionDown)) {
-            way = kDirectionDown;
-        } else if (d == (1 << kDirectionLeft)) {
-            way = kDirectionLeft;
-        } else if (d == (1 << kDirectionRight)) {
-            way = kDirectionRight;
-        } else {
-            int c = d & ~(1 << reverses[actor->direction]);
-            if (c == (1 << kDirectionUp)) {
+    // プレイ中
+    if (GameIsPlay()) {
+
+        // 移動の設定
+        if (actor->position.x == actor->destination.x && actor->position.y == actor->destination.y) {
+            static const int reverses[] = {
+                kDirectionDown, 
+                kDirectionUp, 
+                kDirectionRight, 
+                kDirectionLeft, 
+            };
+            int way = -1;
+            int d = EnemyFieldGetWalkableDirection(actor);
+            if (d == (1 << kDirectionUp)) {
                 way = kDirectionUp;
-            } else if (c == (1 << kDirectionDown)) {
+            } else if (d == (1 << kDirectionDown)) {
                 way = kDirectionDown;
-            } else if (c == (1 << kDirectionLeft)) {
+            } else if (d == (1 << kDirectionLeft)) {
                 way = kDirectionLeft;
-            } else if (c == (1 << kDirectionRight)) {
+            } else if (d == (1 << kDirectionRight)) {
                 way = kDirectionRight;
             } else {
-                int t = IocsGetRandomNumber(NULL) % 4;
-                while ((c & (1 << t)) == 0) {
-                    ++t;
-                    if (t >= 4) {
-                        t = 0;
+                int c = d & ~(1 << reverses[actor->direction]);
+                if (c == (1 << kDirectionUp)) {
+                    way = kDirectionUp;
+                } else if (c == (1 << kDirectionDown)) {
+                    way = kDirectionDown;
+                } else if (c == (1 << kDirectionLeft)) {
+                    way = kDirectionLeft;
+                } else if (c == (1 << kDirectionRight)) {
+                    way = kDirectionRight;
+                } else {
+                    int t = IocsGetRandomNumber(NULL) % 4;
+                    while ((c & (1 << t)) == 0) {
+                        ++t;
+                        if (t >= 4) {
+                            t = 0;
+                        }
                     }
+                    way = t;
                 }
-                way = t;
+            }
+            actor->direction = way;
+            if (FieldWalk(actor->position.x, actor->position.y, actor->direction, false, false, &actor->destination)) {
+                if (actor->position.x != actor->destination.x) {
+                    FieldAdjustMovePosition(&actor->position, &actor->destination);
+                }
             }
         }
-        actor->direction = way;
-        if (FieldWalk(actor->position.x, actor->position.y, actor->direction, false, false, &actor->destination)) {
-            if (actor->position.x != actor->destination.x) {
-                FieldAdjustMovePosition(&actor->position, &actor->destination);
-            }
-        }
+
+        // 移動
+        EnemyFieldMoveToDestination(actor);
+
+        // スプライトの更新
+        AsepriteUpdateSpriteAnimation(&actor->animation);
     }
-
-    // 移動
-    EnemyFieldMoveToDestination(actor);
-
-    // スプライトの更新
-    AsepriteUpdateSpriteAnimation(&actor->animation);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
@@ -163,8 +171,12 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
         ++actor->actor.state;
     }
 
-    // スプライトの更新
-    AsepriteUpdateSpriteAnimation(&actor->animation);
+    // プレイ中
+    if (GameIsPlay()) {
+
+        // スプライトの更新
+        AsepriteUpdateSpriteAnimation(&actor->animation);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
@@ -196,8 +208,12 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
         ++actor->actor.state;
     }
 
-    // スプライトの更新
-    AsepriteUpdateSpriteAnimation(&actor->animation);
+    // プレイ中
+    if (GameIsPlay()) {
+
+        // スプライトの更新
+        AsepriteUpdateSpriteAnimation(&actor->animation);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);

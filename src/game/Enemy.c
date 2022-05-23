@@ -154,9 +154,6 @@ void EnemyActorDraw(struct EnemyActor *actor)
         return;
     }
 
-    // カメラの取得
-    struct Vector *camera = GameGetCamera();
-    
     // スプライトの描画
     {
         struct Vector view;

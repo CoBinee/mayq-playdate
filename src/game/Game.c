@@ -148,6 +148,9 @@ static void GameLoadField(struct Game *game)
         // エネミーアクタの読み込み
         EnemyActorLoadOnField();
 
+        // ゲームの停止
+        game->play = false;
+
         // 初期化の完了
         ++game->state;
     }
@@ -168,6 +171,9 @@ static void GameStartField(struct Game *game)
 
     // 初期化
     if (game->state == 0) {
+
+        // ゲームの停止
+        game->play = false;
 
         // 初期化の完了
         ++game->state;
@@ -190,8 +196,16 @@ static void GamePlayField(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
+        // ゲームの停止
+        game->play = true;
+
         // 初期化の完了
         ++game->state;
+    }
+
+    // DEBUG
+    if (IocsIsButtonEdge(kButtonA)) {
+        game->play = !game->play;
     }
 
 }
@@ -214,6 +228,14 @@ static void GameDone(struct Game *game)
     }
     // シーンの遷移
     ApplicationTransition(kApplicationSceneTitle);
+}
+
+// プレイ中かどうかを判定する
+//
+bool GameIsPlay(void)
+{
+    struct Game *game = (struct Game *)SceneGetUserdata();
+    return game != NULL ? game->play : false;
 }
 
 // カメラを取得する
