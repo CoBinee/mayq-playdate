@@ -82,6 +82,12 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
 
     // 移動の設定
     if (actor->position.x == actor->destination.x && actor->position.y == actor->destination.y) {
+        static const int reverses[] = {
+            kDirectionDown, 
+            kDirectionUp, 
+            kDirectionRight, 
+            kDirectionLeft, 
+        };
         int way = -1;
         int d = EnemyFieldGetWalkableDirection(actor);
         if (d == (1 << kDirectionUp)) {
@@ -90,18 +96,31 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
             way = kDirectionDown;
         } else if (d == (1 << kDirectionLeft)) {
             way = kDirectionLeft;
-        } else if (d == (1 << kDirectionDown)) {
+        } else if (d == (1 << kDirectionRight)) {
             way = kDirectionRight;
-        } else if ((d & (1 << actor->direction)) == 0) {
-            way = EnemyFieldGetWalkableRandomDirection(actor);
         } else {
-            way = actor->direction;
-        }
-        if (way < 0) {
-            playdate->system->error("%s: %d: enemy actor is not moved(%d).", __FILE__, __LINE__, actor->direction);
+            int c = d & ~(1 << reverses[actor->direction]);
+            if (c == (1 << kDirectionUp)) {
+                way = kDirectionUp;
+            } else if (c == (1 << kDirectionDown)) {
+                way = kDirectionDown;
+            } else if (c == (1 << kDirectionLeft)) {
+                way = kDirectionLeft;
+            } else if (c == (1 << kDirectionRight)) {
+                way = kDirectionRight;
+            } else {
+                int t = IocsGetRandomNumber(NULL) % 4;
+                while ((c & (1 << t)) == 0) {
+                    ++t;
+                    if (t >= 4) {
+                        t = 0;
+                    }
+                }
+                way = t;
+            }
         }
         actor->direction = way;
-        if (FieldIsWalk(actor->position.x, actor->position.y, actor->direction, false, false, &actor->destination)) {
+        if (FieldWalk(actor->position.x, actor->position.y, actor->direction, false, false, &actor->destination)) {
             if (actor->position.x != actor->destination.x) {
                 FieldAdjustMovePosition(&actor->position, &actor->destination);
             }
@@ -189,16 +208,16 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
 static int EnemyFieldGetWalkableDirection(struct EnemyActor *actor)
 {
     int direction = 0;
-    if (FieldIsLadder(actor->position.x, actor->position.y) && FieldIsSpace(actor->position.x, actor->position.y - kFieldSizePixel)) {
+    if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionUp, false, false)) {
         direction |= (1 << kDirectionUp);
     }
-    if (FieldIsSpace(actor->position.x, actor->position.y) && FieldIsLadder(actor->position.x, actor->position.y + kFieldSizePixel)) {
+    if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionDown, false, false)) {
         direction |= (1 << kDirectionDown);
     }
-    if (FieldIsSpace(actor->position.x - kFieldSizePixel, actor->position.y) && !FieldIsSpace(actor->position.x - kFieldSizePixel, actor->position.y + kFieldSizePixel)) {
+    if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionLeft, false, false)) {
         direction |= (1 << kDirectionLeft);
     }
-    if (FieldIsSpace(actor->position.x + kFieldSizePixel, actor->position.y) && !FieldIsSpace(actor->position.x + kFieldSizePixel, actor->position.y + kFieldSizePixel)) {
+    if (FieldIsWalk(actor->position.x, actor->position.y, kDirectionRight, false, false)) {
         direction |= (1 << kDirectionRight);
     }
     return direction;

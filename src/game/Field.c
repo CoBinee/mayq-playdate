@@ -14,11 +14,12 @@
 
 // 内部関数
 //
-static void FieldLoadLocation(void);
-static void FieldLoadMap(void);
+static void FieldBuildLocation(void);
+static void FieldUnbuildLocation(void);
+static void FieldBuildMap(void);
+static void FieldUnbuildMap(void);
 static void FieldLockLocation(int location);
 static void FieldDigLocation(int location);
-static void FieldUnloadMap(void);
 static void FieldActorUnload(struct FieldActor *actor);
 static void FieldActorDraw(struct FieldActor *actor);
 static void FieldActorLoop(struct FieldActor *actor);
@@ -70,13 +71,11 @@ void FieldInitialize(void)
         IocsSetRandomSeed(&field->xorshift, 123456789);
 
         // 配置の作成
-        FieldLoadLocation();
+        FieldBuildLocation();
 
         // マップの作成
-        FieldLoadMap();
-
+        FieldBuildMap();
     }
-
 }
 
 // フィールドを解放する
@@ -90,7 +89,10 @@ void FieldRelease(void)
     }
 
     // マップの解放
-    FieldUnloadMap();
+    FieldUnbuildMap();
+
+    // 配置の解放
+    FieldUnbuildLocation();
 
     // フィールドの解放
     if (field != NULL) {        
@@ -101,7 +103,7 @@ void FieldRelease(void)
 
 // 配置を作成する
 //
-static void FieldLoadLocation(void)
+static void FieldBuildLocation(void)
 {
     // 配置の初期化
     for (int i = 0; i < kFieldLocationSize; i++) {
@@ -143,9 +145,16 @@ static void FieldLoadLocation(void)
     field->locationEnemy = kFieldLocationEnemy;
 }
 
+// 配置を解放する
+//
+static void FieldUnbuildLocation(void)
+{
+    ;
+}
+
 // マップを作成する
 //
-static void FieldLoadMap(void)
+static void FieldBuildMap(void)
 {
     // 迷路の作成
     {
@@ -425,6 +434,22 @@ static void FieldLoadMap(void)
     }
 }
 
+// マップを解放する
+//
+static void FieldUnbuildMap(void)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // 迷路の解放
+    if (field != NULL) {
+        MazeUnload(field->maze);
+    }
+}
+
 // 指定した配置をロックする
 //
 static void FieldLockLocation(int location)
@@ -513,22 +538,6 @@ static void FieldDigLocation(int location)
                 field->maps[y + h][x + w] = kFieldMapCave00 + h * kFieldCaveSizeX + w;
             }
         }
-    }
-}
-
-// マップを解放する
-//
-static void FieldUnloadMap(void)
-{
-    // Playdate の取得
-    PlaydateAPI *playdate = IocsGetPlaydate();
-    if (playdate == NULL) {
-        return;
-    }
-
-    // 迷路の解放
-    if (field != NULL) {
-        MazeUnload(field->maze);
     }
 }
 
@@ -680,9 +689,13 @@ bool FieldIsFall(int x, int y)
     return !FieldIsLand(x, y);
 }
 
-// フィールドを指定した方向に移動できるかどうかを判定する
+// フィールドを指定した方向に移動する
 //
-bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall, struct Vector *to)
+bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall)
+{
+    return FieldWalk(x, y, direction, jump, fall, NULL);
+}
+bool FieldWalk(int x, int y, int direction, bool jump, bool fall, struct Vector *to)
 {
     bool result = false;
     if (direction == kDirectionUp) {

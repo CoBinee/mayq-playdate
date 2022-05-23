@@ -159,8 +159,8 @@ void EnemyActorDraw(struct EnemyActor *actor)
     
     // スプライトの描画
     {
-        int x = actor->position.x - camera->x;
-        int y = actor->position.y - camera->y;
-        AsepriteDrawRotatedSpriteAnimation(&actor->animation, x, y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
+        struct Vector view;
+        GameGetCameraPosition(actor->position.x, actor->position.y, &view);
+        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
     }
 }
