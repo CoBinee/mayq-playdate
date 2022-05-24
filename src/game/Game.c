@@ -267,7 +267,7 @@ static void GameLoadBattle(struct Game *game)
         BattleActorLoad(15);
 
         // プレイヤアクタの読み込み
-        // PlayerBattleActorLoad();
+        PlayerBattleActorLoad();
 
         // エネミーアクタの読み込み
         // EnemyBattleActorLoad();

@@ -18,6 +18,9 @@ struct Player {
     // フィールド
     struct Vector fieldPosition;
 
+    // バトル
+    struct Vector battlePosition;
+
 };
 
 // プレイヤアクタ
@@ -63,6 +66,7 @@ enum {
 extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
 extern void PlayerFieldActorLoad(void);
+extern void PlayerBattleActorLoad(void);
 
 // 外部参照変数
 //
