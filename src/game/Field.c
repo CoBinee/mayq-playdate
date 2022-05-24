@@ -631,7 +631,7 @@ static void FieldActorLoop(struct FieldActor *actor)
 
         // アニメーションの開始
         for (int i = 0; i < kFieldAnimationSize; i++) {
-            AsepriteStartSpriteAnimation(&actor->animations[i], "field", fieldAnimationNames[i], false);
+            AsepriteStartSpriteAnimation(&actor->animations[i], "tileset", fieldAnimationNames[i], false);
         }
 
         // 初期化の完了

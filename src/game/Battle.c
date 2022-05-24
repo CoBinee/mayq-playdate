@@ -23,7 +23,7 @@ static void BattleActorLoop(struct BattleActor *actor);
 static struct Battle *battle = NULL;
 static const char *battleAnimationNames[kBattleAnimationSize] = {
     "Null", 
-    "Wall", 
+    "Floor", 
     "Block", 
 };
 
@@ -193,7 +193,7 @@ static void BattleActorLoop(struct BattleActor *actor)
 
         // アニメーションの開始
         for (int i = 0; i < kBattleAnimationSize; i++) {
-            AsepriteStartSpriteAnimation(&actor->animations[i], "field", battleAnimationNames[i], false);
+            AsepriteStartSpriteAnimation(&actor->animations[i], "tileset", battleAnimationNames[i], false);
         }
 
         // 初期化の完了

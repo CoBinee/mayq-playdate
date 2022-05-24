@@ -33,7 +33,7 @@ static void GameDone(struct Game *game);
 // 内部変数
 //
 static const char *gameSpriteNames[] = {
-    "field", 
+    "tileset", 
     "player", 
     "mob", 
 };
