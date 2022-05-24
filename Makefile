@@ -28,8 +28,8 @@ SRC = \
 	src/title/Title.c \
 	src/game/Game.c \
 	src/game/Maze.c \
-	src/game/Field.c \
-	src/game/Player.c \
+	src/game/Field.c src/game/Battle.c \
+	src/game/Player.c src/game/PlayerField.c \
 	src/game/Enemy.c src/game/EnemyTable.c src/game/EnemyField.c
 
 # List all user directories here

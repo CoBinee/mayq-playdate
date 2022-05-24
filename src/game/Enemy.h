@@ -142,15 +142,12 @@ struct EnemyActor {
 //
 extern void EnemyInitialize(void);
 extern void EnemyRelease(void);
-extern void EnemyActorLoadOnField(void);
-extern void EnemyActorDraw(struct EnemyActor *actor);
-extern void EnemyFieldActorIdle(struct EnemyActor *actor);
-extern void EnemyFieldActorWalk(struct EnemyActor *actor);
-extern void EnemyFieldActorFree(struct EnemyActor *actor);
-extern void EnemyFieldActorStep(struct EnemyActor *actor);
+extern void EnemyActorNull(struct EnemyActor *actor);
+extern void EnemyFieldActorLoad(void);
 
 // 外部参照変数
 //
+extern struct Enemy *enemy;
 extern const struct EnemyData enemyDatas[kEnemyTypeSize];
 extern const struct EnemyPool enemyPoolFields[kEnemyPoolFieldSize];
 

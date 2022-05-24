@@ -13,15 +13,104 @@
 
 // 内部関数
 //
+static void EnemyFieldActorUnload(struct EnemyActor *actor);
+static void EnemyFieldActorDraw(struct EnemyActor *actor);
+static void EnemyFieldActorIdle(struct EnemyActor *actor);
+static void EnemyFieldActorWalk(struct EnemyActor *actor);
+static void EnemyFieldActorFree(struct EnemyActor *actor);
+static void EnemyFieldActorStep(struct EnemyActor *actor);
 static int EnemyFieldGetWalkableDirection(struct EnemyActor *actor);
 static int EnemyFieldGetWalkableRandomDirection(struct EnemyActor *actor);
 static bool EnemyFieldMoveToDestination(struct EnemyActor *actor);
 
 // 内部変数
 //
+static ActorFunction enemyFieldActorFunctions[kEnemyFieldActionSize] = {
+    (ActorFunction)EnemyActorNull, 
+    (ActorFunction)EnemyFieldActorIdle, 
+    (ActorFunction)EnemyFieldActorWalk, 
+    (ActorFunction)EnemyFieldActorFree, 
+    (ActorFunction)EnemyFieldActorStep, 
+};
 
 
-// エネミーアクタがフィールドを待機する
+// エネミーアクタを読み込む
+//
+void EnemyFieldActorLoad(void)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // エネミーの読み込み
+    for (int i = 0; i < kEnemyPoolFieldSize; i++) {
+        if (enemy->fields[i].entry > 0) {
+
+            // エネミーの取得
+            const struct EnemyData *data = &enemyDatas[enemy->fields[i].type];
+
+            // アクタの登録
+            struct EnemyActor *actor = (struct EnemyActor *)ActorLoad(enemyFieldActorFunctions[data->fieldAction], kGamePriorityEnemy);
+            if (actor == NULL) {
+                playdate->system->error("%s: %d: enemy actor is not loaded.", __FILE__, __LINE__);
+            }
+
+            // エネミーの初期化
+            {
+                // 解放処理の設定
+                ActorSetUnload(&actor->actor, (ActorFunction)EnemyFieldActorUnload);
+
+                // タグの設定
+                ActorSetTag(&actor->actor, kGameTagEnemy);
+
+                // インデックスの設定
+                actor->index = i;
+
+                // データの設定
+                actor->data = data;
+
+                // 位置の設定
+                actor->position = enemy->fields[i].position;
+            }
+        }
+    }
+}
+
+// エネミーアクタを解放する
+//
+static void EnemyFieldActorUnload(struct EnemyActor *actor)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // 位置の保存
+    enemy->fields[actor->index].position = actor->destination;
+}
+
+// エネミーアクタを描画する
+//
+static void EnemyFieldActorDraw(struct EnemyActor *actor)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // スプライトの描画
+    {
+        struct Vector view;
+        GameGetFieldCameraPosition(actor->position.x, actor->position.y, &view);
+        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
+    }
+}
+
+// エネミーアクタが待機する
 //
 void EnemyFieldActorIdle(struct EnemyActor *actor)
 {
@@ -55,10 +144,10 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
 }
 
-// エネミーアクタがフィールドを歩く
+// エネミーアクタが歩く
 //
 void EnemyFieldActorWalk(struct EnemyActor *actor)
 {
@@ -142,10 +231,10 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
 }
 
-// エネミーアクタがフィールドを自由に移動する
+// エネミーアクタが自由に移動する
 //
 void EnemyFieldActorFree(struct EnemyActor *actor)
 {
@@ -179,10 +268,10 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
 }
 
-// エネミーアクタがフィールドをステップ移動する
+// フィールドエネミーアクタがステップ移動する
 //
 void EnemyFieldActorStep(struct EnemyActor *actor)
 {
@@ -216,7 +305,7 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyActorDraw, kGameOrderEnemy);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
 }
 
 // 移動できる方向を取得する

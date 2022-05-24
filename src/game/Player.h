@@ -62,4 +62,8 @@ enum {
 //
 extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
-extern void PlayerActorLoadOnField(void);
+extern void PlayerFieldActorLoad(void);
+
+// 外部参照変数
+//
+extern struct Player *player;

@@ -52,6 +52,7 @@ enum {
 enum {
     kGamePriorityNull = 0, 
     kGamePriorityField, 
+    kGamePriorityBattle = kGamePriorityField, 
     kGamePriorityPlayer, 
     kGamePriorityEnemy, 
 };
@@ -61,6 +62,7 @@ enum {
 enum {
     kGameTagNull = 0, 
     kGameTagField, 
+    kGameTagBattle = kGameTagField, 
     kGameTagPlayer, 
     kGameTagEnemy, 
 };
@@ -70,6 +72,7 @@ enum {
 enum {
     kGameOrderNull = 0, 
     kGameOrderField, 
+    kGameOrderBattle = kGameOrderField, 
     kGameOrderEnemy, 
     kGameOrderPlayer, 
 };
@@ -80,6 +83,8 @@ enum {
 extern void GameUpdate(struct Game *game);
 extern bool GameIsPlay(void);
 extern struct Vector *GameGetCamera(void);
-extern void GameSetCamera(int x, int y);
-extern void GameGetCameraPosition(int x, int y, struct Vector *position);
+extern void GameSetFieldCamera(int x, int y);
+extern void GameSetBattleCamera(int x, int y);
+extern void GameGetFieldCameraPosition(int x, int y, struct Vector *position);
+extern void GameGetBattleCameraPosition(int x, int y, struct Vector *position);
 

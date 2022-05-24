@@ -595,12 +595,12 @@ static void FieldActorDraw(struct FieldActor *actor)
     {
         int viewx = camera->x >= 0 ? -(camera->x % kFieldSizePixel) : -kFieldSizePixel - (camera->x % kFieldSizePixel);
         int viewy = camera->y >= 0 ? -(camera->y % kFieldSizePixel) : -kFieldSizePixel - (camera->y % kFieldSizePixel);
-        int mazex = camera->x >= 0 ? camera->x / kFieldSizePixel : camera->x / kFieldSizePixel - 1;
-        int mazey = camera->y >= 0 ? camera->y / kFieldSizePixel : camera->y / kFieldSizePixel - 1;
-        int my = mazey;
+        int mapx = camera->x >= 0 ? camera->x / kFieldSizePixel : camera->x / kFieldSizePixel - 1;
+        int mapy = camera->y >= 0 ? camera->y / kFieldSizePixel : camera->y / kFieldSizePixel - 1;
+        int my = mapy;
         playdate->graphics->setClipRect(kFieldViewLeft, kFieldViewTop, kFieldViewSizeX, kFieldViewSizeY);
         for (int vy = viewy; vy < kFieldViewSizeY; vy += kFieldSizePixel) {
-            int mx = mazex;
+            int mx = mapx;
             for (int vx = viewx; vx < kFieldViewSizeX; vx += kFieldSizePixel) {
                 int animation = kFieldAnimationBlock;
                 if (my >= 0 && my < kFieldSizeY) {
