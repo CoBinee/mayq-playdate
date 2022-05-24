@@ -219,26 +219,26 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
         {
             bool move = false;
             if (actor->position.x < actor->destination.x) {
-                actor->position.x += kPlayerMoveSpeed;
+                actor->position.x += kPlayerSpeedField;
                 if (actor->position.x > actor->destination.x) {
                     actor->position.x = actor->destination.x;
                 }
                 move = true;
             } else if (actor->position.x > actor->destination.x) {
-                actor->position.x -= kPlayerMoveSpeed;
+                actor->position.x -= kPlayerSpeedField;
                 if (actor->position.x < actor->destination.x) {
                     actor->position.x = actor->destination.x;
                 }
                 move = true;
             }
             if (actor->position.y < actor->destination.y) {
-                actor->position.y += kPlayerMoveSpeed;
+                actor->position.y += kPlayerSpeedField;
                 if (actor->position.y > actor->destination.y) {
                     actor->position.y = actor->destination.y;
                 }
                 move = true;
             } else if (actor->position.y > actor->destination.y) {
-                actor->position.y -= kPlayerMoveSpeed;
+                actor->position.y -= kPlayerSpeedField;
                 if (actor->position.y < actor->destination.y) {
                     actor->position.y = actor->destination.y;
                 }

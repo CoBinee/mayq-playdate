@@ -58,7 +58,8 @@ enum {
 // 移動
 //
 enum {
-    kPlayerMoveSpeed = 4, 
+    kPlayerSpeedField = 4, 
+    kPlayerSpeedBattle = 2, 
 };
 
 // 外部参照関数

@@ -120,19 +120,19 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
             bool move = false;
             int direction = actor->direction;
             if (IocsIsButtonPush(kButtonUp)) {
-                --actor->position.y;
+                actor->position.y -= kPlayerSpeedBattle;
                 actor->direction = kDirectionUp;
                 move = true;
             } else if (IocsIsButtonPush(kButtonDown)) {
-                ++actor->position.y;
+                actor->position.y += kPlayerSpeedBattle;
                 actor->direction = kDirectionDown;
                 move = true;
             } else if (IocsIsButtonPush(kButtonLeft)) {
-                --actor->position.x;
+                actor->position.x -= kPlayerSpeedBattle;
                 actor->direction = kDirectionLeft;
                 move = true;
             } else if (IocsIsButtonPush(kButtonRight)) {
-                ++actor->position.x;
+                actor->position.x += kPlayerSpeedBattle;
                 actor->direction = kDirectionRight;
                 move = true;
             }
