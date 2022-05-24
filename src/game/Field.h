@@ -40,7 +40,7 @@ enum {
 enum {
     kFieldMapNull = 0, 
     kFieldMapLock, 
-    kFieldMapWall, 
+    kFieldMapBack, 
     kFieldMapBlock, 
     kFieldMapLadder, 
     kFieldMapIcicle, 
@@ -125,7 +125,7 @@ enum {
 enum {
     kFieldAnimationNull = 0, 
     kFieldAnimationLock, 
-    kFieldAnimationWall, 
+    kFieldAnimationBack, 
     kFieldAnimationBlock, 
     kFieldAnimationLadder, 
     kFieldAnimationIcicle, 

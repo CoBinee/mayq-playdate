@@ -189,7 +189,7 @@
   "scale": "1",
   "frameTags": [
    { "name": "Null", "from": 0, "to": 0, "direction": "forward", "color": "#000000ff" },
-   { "name": "Wall", "from": 1, "to": 1, "direction": "forward", "color": "#000000ff" },
+   { "name": "Back", "from": 1, "to": 1, "direction": "forward", "color": "#000000ff" },
    { "name": "Floor", "from": 2, "to": 2, "direction": "forward", "color": "#000000ff" },
    { "name": "Block", "from": 3, "to": 3, "direction": "forward", "color": "#000000ff" },
    { "name": "BlockUp", "from": 4, "to": 4, "direction": "forward", "color": "#000000ff" },

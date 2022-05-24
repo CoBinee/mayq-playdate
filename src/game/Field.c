@@ -28,9 +28,9 @@ static void FieldActorLoop(struct FieldActor *actor);
 //
 static struct Field *field = NULL;
 static const char *fieldAnimationNames[kFieldAnimationSize] = {
-    "Wall", 
-    "Wall", 
-    "Wall", 
+    "Back", 
+    "Back", 
+    "Back", 
     "Block", 
     "Ladder", 
     "Icicle", 
@@ -196,7 +196,7 @@ static void FieldBuildMap(void)
     {
         for (int mapy = 0; mapy < kFieldSizeY; mapy++) {
             for (int mapx = 0; mapx < kFieldSizeX; mapx++) {
-                field->maps[mapy][mapx] = kFieldMapWall;
+                field->maps[mapy][mapx] = kFieldMapBack;
             }
         }
     }
@@ -397,15 +397,15 @@ static void FieldBuildMap(void)
         for (int x = 1; x < kFieldSizeX - 1; x++) {
             if (
                 field->maps[y - 1][x] == kFieldMapBlock && 
-                field->maps[y + 0][x] == kFieldMapWall && 
-                field->maps[y + 1][x] == kFieldMapWall
+                field->maps[y + 0][x] == kFieldMapBack && 
+                field->maps[y + 1][x] == kFieldMapBack
             ) {
                 if (
-                    (field->maps[y - 1][x - 1] == kFieldMapWall && field->maps[y - 1][x + 1] == kFieldMapBlock) || 
-                    (field->maps[y - 1][x + 1] == kFieldMapWall && field->maps[y - 1][x - 1] == kFieldMapBlock)
+                    (field->maps[y - 1][x - 1] == kFieldMapBack && field->maps[y - 1][x + 1] == kFieldMapBlock) || 
+                    (field->maps[y - 1][x + 1] == kFieldMapBack && field->maps[y - 1][x - 1] == kFieldMapBlock)
                 ) {
                     int y_0 = y + 1;
-                    while (y_0 < kFieldSizeY && field->maps[y_0][x] == kFieldMapWall) {
+                    while (y_0 < kFieldSizeY && field->maps[y_0][x] == kFieldMapBack) {
                         ++y_0;
                     }
                     if (y_0 >= kFieldSizeY || field->maps[y_0][x] == kFieldMapBlock) {
@@ -423,8 +423,8 @@ static void FieldBuildMap(void)
         for (int x = 0; x < kFieldSizeX; x++) {
             if (
                 (y == 0 || field->maps[y - 1][x] == kFieldMapBlock) && 
-                (field->maps[y + 0][x + 0] == kFieldMapLock || field->maps[y + 0][x + 0] == kFieldMapWall) && 
-                (field->maps[y + 1][x + 0] == kFieldMapLock || field->maps[y + 1][x + 0] == kFieldMapWall) && 
+                (field->maps[y + 0][x + 0] == kFieldMapLock || field->maps[y + 0][x + 0] == kFieldMapBack) && 
+                (field->maps[y + 1][x + 0] == kFieldMapLock || field->maps[y + 1][x + 0] == kFieldMapBack) && 
                 field->maps[y + 1][x - 1] != kFieldMapBlock && 
                 field->maps[y + 1][x + 1] != kFieldMapBlock
             ) {
