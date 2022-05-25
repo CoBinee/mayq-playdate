@@ -102,12 +102,18 @@ static void EnemyFieldActorDraw(struct EnemyActor *actor)
         return;
     }
 
+    // クリップの設定
+    FieldSetClip();
+
     // スプライトの描画
     {
         struct Vector view;
         GameGetFieldCameraPosition(actor->position.x, actor->position.y, &view);
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
     }
+
+    // クリップの解除
+    FieldClearClip();
 }
 
 // エネミーアクタが待機する

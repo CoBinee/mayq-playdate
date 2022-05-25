@@ -591,6 +591,9 @@ static void FieldActorDraw(struct FieldActor *actor)
     // カメラの取得
     struct Vector *camera = GameGetCamera();
 
+    // クリップの設定
+    FieldSetClip();
+
     // スプライトの描画
     {
         int viewx = camera->x >= 0 ? -(camera->x % kFieldSizePixel) : -kFieldSizePixel - (camera->x % kFieldSizePixel);
@@ -598,7 +601,6 @@ static void FieldActorDraw(struct FieldActor *actor)
         int mapx = camera->x >= 0 ? camera->x / kFieldSizePixel : camera->x / kFieldSizePixel - 1;
         int mapy = camera->y >= 0 ? camera->y / kFieldSizePixel : camera->y / kFieldSizePixel - 1;
         int my = mapy;
-        playdate->graphics->setClipRect(kFieldViewLeft, kFieldViewTop, kFieldViewSizeX, kFieldViewSizeY);
         for (int vy = viewy; vy < kFieldViewSizeY; vy += kFieldSizePixel) {
             int mx = mapx;
             for (int vx = viewx; vx < kFieldViewSizeX; vx += kFieldSizePixel) {
@@ -612,8 +614,10 @@ static void FieldActorDraw(struct FieldActor *actor)
             }
             ++my;
         }
-        playdate->graphics->clearClipRect();
     }
+
+    // クリップの解除
+    FieldClearClip();
 }
 
 // フィールドアクタが待機する
@@ -917,6 +921,17 @@ int FieldGetBattleRoute(int x, int y)
         route |= (1 << kDirectionRight);
     }
     return route;
+}
+
+// クリップを設定する
+//
+void FieldClearClip(void)
+{
+    IocsGetPlaydate()->graphics->clearClipRect();
+}
+void FieldSetClip(void)
+{
+    IocsGetPlaydate()->graphics->setClipRect(kFieldViewLeft, kFieldViewTop, kFieldViewSizeX, kFieldViewSizeY);
 }
 
 

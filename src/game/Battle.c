@@ -186,6 +186,9 @@ static void BattleActorDraw(struct BattleActor *actor)
     // カメラの取得
     struct Vector *camera = GameGetCamera();
 
+    // クリップの設定
+    BattleSetClip();
+
     // スプライトの描画
     {
         int viewx = camera->x >= 0 ? -(camera->x % kBattleSizePixel) : -kBattleSizePixel - (camera->x % kBattleSizePixel);
@@ -193,7 +196,6 @@ static void BattleActorDraw(struct BattleActor *actor)
         int mapx = camera->x >= 0 ? camera->x / kBattleSizePixel : camera->x / kBattleSizePixel - 1;
         int mapy = camera->y >= 0 ? camera->y / kBattleSizePixel : camera->y / kBattleSizePixel - 1;
         int my = mapy;
-        playdate->graphics->setClipRect(kBattleViewLeft, kBattleViewTop, kBattleViewSizeX, kBattleViewSizeY);
         for (int vy = viewy; vy < kBattleViewSizeY; vy += kBattleSizePixel) {
             int mx = mapx;
             for (int vx = viewx; vx < kBattleViewSizeX; vx += kBattleSizePixel) {
@@ -206,8 +208,10 @@ static void BattleActorDraw(struct BattleActor *actor)
             }
             ++my;
         }
-        playdate->graphics->clearClipRect();
     }
+
+    // クリップの解除
+    BattleClearClip();
 }
 
 // バトルアクタが待機する
@@ -340,3 +344,13 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
     return distance;
 }
 
+// クリップを設定する
+//
+void BattleClearClip(void)
+{
+    IocsGetPlaydate()->graphics->clearClipRect();
+}
+void BattleSetClip(void)
+{
+    IocsGetPlaydate()->graphics->setClipRect(kBattleViewLeft, kBattleViewTop, kBattleViewSizeX, kBattleViewSizeY);
+}

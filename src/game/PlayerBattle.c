@@ -82,12 +82,18 @@ static void PlayerBattleActorDraw(struct PlayerActor *actor)
         return;
     }
 
+    // クリップの設定
+    BattleSetClip();
+
     // スプライトの描画
     {
         struct Vector view;
         GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
     }
+
+    // クリップの解除
+    BattleClearClip();
 }
 
 // プレイヤアクタがプレイする

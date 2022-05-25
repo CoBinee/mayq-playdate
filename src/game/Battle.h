@@ -100,4 +100,5 @@ extern void BattleActorLoad(int type, int route);
 extern unsigned char BattleGetMap(int x, int y);
 extern bool BattleIsSpace(int x, int y);
 extern int BattleGetMoveDistance(int x, int y, int direction, int speed);
-
+extern void BattleClearClip(void);
+extern void BattleSetClip(void);
