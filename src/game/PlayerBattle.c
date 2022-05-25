@@ -124,27 +124,67 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
             bool move = false;
             int direction = actor->direction;
             if (IocsIsButtonPush(kButtonUp)) {
-                int d_0 = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
-                int d_1 = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
-                actor->position.y -= d_0 < d_1 ? d_0 : d_1;
+                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
+                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
+                if (dl == 0 && dr > 0) {
+                    int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, 1);
+                    int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, 1);
+                    actor->position.x += dt < db ? dt : db;
+                } else if (dr == 0 && dl > 0) {
+                    int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, 1);
+                    int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, 1);
+                    actor->position.x -= dt < db ? dt : db;
+                } else {
+                    actor->position.y -= dl < dr ? dl : dr;
+                }
                 actor->direction = kDirectionUp;
                 move = true;
             } else if (IocsIsButtonPush(kButtonDown)) {
-                int d_0 = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
-                int d_1 = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
-                actor->position.y += d_0 < d_1 ? d_0 : d_1;
+                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
+                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
+                if (dl == 0 && dr > 0) {
+                    int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, 1);
+                    int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, 1);
+                    actor->position.x += dt < db ? dt : db;
+                } else if (dr == 0 && dl > 0) {
+                    int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, 1);
+                    int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, 1);
+                    actor->position.x -= dt < db ? dt : db;
+                } else {
+                    actor->position.y += dl < dr ? dl : dr;
+                }
                 actor->direction = kDirectionDown;
                 move = true;
             } else if (IocsIsButtonPush(kButtonLeft)) {
-                int d_0 = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, kPlayerSpeedBattle);
-                int d_1 = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, kPlayerSpeedBattle);
-                actor->position.x -= d_0 < d_1 ? d_0 : d_1;
+                int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, kPlayerSpeedBattle);
+                int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, kPlayerSpeedBattle);
+                if (dt == 0 && db > 0) {
+                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionDown, 1);
+                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionDown, 1);
+                    actor->position.y += dl < dr ? dl : dr;
+                } else if (db == 0 && dt > 0) {
+                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
+                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
+                    actor->position.y -= dl < dr ? dl : dr;
+                } else {
+                    actor->position.x -= dt < db ? dt : db;
+                }
                 actor->direction = kDirectionLeft;
                 move = true;
             } else if (IocsIsButtonPush(kButtonRight)) {
-                int d_0 = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, kPlayerSpeedBattle);
-                int d_1 = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, kPlayerSpeedBattle);
-                actor->position.x += d_0 < d_1 ? d_0 : d_1;
+                int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, kPlayerSpeedBattle);
+                int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, kPlayerSpeedBattle);
+                if (dt == 0 && db > 0) {
+                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionDown, 1);
+                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionDown, 1);
+                    actor->position.y += dl < dr ? dl : dr;
+                } else if (db == 0 && dt > 0) {
+                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
+                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
+                    actor->position.y -= dl < dr ? dl : dr;
+                } else {
+                    actor->position.x += dt < db ? dt : db;
+                }
                 actor->direction = kDirectionRight;
                 move = true;
             }
