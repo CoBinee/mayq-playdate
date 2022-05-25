@@ -607,7 +607,7 @@ static void FieldActorDraw(struct FieldActor *actor)
                     int ax = mx < 0 ? mx + kFieldSizeX : (mx >= kFieldSizeX ? mx - kFieldSizeX : mx);
                     animation = field->maps[my][ax];
                 }
-                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx + kFieldViewLeft, vy + kFieldViewTop, kDrawModeCopy, kBitmapUnflipped);
+                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx, vy, kDrawModeCopy, kBitmapUnflipped);
                 ++mx;
             }
             ++my;
@@ -898,4 +898,25 @@ void FieldGetEnemyPosition(struct Vector *position, bool land)
         field->locationEnemy = kFieldLocationEnemy;
     }
 }
+
+// バトルの経路を取得する
+//
+int FieldGetBattleRoute(int x, int y)
+{
+    int route = 0;
+    if (FieldIsSpace(x, y - kFieldSizePixel)) {
+        route |= (1 << kDirectionUp);
+    }
+    if (FieldIsSpace(x, y + kFieldSizePixel)) {
+        route |= (1 << kDirectionDown);
+    }
+    if (FieldIsSpace(x - kFieldSizePixel, y)) {
+        route |= (1 << kDirectionLeft);
+    }
+    if (FieldIsSpace(x + kFieldSizePixel, y)) {
+        route |= (1 << kDirectionRight);
+    }
+    return route;
+}
+
 

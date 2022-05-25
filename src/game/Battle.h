@@ -15,7 +15,7 @@
 // バトル
 //
 enum {
-    kBattleSizeX = 17, 
+    kBattleSizeX = 16, 
     kBattleSizeY = 10, 
     kBattleSizePixel = 24, 
 };
@@ -26,6 +26,19 @@ enum {
     kBattleMapNull = 0, 
     kBattleMapFloor, 
     kBattleMapBlock, 
+    kBattleMapBlockUp, 
+    kBattleMapBlockDown, 
+    kBattleMapBlockLeft, 
+    kBattleMapBlockRight, 
+};
+
+// 種類
+//
+enum {
+    kBattleTypeField = 0, 
+    kBattleTypeDungeon, 
+    kBattleTypeEntrance, 
+    kBattleTypeSize, 
 };
 
 // エネミー
@@ -46,11 +59,11 @@ struct Battle {
 // 視界
 //
 enum {
-    kBattleViewSizeX = 400, 
+    kBattleViewSizeX = 384, 
     kBattleViewSizeY = 240, 
-    kBattleViewLeft = 0, 
+    kBattleViewLeft = 8, 
     kBattleViewTop = 0, 
-    kBattleViewRight = 399, 
+    kBattleViewRight = 391, 
     kBattleViewBottom = 239, 
 };
 
@@ -60,6 +73,10 @@ enum {
     kBattleAnimationNull = 0, 
     kBattleAnimationFloor, 
     kBattleAnimationBlock, 
+    kBattleAnimationBlockUp, 
+    kBattleAnimationBlockDown, 
+    kBattleAnimationBlockLeft, 
+    kBattleAnimationBlockRight, 
     kBattleAnimationSize, 
 };
 
@@ -79,7 +96,8 @@ struct BattleActor {
 //
 extern void BattleInitialize(void);
 extern void BattleRelease(void);
-extern void BattleActorLoad(int block);
+extern void BattleActorLoad(int type, int route);
 extern unsigned char BattleGetMap(int x, int y);
 extern bool BattleIsSpace(int x, int y);
+extern int BattleGetMoveDistance(int x, int y, int direction, int speed);
 

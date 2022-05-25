@@ -16,6 +16,7 @@
 static void PlayerBattleActorUnload(struct PlayerActor *actor);
 static void PlayerBattleActorDraw(struct PlayerActor *actor);
 static void PlayerBattleActorPlay(struct PlayerActor *actor);
+static void PlayerBattleCalcRect(struct PlayerActor *actor);
 
 // 内部変数
 //
@@ -54,6 +55,9 @@ void PlayerBattleActorLoad(void)
         // 位置の設定
         actor->position.x = 200;
         actor->position.y = 120;
+
+        // 矩形の計算
+        PlayerBattleCalcRect(actor);
     }
 }
 
@@ -120,19 +124,27 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
             bool move = false;
             int direction = actor->direction;
             if (IocsIsButtonPush(kButtonUp)) {
-                actor->position.y -= kPlayerSpeedBattle;
+                int d_0 = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
+                int d_1 = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
+                actor->position.y -= d_0 < d_1 ? d_0 : d_1;
                 actor->direction = kDirectionUp;
                 move = true;
             } else if (IocsIsButtonPush(kButtonDown)) {
-                actor->position.y += kPlayerSpeedBattle;
+                int d_0 = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
+                int d_1 = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
+                actor->position.y += d_0 < d_1 ? d_0 : d_1;
                 actor->direction = kDirectionDown;
                 move = true;
             } else if (IocsIsButtonPush(kButtonLeft)) {
-                actor->position.x -= kPlayerSpeedBattle;
+                int d_0 = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, kPlayerSpeedBattle);
+                int d_1 = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, kPlayerSpeedBattle);
+                actor->position.x -= d_0 < d_1 ? d_0 : d_1;
                 actor->direction = kDirectionLeft;
                 move = true;
             } else if (IocsIsButtonPush(kButtonRight)) {
-                actor->position.x += kPlayerSpeedBattle;
+                int d_0 = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, kPlayerSpeedBattle);
+                int d_1 = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, kPlayerSpeedBattle);
+                actor->position.x += d_0 < d_1 ? d_0 : d_1;
                 actor->direction = kDirectionRight;
                 move = true;
             }
@@ -143,9 +155,22 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
                 AsepriteUpdateSpriteAnimation(&actor->animation);
             }
         }
+
+        // 矩形の計算
+        PlayerBattleCalcRect(actor);
     }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderPlayer);
+}
+
+// 矩形を計算する
+//
+static void PlayerBattleCalcRect(struct PlayerActor *actor)
+{
+    actor->rect.left = actor->position.x + kPlayerRectLeft;
+    actor->rect.top = actor->position.y + kPlayerRectTop;
+    actor->rect.right = actor->position.x + kPlayerRectRight;
+    actor->rect.bottom = actor->position.y + kPlayerRectBottom;
 }
 

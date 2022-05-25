@@ -23,8 +23,12 @@ static void BattleActorLoop(struct BattleActor *actor);
 static struct Battle *battle = NULL;
 static const char *battleAnimationNames[kBattleAnimationSize] = {
     "Null", 
-    "Floor", 
+    "Back", 
     "Block", 
+    "BlockUp", 
+    "BlockDown", 
+    "BlockLeft", 
+    "BlockRight", 
 };
 
 
@@ -74,7 +78,7 @@ void BattleRelease(void)
 
 // バトルアクタを読み込む
 //
-void BattleActorLoad(int block)
+void BattleActorLoad(int type, int route)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -103,24 +107,55 @@ void BattleActorLoad(int block)
                     battle->maps[y][x] = kBattleMapFloor;
                 }
             }
-            if ((block & (1 << kDirectionUp)) != 0) {
+            if (type == kBattleTypeField) {
+                if ((route & (1 << kDirectionUp)) == 0) {
+                    for (int x = 0; x < kBattleSizeX; x++) {
+                        battle->maps[0][x] = kBattleMapBlock;
+                    }
+                }
+                if ((route & (1 << kDirectionDown)) == 0) {
+                    for (int x = 0; x < kBattleSizeX; x++) {
+                        battle->maps[kBattleSizeY - 1][x] = kBattleMapBlock;
+                    }
+                }
+                if ((route & (1 << kDirectionLeft)) == 0) {
+                    for (int y = 0; y < kBattleSizeY; y++) {
+                        battle->maps[y][0] = kBattleMapBlock;
+                    }
+                }
+                if ((route & (1 << kDirectionRight)) == 0) {
+                    for (int y = 0; y < kBattleSizeY; y++) {
+                        battle->maps[y][kBattleSizeX - 1] = kBattleMapBlock;
+                    }
+                }
+            } else {
                 for (int x = 0; x < kBattleSizeX; x++) {
                     battle->maps[0][x] = kBattleMapBlock;
                 }
-            }
-            if ((block & (1 << kDirectionDown)) != 0) {
                 for (int x = 0; x < kBattleSizeX; x++) {
                     battle->maps[kBattleSizeY - 1][x] = kBattleMapBlock;
                 }
-            }
-            if ((block & (1 << kDirectionLeft)) != 0) {
                 for (int y = 0; y < kBattleSizeY; y++) {
                     battle->maps[y][0] = kBattleMapBlock;
                 }
-            }
-            if ((block & (1 << kDirectionRight)) != 0) {
                 for (int y = 0; y < kBattleSizeY; y++) {
                     battle->maps[y][kBattleSizeX - 1] = kBattleMapBlock;
+                }
+                if ((route & (1 << kDirectionUp)) != 0) {
+                    battle->maps[0][kBattleSizeX / 2 - 1] = kBattleMapFloor;
+                    battle->maps[0][kBattleSizeX / 2 + 0] = kBattleMapFloor;
+                }
+                if ((route & (1 << kDirectionDown)) != 0) {
+                    battle->maps[kBattleSizeY - 1][kBattleSizeX / 2 - 1] = kBattleMapFloor;
+                    battle->maps[kBattleSizeY - 1][kBattleSizeX / 2 + 0] = kBattleMapFloor;
+                }
+                if ((route & (1 << kDirectionLeft)) != 0) {
+                    battle->maps[kBattleSizeY / 2 - 1][0] = kBattleMapFloor;
+                    battle->maps[kBattleSizeY / 2 + 0][0] = kBattleMapFloor;
+                }
+                if ((route & (1 << kDirectionRight)) != 0) {
+                    battle->maps[kBattleSizeY / 2 - 1][kBattleSizeX - 1] = kBattleMapFloor;
+                    battle->maps[kBattleSizeY / 2 + 0][kBattleSizeX - 1] = kBattleMapFloor;
                 }
             }
         }
@@ -166,7 +201,7 @@ static void BattleActorDraw(struct BattleActor *actor)
                 if (mx >= 0 && mx < kBattleSizeX && my >= 0 && my < kBattleSizeY) {
                     animation = battle->maps[my][mx];
                 }
-                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx + kBattleViewLeft, vy + kBattleViewTop, kDrawModeCopy, kBitmapUnflipped);
+                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx, vy, kDrawModeCopy, kBitmapUnflipped);
                 ++mx;
             }
             ++my;
@@ -189,7 +224,7 @@ static void BattleActorLoop(struct BattleActor *actor)
     if (actor->actor.state == 0) {
 
         // カメラの設定
-        GameSetBattleCamera(((kBattleSizeX * kBattleSizePixel) - kBattleViewSizeX) / 2, ((kBattleSizeY * kBattleSizePixel) - kBattleViewSizeY) / 2);
+        GameSetBattleCamera(((kBattleSizeX * kBattleSizePixel) - kBattleViewSizeX) / 2 - kBattleViewLeft, ((kBattleSizeY * kBattleSizePixel) - kBattleViewSizeY) / 2 - kBattleViewTop);
 
         // アニメーションの開始
         for (int i = 0; i < kBattleAnimationSize; i++) {
@@ -217,10 +252,10 @@ static void BattleActorLoop(struct BattleActor *actor)
 //
 unsigned char BattleGetMap(int x, int y)
 {
-    unsigned char result = kBattleMapBlock;
+    unsigned char result = kBattleMapNull;
     if (battle != NULL) {
-        if (y >= 0 && y < kBattleSizeY * kBattleSizePixel) {
-            x = (x < 0 ? x + kBattleSizeX * kBattleSizePixel : (x >= kBattleSizeX * kBattleSizePixel ? x - kBattleSizeX * kBattleSizePixel : x)) / kBattleSizePixel;
+        if (x >= 0 && x < kBattleSizeX * kBattleSizePixel && y >= 0 && y < kBattleSizeY * kBattleSizePixel) {
+            x = x / kBattleSizePixel;
             y = y / kBattleSizePixel;
             result = battle->maps[y][x];
         }
@@ -235,3 +270,73 @@ bool BattleIsSpace(int x, int y)
     unsigned char m = BattleGetMap(x, y);
     return m != kBattleMapBlock ? true : false;
 }
+
+// バトル内で矩形を移動させる
+//
+int BattleGetMoveDistance(int x, int y, int direction, int speed)
+{
+    int distance = 0;
+    if (direction == kDirectionUp) {
+        int y_0 = y;
+        while (speed > 0) {
+            int d = speed;
+            if (d > kBattleSizePixel) {
+                d = kBattleSizePixel;
+            }
+            speed -= d;
+            y_0 -= d;
+            if (!BattleIsSpace(x, y_0)) {
+                y_0 = y_0 + (kBattleSizePixel - (y_0 % kBattleSizePixel));
+                break;
+            }
+        }
+        distance = y - y_0;
+    } else if (direction == kDirectionDown) {
+        int y_0 = y;
+        while (speed > 0) {
+            int d = speed;
+            if (d > kBattleSizePixel) {
+                d = kBattleSizePixel;
+            }
+            speed -= d;
+            y_0 += d;
+            if (!BattleIsSpace(x, y_0)) {
+                y_0 = y_0 - (y_0 % kBattleSizePixel) - 1;
+                break;
+            }
+        }
+        distance = y_0 - y;
+    } else if (direction == kDirectionLeft) {
+        int x_0 = x;
+        while (speed > 0) {
+            int d = speed;
+            if (d > kBattleSizePixel) {
+                d = kBattleSizePixel;
+            }
+            speed -= d;
+            x_0 -= d;
+            if (!BattleIsSpace(x_0, y)) {
+                x_0 = x_0 + (kBattleSizePixel - (x_0 % kBattleSizePixel));
+                break;
+            }
+        }
+        distance = x - x_0;
+    } else if (direction == kDirectionRight) {
+        int x_0 = x;
+        while (speed > 0) {
+            int d = speed;
+            if (d > kBattleSizePixel) {
+                d = kBattleSizePixel;
+            }
+            speed -= d;
+            x_0 += d;
+            if (!BattleIsSpace(x_0, y)) {
+                x_0 = x_0 - (x_0 % kBattleSizePixel) - 1;
+                break;
+            }
+        }
+        distance = x_0 - x;
+    }
+    return distance;
+}
+

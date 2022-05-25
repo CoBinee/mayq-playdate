@@ -264,7 +264,12 @@ static void GameLoadBattle(struct Game *game)
     if (game->state == 0) {
 
         // バトルアクタの読み込み
-        BattleActorLoad(15);
+        {
+            struct Vector position;
+            PlayerGetFieldPosition(&position);
+            int route = FieldGetBattleRoute(position.x, position.y);
+            BattleActorLoad(kBattleTypeDungeon, route);
+        }
 
         // プレイヤアクタの読み込み
         PlayerBattleActorLoad();
@@ -469,6 +474,4 @@ void GameGetBattleCameraPosition(int x, int y, struct Vector *position)
         }
     }
 }
-
-
 

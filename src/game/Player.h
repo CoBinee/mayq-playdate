@@ -23,6 +23,15 @@ struct Player {
 
 };
 
+// 矩形
+//
+enum {
+    kPlayerRectLeft = -12, 
+    kPlayerRectTop = -23, 
+    kPlayerRectRight = 11, 
+    kPlayerRectBottom = 0, 
+};
+
 // プレイヤアクタ
 //
 struct PlayerActor {
@@ -42,6 +51,9 @@ struct PlayerActor {
     // ジャンプ
     int jump;
     int step;
+
+    // 矩形
+    struct Rect rect;
 
     // アニメーション
     struct AsepriteSpriteAnimation animation;
@@ -68,6 +80,7 @@ extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
 extern void PlayerFieldActorLoad(void);
 extern void PlayerBattleActorLoad(void);
+extern void PlayerGetFieldPosition(struct Vector *position);
 
 // 外部参照変数
 //

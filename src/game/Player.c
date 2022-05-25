@@ -66,3 +66,12 @@ void PlayerRelease(void)
     }
 }
 
+// プレイヤのフィールド上の位置を取得する
+//
+void PlayerGetFieldPosition(struct Vector *position)
+{
+    if (player != NULL) {
+        *position = player->fieldPosition;
+    }
+}
+
