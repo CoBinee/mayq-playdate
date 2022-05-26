@@ -31,7 +31,7 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
         .life = 100, 
         .fieldAction = kEnemyFieldActionWalk, 
         .fieldSpeed = kEnemyFieldSpeedNormal, 
-        .animation = "Skeleton", 
+        .animation = "SkeletonLeft", 
     }, 
 };
 

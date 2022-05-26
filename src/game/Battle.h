@@ -26,10 +26,6 @@ enum {
     kBattleMapNull = 0, 
     kBattleMapFloor, 
     kBattleMapBlock, 
-    kBattleMapBlockUp, 
-    kBattleMapBlockDown, 
-    kBattleMapBlockLeft, 
-    kBattleMapBlockRight, 
 };
 
 // 種類
@@ -73,10 +69,6 @@ enum {
     kBattleAnimationNull = 0, 
     kBattleAnimationFloor, 
     kBattleAnimationBlock, 
-    kBattleAnimationBlockUp, 
-    kBattleAnimationBlockDown, 
-    kBattleAnimationBlockLeft, 
-    kBattleAnimationBlockRight, 
     kBattleAnimationSize, 
 };
 

@@ -25,10 +25,6 @@ static const char *battleAnimationNames[kBattleAnimationSize] = {
     "Null", 
     "Back", 
     "Block", 
-    "BlockUp", 
-    "BlockDown", 
-    "BlockLeft", 
-    "BlockRight", 
 };
 
 
