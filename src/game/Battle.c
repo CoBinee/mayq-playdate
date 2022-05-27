@@ -340,6 +340,62 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
     return distance;
 }
 
+// 開始位置を取得する
+//
+void BattleGetStartPosition(int direction, struct Vector *position)
+{
+    static const struct Vector positions[] = {
+        {.x = (kBattleSizeX * kBattleSizePixel) / 2, .y = kBattleSizePixel - 1, }, 
+        {.x = (kBattleSizeX * kBattleSizePixel) / 2, .y = kBattleSizeY * kBattleSizePixel - 1, }, 
+        {.x = kBattleSizePixel / 2, .y = (kBattleSizeY * kBattleSizePixel) / 2 + (kBattleSizePixel / 2 - 1), }, 
+        {.x = kBattleSizeX * kBattleSizePixel - kBattleSizePixel / 2, .y = (kBattleSizeY * kBattleSizePixel) / 2 + (kBattleSizePixel / 2 - 1), }, 
+    };
+    static const struct Vector offsets[] = {
+        {.x = 0, .y = kBattleSizePixel, }, 
+        {.x = 0, .y = -kBattleSizePixel, }, 
+        {.x = kBattleSizePixel, .y = 0, }, 
+        {.x = -kBattleSizePixel, .y = 0, }, 
+    };
+    *position = positions[direction];
+    if (!BattleIsSpace(position->x, position->y)) {
+        position->x += offsets[direction].x;
+        position->y += offsets[direction].y;
+    }
+}
+
+// エネミーの配置位置を取得する
+//
+void BattleGetEnemyPosition(int index, int direction, struct Vector *position)
+{
+    static const struct Vector o = {
+        .x = (kBattleSizeX * kBattleSizePixel) / 2, .y = (kBattleSizeY * kBattleSizePixel) / 2 + (kBattleSizePixel / 2 - 1), 
+    };
+    static const struct Vector offsets[] = {
+        { 0 * kBattleSizePixel,  0 * kBattleSizePixel, }, 
+        { 1 * kBattleSizePixel,  1 * kBattleSizePixel, }, 
+        {-1 * kBattleSizePixel,  1 * kBattleSizePixel, }, 
+        {-1 * kBattleSizePixel,  0 * kBattleSizePixel, }, 
+        { 1 * kBattleSizePixel, -1 * kBattleSizePixel, }, 
+        { 0 * kBattleSizePixel, -1 * kBattleSizePixel, }, 
+        { 0 * kBattleSizePixel,  1 * kBattleSizePixel, }, 
+        { 1 * kBattleSizePixel,  0 * kBattleSizePixel, }, 
+        {-1 * kBattleSizePixel, -1 * kBattleSizePixel, }, 
+    };
+    if (direction == kDirectionUp) {
+        position->x = o.x + offsets[index].x;
+        position->y = o.y + offsets[index].y;
+    } else if (direction == kDirectionDown) {
+        position->x = o.x - offsets[index].x;
+        position->y = o.y - offsets[index].y;
+    } else if (direction == kDirectionLeft) {
+        position->x = o.x + offsets[index].y;
+        position->y = o.y - offsets[index].x;
+    } else {
+        position->x = o.x - offsets[index].y;
+        position->y = o.y + offsets[index].x;
+    }
+}
+
 // クリップを設定する
 //
 void BattleClearClip(void)

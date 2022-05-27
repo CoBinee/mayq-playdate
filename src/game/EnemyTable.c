@@ -31,14 +31,16 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
         .life = 100, 
         .fieldAction = kEnemyFieldActionWalk, 
         .fieldSpeed = kEnemyFieldSpeedNormal, 
-        .animation = "SkeletonLeft", 
+        .battleAction = kEnemyBattleActionWalkRandom, 
+        .battleSpeed = kEnemyBattleSpeedNormal, 
+        .sprite = "skeleton", 
     }, 
 };
 
 // フィールドプール
 //
 const struct EnemyPool enemyPoolFields[kEnemyPoolFieldSize] = {
-    {.type = kEnemyTypeSkeleton, 1, }, 
+    {.type = kEnemyTypeSkeleton, .rest = 1, }, 
 };
 
 

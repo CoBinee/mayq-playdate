@@ -41,6 +41,20 @@ enum {
     kEnemyFieldSpeedFast = 3, 
 };
 
+// バトル
+//
+enum {
+    kEnemyBattleActionNull = 0, 
+    kEnemyBattleActionIdle, 
+    kEnemyBattleActionWalkRandom, 
+    kEnemyBattleActionSize, 
+};
+enum {
+    kEnemyBattleSpeedSlow = 1, 
+    kEnemyBattleSpeedNormal = 2, 
+    kEnemyBattleSpeedFast = 3, 
+};
+
 // データ
 //
 struct EnemyData {
@@ -58,15 +72,19 @@ struct EnemyData {
     int fieldAction;
     int fieldSpeed;
 
-    // アニメーション
-    const char *animation;
+    // バトル
+    int battleAction;
+    int battleSpeed;
+
+    // スプライト
+    const char *sprite;
 
 };
 
 // プール
 //
 enum {
-    kEnemyPoolFieldSize = 1, 
+    kEnemyPoolFieldSize = 96, 
 };
 struct EnemyPool {
 
@@ -74,7 +92,7 @@ struct EnemyPool {
     int type;
 
     // 数
-    int entry;
+    int rest;
 
 };
 
@@ -86,7 +104,7 @@ struct EnemyField {
     int type;
 
     // 数
-    int entry;
+    int rest;
 
     // 位置
     struct Vector position;
@@ -103,6 +121,23 @@ struct Enemy {
     // フィールド
     struct EnemyField fields[kEnemyPoolFieldSize];
 
+};
+
+// 体の向き
+//
+enum {
+    kEnemyFaceLeft = 0, 
+    kEnemyFaceRight, 
+    kEnemyFaceSize, 
+};
+
+// 矩形
+//
+enum {
+    kEnemyRectLeft = -12, 
+    kEnemyRectTop = -23, 
+    kEnemyRectRight = 11, 
+    kEnemyRectBottom = 0, 
 };
 
 // エネミーアクタ
@@ -127,11 +162,14 @@ struct EnemyActor {
     // 向き
     int direction;
 
-    // 待機
-    int idle;
+    // 体の向き
+    int face;
 
-    // 歩数
-    int step;
+    // 矩形
+    struct Rect rect;
+
+    // 移動
+    int move;
 
     // アニメーション
     struct AsepriteSpriteAnimation animation;
@@ -144,6 +182,7 @@ extern void EnemyInitialize(void);
 extern void EnemyRelease(void);
 extern void EnemyActorNull(struct EnemyActor *actor);
 extern void EnemyFieldActorLoad(void);
+extern void EnemyBattleActorLoad(int type, int rest, int direction);
 
 // 外部参照変数
 //

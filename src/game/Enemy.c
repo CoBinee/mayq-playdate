@@ -9,6 +9,7 @@
 #include "Actor.h"
 #include "Game.h"
 #include "Field.h"
+#include "Battle.h"
 #include "Enemy.h"
 
 // 内部関数
@@ -45,10 +46,10 @@ void EnemyInitialize(void)
         // フィールドへの配置
         {
             for (int i = 0; i < kEnemyPoolFieldSize; i++) {
-                const struct EnemyPool *pool = &enemyPoolFields[i];
+                const struct EnemyPool *pool = &enemyPoolFields[0];
                 const struct EnemyData *data = &enemyDatas[pool->type];
                 enemy->fields[i].type = pool->type;
-                enemy->fields[i].entry = pool->entry;
+                enemy->fields[i].rest = pool->rest;
                 FieldGetEnemyPosition(&enemy->fields[i].position, data->fieldAction != kEnemyFieldActionFree ? true : false);
             }
         }

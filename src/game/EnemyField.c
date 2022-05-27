@@ -32,6 +32,10 @@ static ActorFunction enemyFieldActorFunctions[kEnemyFieldActionSize] = {
     (ActorFunction)EnemyFieldActorFree, 
     (ActorFunction)EnemyFieldActorStep, 
 };
+static const char *enemyFieldAnimationNames_Walk[kEnemyFaceSize] = {
+    "WalkLeft", 
+    "WalkRight", 
+};
 
 
 // エネミーアクタを読み込む
@@ -46,7 +50,7 @@ void EnemyFieldActorLoad(void)
 
     // エネミーの読み込み
     for (int i = 0; i < kEnemyPoolFieldSize; i++) {
-        if (enemy->fields[i].entry > 0) {
+        if (enemy->fields[i].rest > 0) {
 
             // エネミーの取得
             const struct EnemyData *data = &enemyDatas[enemy->fields[i].type];
@@ -135,8 +139,11 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
         // 向きの設定
         actor->direction = kDirectionDown;
 
+        // 体の向きの設定
+        actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
+
         // アニメーションの開始
-        AsepriteStartSpriteAnimation(&actor->animation, "mob", actor->data->animation, true);
+        AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
         // 初期化の完了
         ++actor->actor.state;
@@ -172,8 +179,15 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
         // 向きの設定
         actor->direction = EnemyFieldGetWalkableRandomDirection(actor);
 
+        // 体の向きの設定
+        if (actor->direction == kDirectionLeft || actor->direction == kDirectionUp) {
+            actor->face = kEnemyFaceLeft;
+        } else {
+            actor->face = kEnemyFaceRight;
+        }
+
         // アニメーションの開始
-        AsepriteStartSpriteAnimation(&actor->animation, "mob", actor->data->animation, true);
+        AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
         // 初期化の完了
         ++actor->actor.state;
@@ -226,6 +240,19 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
                 if (actor->position.x != actor->destination.x) {
                     FieldAdjustMovePosition(&actor->position, &actor->destination);
                 }
+                {
+                    bool face = false;
+                    if (actor->direction == kDirectionLeft && actor->face != kEnemyFaceLeft) {
+                        actor->face = kEnemyFaceLeft;
+                        face = true;
+                    } else if (actor->direction == kDirectionRight && actor->face != kEnemyFaceRight) {
+                        actor->face = kEnemyFaceRight;
+                        face = true;
+                    }
+                    if (face) {
+                        AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
+                    }
+                }
             }
         }
 
@@ -259,8 +286,11 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
         // 向きの設定
         actor->direction = kDirectionDown;
 
+        // 体の向きの設定
+        actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
+
         // アニメーションの開始
-        AsepriteStartSpriteAnimation(&actor->animation, "mob", actor->data->animation, true);
+        AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
         // 初期化の完了
         ++actor->actor.state;
@@ -296,8 +326,11 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
         // 向きの設定
         actor->direction = kDirectionDown;
 
+        // 体の向きの設定
+        actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
+
         // アニメーションの開始
-        AsepriteStartSpriteAnimation(&actor->animation, "mob", actor->data->animation, true);
+        AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
         // 初期化の完了
         ++actor->actor.state;

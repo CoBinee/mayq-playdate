@@ -35,7 +35,7 @@ static void GameDone(struct Game *game);
 static const char *gameSpriteNames[] = {
     "tileset", 
     "player", 
-    "mob", 
+    "skeleton", 
 };
 static const char *gameAudioSamplePaths[] = {
     "", 
@@ -275,7 +275,7 @@ static void GameLoadBattle(struct Game *game)
         PlayerBattleActorLoad();
 
         // エネミーアクタの読み込み
-        // EnemyBattleActorLoad();
+        EnemyBattleActorLoad(kEnemyTypeSkeleton, 9, kDirectionLeft);
 
         // ゲームの停止
         game->play = false;

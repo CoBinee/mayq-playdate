@@ -53,8 +53,7 @@ void PlayerBattleActorLoad(void)
         ActorSetTag(&actor->actor, kGameTagPlayer);
 
         // 位置の設定
-        actor->position.x = 200;
-        actor->position.y = 120;
+        BattleGetStartPosition(kDirectionRight, &actor->position);
 
         // 矩形の計算
         PlayerBattleCalcRect(actor);
@@ -169,8 +168,8 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
                     int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionDown, 1);
                     actor->position.y += dl < dr ? dl : dr;
                 } else if (db == 0 && dt > 0) {
-                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
-                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
+                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
+                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
                     actor->position.y -= dl < dr ? dl : dr;
                 } else {
                     actor->position.x -= dt < db ? dt : db;
@@ -185,8 +184,8 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
                     int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionDown, 1);
                     actor->position.y += dl < dr ? dl : dr;
                 } else if (db == 0 && dt > 0) {
-                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
-                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
+                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
+                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
                     actor->position.y -= dl < dr ? dl : dr;
                 } else {
                     actor->position.x += dt < db ? dt : db;
