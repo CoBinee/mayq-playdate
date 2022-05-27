@@ -196,7 +196,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 if (actor->direction == kDirectionUp) {
                     int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, actor->data->battleSpeed);
                     int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, actor->data->battleSpeed);
-                    if (dl > 0 || dr > 0) {
+                    if (dl > 0 && dr > 0) {
                         actor->position.y -= dl < dr ? dl : dr;
                         move = true;
                     } else {
@@ -205,7 +205,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 } else if (actor->direction == kDirectionDown) {
                     int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionDown, actor->data->battleSpeed);
                     int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionDown, actor->data->battleSpeed);
-                    if (dl > 0 || dr > 0) {
+                    if (dl > 0 && dr > 0) {
                         actor->position.y += dl < dr ? dl : dr;
                         move = true;
                     } else {
@@ -214,7 +214,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 } else if (actor->direction == kDirectionLeft) {
                     int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, actor->data->battleSpeed);
                     int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, actor->data->battleSpeed);
-                    if (dt > 0 || db > 0) {
+                    if (dt > 0 && db > 0) {
                         actor->position.x -= dt < db ? dt : db;
                         move = true;
                     } else {
@@ -223,7 +223,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 } else if (actor->direction == kDirectionRight) {
                     int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, actor->data->battleSpeed);
                     int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, actor->data->battleSpeed);
-                    if (dt > 0 || db > 0) {
+                    if (dt > 0 && db > 0) {
                         actor->position.x += dt < db ? dt : db;
                         move = true;
                     } else {
@@ -244,7 +244,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 }
 
                 // 移動の設定
-                actor->move = 128;
+                actor->move = 16 + (IocsGetRandomNumber(NULL) % 16);
 
                 // アニメーションの開始
                 if (face != actor->face) {
@@ -292,31 +292,15 @@ static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor)
 {
     int direction = -1;
     int d = EnemyBattleGetWalkableDirection(actor);
-    if (IocsGetRandomBool(NULL)) {
-        if ((d & (1 << kDirectionLeft)) != 0) {
-            direction = kDirectionLeft;
-        } else if ((d & (1 << kDirectionRight)) != 0) {
-            direction = kDirectionRight;
-        }
+    if (d == (1 << actor->direction)) {
+        direction = actor->direction;
     } else {
-        if ((d & (1 << kDirectionRight)) != 0) {
-            direction = kDirectionRight;
-        } else if ((d & (1 << kDirectionLeft)) != 0) {
-            direction = kDirectionLeft;
-        }
-    }
-    if (direction < 0) {
-        if (IocsGetRandomBool(NULL)) {
-            if ((d & (1 << kDirectionUp)) != 0) {
-                direction = kDirectionUp;
-            } else if ((d & (1 << kDirectionDown)) != 0) {
-                direction = kDirectionDown;
-            }
-        } else {
-            if ((d & (1 << kDirectionDown)) != 0) {
-                direction = kDirectionDown;
-            } else if ((d & (1 << kDirectionUp)) != 0) {
-                direction = kDirectionUp;
+        d &= ~(1 << actor->direction);
+        direction = IocsGetRandomNumber(NULL) % 4;
+        while ((d & (1 << direction)) == 0) {
+            ++direction;
+            if (direction >= 4) {
+                direction = 0;
             }
         }
     }

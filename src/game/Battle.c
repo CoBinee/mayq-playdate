@@ -252,7 +252,7 @@ static void BattleActorLoop(struct BattleActor *actor)
 //
 unsigned char BattleGetMap(int x, int y)
 {
-    unsigned char result = kBattleMapNull;
+    unsigned char result = kBattleMapBlock;
     if (battle != NULL) {
         if (x >= 0 && x < kBattleSizeX * kBattleSizePixel && y >= 0 && y < kBattleSizeY * kBattleSizePixel) {
             x = x / kBattleSizePixel;
@@ -271,7 +271,7 @@ bool BattleIsSpace(int x, int y)
     return m != kBattleMapBlock ? true : false;
 }
 
-// バトル内で矩形を移動させる
+// バトル内で移動できる距離を取得する
 //
 int BattleGetMoveDistance(int x, int y, int direction, int speed)
 {
@@ -286,7 +286,11 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
             speed -= d;
             y_0 -= d;
             if (!BattleIsSpace(x, y_0)) {
-                y_0 = y_0 + (kBattleSizePixel - (y_0 % kBattleSizePixel));
+                if (y_0 > 0) {
+                    y_0 = y_0 + (kBattleSizePixel - (y_0 % kBattleSizePixel));
+                } else {
+                    y_0 = 0;
+                }
                 break;
             }
         }
@@ -316,7 +320,11 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
             speed -= d;
             x_0 -= d;
             if (!BattleIsSpace(x_0, y)) {
-                x_0 = x_0 + (kBattleSizePixel - (x_0 % kBattleSizePixel));
+                if (x_0 > 0) {
+                    x_0 = x_0 + (kBattleSizePixel - (x_0 % kBattleSizePixel));
+                } else {
+                    x_0 = 0;
+                }
                 break;
             }
         }
