@@ -32,15 +32,6 @@ struct Game {
 
 };
 
-// スプライト
-//
-enum {
-    kGameSpriteField = 0, 
-    kGameSpritePlayer, 
-    kGameSpriteMob, 
-    kGameSpriteNameSize, 
-};
-
 // オーディオ
 //
 enum {

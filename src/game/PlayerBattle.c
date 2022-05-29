@@ -4,6 +4,7 @@
 // 外部参照
 //
 #include <string.h>
+#include <math.h>
 #include "pd_api.h"
 #include "Iocs.h"
 #include "Actor.h"
@@ -20,7 +21,7 @@ static void PlayerBattleCalcRect(struct PlayerActor *actor);
 
 // 内部変数
 //
-static const char *playerBattleAnimationNames[] = {
+static const char *playerBattleAnimationNames_Walk[] = {
     "WalkUp", 
     "WalkDown", 
     "WalkLeft", 
@@ -88,7 +89,7 @@ static void PlayerBattleActorDraw(struct PlayerActor *actor)
     {
         struct Vector view;
         GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
-        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
+        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 0.75f, 1.0f, 1.0f, kDrawModeCopy);
     }
 
     // クリップの解除
@@ -114,8 +115,11 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
         // 向きの設定
         actor->direction = kDirectionDown;
 
+        // 攻撃の設定
+        actor->swing = 0;
+
         // アニメーションの開始
-        AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames[actor->direction], true);
+        AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames_Walk[actor->direction], true);
 
         // 初期化の完了
         ++actor->actor.state;
@@ -194,7 +198,7 @@ static void PlayerBattleActorPlay(struct PlayerActor *actor)
                 move = true;
             }
             if (actor->direction != direction) {
-                AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames[actor->direction], true);
+                AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames_Walk[actor->direction], true);
             }
             if (move) {
                 AsepriteUpdateSpriteAnimation(&actor->animation);

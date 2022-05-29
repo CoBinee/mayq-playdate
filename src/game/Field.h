@@ -42,6 +42,8 @@ enum {
     kFieldMapLock, 
     kFieldMapBack, 
     kFieldMapBlock, 
+    kFieldMapSolid, 
+    kFieldMapChecker, 
     kFieldMapLadder, 
     kFieldMapIcicle, 
     kFieldMapPole, 
@@ -127,6 +129,8 @@ enum {
     kFieldAnimationLock, 
     kFieldAnimationBack, 
     kFieldAnimationBlock, 
+    kFieldAnimationSolid, 
+    kFieldAnimationChecker, 
     kFieldAnimationLadder, 
     kFieldAnimationIcicle, 
     kFieldAnimationPole, 
@@ -158,6 +162,7 @@ extern void FieldRelease(void);
 extern void FieldActorLoad(void);
 extern unsigned char FieldGetMap(int x, int y);
 extern bool FieldIsSpace(int x, int y);
+extern bool FieldIsBlock(int x, int y);
 extern bool FieldIsLadder(int x, int y);
 extern bool FieldIsLand(int x, int y);
 extern bool FieldIsFall(int x, int y);

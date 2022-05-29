@@ -208,6 +208,9 @@ static void BattleActorDraw(struct BattleActor *actor)
 
     // クリップの解除
     BattleClearClip();
+
+    // DEBUG
+    playdate->system->drawFPS(0, 0);
 }
 
 // バトルアクタが待機する

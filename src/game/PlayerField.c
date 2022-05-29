@@ -87,7 +87,7 @@ static void PlayerFieldActorDraw(struct PlayerActor *actor)
     {
         struct Vector view;
         GameGetFieldCameraPosition(actor->position.x, actor->position.y, &view);
-        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
+        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 0.75f, 1.0f, 1.0f, kDrawModeCopy);
     }
 
     // クリップの解除

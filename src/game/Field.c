@@ -23,6 +23,10 @@ static void FieldDigLocation(int location);
 static void FieldActorUnload(struct FieldActor *actor);
 static void FieldActorDraw(struct FieldActor *actor);
 static void FieldActorLoop(struct FieldActor *actor);
+static bool FieldIsMapBack(unsigned char map);
+static bool FieldIsMapBlock(unsigned char map);
+static bool FieldIsMapLadder(unsigned char map);
+static bool FieldIsMapLock(unsigned char map);
 
 // 内部変数
 //
@@ -32,6 +36,8 @@ static const char *fieldAnimationNames[kFieldAnimationSize] = {
     "Back", 
     "Back", 
     "Block", 
+    "Solid", 
+    "Checker", 
     "Ladder", 
     "Icicle", 
     "Pole", 
@@ -396,19 +402,19 @@ static void FieldBuildMap(void)
     for (int y = 1; y < kFieldSizeY - 1; y++) {
         for (int x = 1; x < kFieldSizeX - 1; x++) {
             if (
-                field->maps[y - 1][x] == kFieldMapBlock && 
-                field->maps[y + 0][x] == kFieldMapBack && 
-                field->maps[y + 1][x] == kFieldMapBack
+                FieldIsMapBlock(field->maps[y - 1][x]) && 
+                FieldIsMapBack(field->maps[y + 0][x]) && 
+                FieldIsMapBack(field->maps[y + 1][x]) 
             ) {
                 if (
-                    (field->maps[y - 1][x - 1] == kFieldMapBack && field->maps[y - 1][x + 1] == kFieldMapBlock) || 
-                    (field->maps[y - 1][x + 1] == kFieldMapBack && field->maps[y - 1][x - 1] == kFieldMapBlock)
+                    (FieldIsMapBack(field->maps[y - 1][x - 1]) && FieldIsMapBlock(field->maps[y - 1][x + 1])) || 
+                    (FieldIsMapBack(field->maps[y - 1][x + 1]) && FieldIsMapBlock(field->maps[y - 1][x - 1]))
                 ) {
                     int y_0 = y + 1;
-                    while (y_0 < kFieldSizeY && field->maps[y_0][x] == kFieldMapBack) {
+                    while (y_0 < kFieldSizeY && FieldIsMapBack(field->maps[y_0][x])) {
                         ++y_0;
                     }
-                    if (y_0 >= kFieldSizeY || field->maps[y_0][x] == kFieldMapBlock) {
+                    if (y_0 >= kFieldSizeY || FieldIsMapBlock(field->maps[y_0][x])) {
                         for (int y_1 = y; y_1 < y_0; y_1++) {
                             field->maps[y_1][x] = kFieldMapPole;
                         }
@@ -422,11 +428,11 @@ static void FieldBuildMap(void)
     for (int y = 0; y < kFieldSizeY - 1; y++) {
         for (int x = 0; x < kFieldSizeX; x++) {
             if (
-                (y == 0 || field->maps[y - 1][x] == kFieldMapBlock) && 
-                (field->maps[y + 0][x + 0] == kFieldMapLock || field->maps[y + 0][x + 0] == kFieldMapBack) && 
-                (field->maps[y + 1][x + 0] == kFieldMapLock || field->maps[y + 1][x + 0] == kFieldMapBack) && 
-                field->maps[y + 1][x - 1] != kFieldMapBlock && 
-                field->maps[y + 1][x + 1] != kFieldMapBlock
+                (y == 0 || FieldIsMapBlock(field->maps[y - 1][x])) && 
+                (FieldIsMapLock(field->maps[y + 0][x + 0]) || FieldIsMapBack(field->maps[y + 0][x + 0])) && 
+                (FieldIsMapLock(field->maps[y + 1][x + 0]) || FieldIsMapBack(field->maps[y + 1][x + 0])) && 
+                !FieldIsMapBlock(field->maps[y + 1][x - 1]) && 
+                !FieldIsMapBlock(field->maps[y + 1][x + 1])
             ) {
                 field->maps[y][x] = kFieldMapIcicle;
             }
@@ -483,7 +489,7 @@ static void FieldDigLocation(int location)
     if (field->locations[location].left > 0) {
         int x = field->locations[location].left - 1;
         int y = field->locations[location].bottom;
-        while (field->maps[y][x] != kFieldMapBlock && field->maps[y][x] != kFieldMapLadder) {
+        while (!FieldIsMapBlock(field->maps[y][x]) && !FieldIsMapLadder(field->maps[y][x])) {
             --y;
             if (y < field->locations[location].top) {
                 y = field->locations[location].bottom;
@@ -508,7 +514,7 @@ static void FieldDigLocation(int location)
     if (field->locations[location].right < kFieldSizeX - 1) {
         int x = field->locations[location].right + 1;
         int y = field->locations[location].bottom;
-        while (field->maps[y][x] != kFieldMapBlock && field->maps[y][x] != kFieldMapLadder) {
+        while (!FieldIsMapBlock(field->maps[y][x]) && !FieldIsMapLadder(field->maps[y][x])) {
             --y;
             if (y < field->locations[location].top) {
                 y = field->locations[location].bottom;
@@ -618,6 +624,9 @@ static void FieldActorDraw(struct FieldActor *actor)
 
     // クリップの解除
     FieldClearClip();
+
+    // DEBUG
+    playdate->system->drawFPS(0, 0);
 }
 
 // フィールドアクタが待機する
@@ -670,20 +679,38 @@ unsigned char FieldGetMap(int x, int y)
     return result;
 }
 
+// フィールドマップを判定する
+//
+static bool FieldIsMapBack(unsigned char map)
+{
+    return map == kFieldMapBack ? true : false;
+}
+static bool FieldIsMapBlock(unsigned char map)
+{
+    return map == kFieldMapBlock|| map == kFieldMapSolid || map == kFieldMapChecker ? true : false;
+}
+static bool FieldIsMapLadder(unsigned char map)
+{
+    return map == kFieldMapLadder ? true : false;
+}
+static bool FieldIsMapLock(unsigned char map)
+{
+    return map == kFieldMapLock ? true : false;
+}
+
 // フィールドが空いているかどうかを判定する
 //
 bool FieldIsSpace(int x, int y)
 {
     unsigned char m = FieldGetMap(x, y);
-    return m != kFieldMapBlock && m != kFieldMapIcicle ? true : false;
+    return !FieldIsMapBlock(m) && m != kFieldMapIcicle ? true : false;
 }
 
 // フィールドが梯子かどうかを判定する
 //
 bool FieldIsLadder(int x, int y)
 {
-    unsigned char m = FieldGetMap(x, y);
-    return m == kFieldMapLadder ? true : false;
+    return FieldIsMapLadder(FieldGetMap(x, y));
 }
 
 // フィールドで落下するかどうかを判定する

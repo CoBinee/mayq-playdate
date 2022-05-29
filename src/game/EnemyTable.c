@@ -30,9 +30,9 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
         .type = kEnemyTypeSkeleton, 
         .life = 100, 
         .fieldAction = kEnemyFieldActionWalk, 
-        .fieldSpeed = kEnemyFieldSpeedNormal, 
+        .fieldSpeed = kEnemyFieldSpeedSlow, 
         .battleAction = kEnemyBattleActionWalkRandom, 
-        .battleSpeed = kEnemyBattleSpeedNormal, 
+        .battleSpeed = kEnemyBattleSpeedSlow, 
         .sprite = "skeleton", 
     }, 
 };

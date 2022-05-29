@@ -32,6 +32,14 @@ enum {
     kPlayerRectBottom = 0, 
 };
 
+// 攻撃
+//
+enum {
+    kPlayerSwingOriginX = 0, 
+    kPlayerSwingOriginY = -12, 
+    kPlayerSwingDistance = 12, 
+};
+
 // プレイヤアクタ
 //
 struct PlayerActor {
@@ -54,6 +62,9 @@ struct PlayerActor {
 
     // 矩形
     struct Rect rect;
+
+    // 攻撃
+    float swing;
 
     // アニメーション
     struct AsepriteSpriteAnimation animation;

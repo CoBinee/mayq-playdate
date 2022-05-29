@@ -35,6 +35,7 @@ static void GameDone(struct Game *game);
 static const char *gameSpriteNames[] = {
     "tileset", 
     "player", 
+    "weapon", 
     "skeleton", 
 };
 static const char *gameAudioSamplePaths[] = {
@@ -74,7 +75,7 @@ void GameUpdate(struct Game *game)
         }
 
         // スプライトの読み込み
-        AsepriteLoadSpriteList(gameSpriteNames, kGameSpriteNameSize);
+        AsepriteLoadSpriteList(gameSpriteNames, sizeof (gameSpriteNames) / sizeof (char *));
 
         // オーディオの読み込み
         // IocsLoadAudioEffects(gameAudioSamplePaths, kGameAudioSampleSize);
