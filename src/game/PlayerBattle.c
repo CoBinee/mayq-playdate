@@ -241,7 +241,7 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderPlayer);
+    ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderCharacter + actor->position.y);
 }
 
 // プレイヤアクタが攻撃する
@@ -303,7 +303,7 @@ static void PlayerBattleActorAttack(struct PlayerActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderPlayer);
+    ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderCharacter + actor->position.y);
 }
 
 // 矩形を計算する

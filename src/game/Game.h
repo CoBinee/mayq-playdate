@@ -66,6 +66,7 @@ enum {
     kGameOrderBattle = kGameOrderField, 
     kGameOrderEnemy, 
     kGameOrderPlayer, 
+    kGameOrderCharacter, 
 };
 
 

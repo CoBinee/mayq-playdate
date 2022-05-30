@@ -151,7 +151,7 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderEnemy);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderCharacter + actor->position.y);
 }
 
 // エネミーアクタがランダムに歩く
@@ -266,7 +266,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
     }
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderEnemy);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderCharacter + actor->position.y);
 }
 
 // 移動できる方向を取得する
