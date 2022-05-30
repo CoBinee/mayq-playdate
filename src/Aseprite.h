@@ -123,4 +123,5 @@ extern void AsepriteUpdateSpriteAnimation(struct AsepriteSpriteAnimation *animat
 extern bool AsepriteIsSpriteAnimationDone(struct AsepriteSpriteAnimation *animation);
 extern void AsepriteDrawSpriteAnimation(struct AsepriteSpriteAnimation *animation, int x, int y, LCDBitmapDrawMode mode, LCDBitmapFlip flip);
 extern void AsepriteDrawRotatedSpriteAnimation(struct AsepriteSpriteAnimation *animation, int x, int y, float degrees, float centerx, float centery, float xscale, float yscale, LCDBitmapDrawMode mode);
+extern int AsepriteGetSpriteAnimationFrame(struct AsepriteSpriteAnimation *animation);
 

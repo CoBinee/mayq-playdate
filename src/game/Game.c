@@ -36,7 +36,7 @@ static const char *gameSpriteNames[] = {
     "tileset", 
     "player", 
     "weapon", 
-    "skeleton", 
+    "skeleton",     
 };
 static const char *gameAudioSamplePaths[] = {
     "", 

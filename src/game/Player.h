@@ -34,6 +34,9 @@ enum {
 enum {
     kPlayerAttackMaximum = 3, 
 };
+enum {
+    kPlayerAttackFrameSize = 4, 
+};
 
 // プレイヤアクタ
 //

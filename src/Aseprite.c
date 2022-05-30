@@ -91,6 +91,7 @@ void AsepriteLoadSprite(const char *spriteName)
         strcat(path, spriteName);
         strcat(path, ".json");
 
+        // .json の読み込み
         if (!AsepriteLoadJson(&sprite->json, path)) {
             playdate->system->error("%s: %d: json is not loaded: %s", __FILE__, __LINE__, path);
             return;
@@ -145,6 +146,12 @@ void AsepriteLoadSprite(const char *spriteName)
 
     // ビットマップの読み込み
     {
+        // パスの取得
+        char path[kAsepritePathSize];
+        strcpy(path, asepriteController->spritePath);
+        strcat(path, spriteName);
+        strcat(path, ".png");
+
         // ビットマップ配列の作成
         sprite->bitmaps = playdate->system->realloc(NULL, sprite->frameSize * sizeof (struct LCDBitmap *));
         if (sprite->bitmaps == NULL) {
@@ -160,12 +167,6 @@ void AsepriteLoadSprite(const char *spriteName)
                 return;
             }
         }
-
-        // パスの取得
-        char path[kAsepritePathSize];
-        strcpy(path, asepriteController->spritePath);
-        strcat(path, spriteName);
-        strcat(path, ".png");
 
         // ビットマップの読み込み
         LCDBitmap *bitmap = NULL;
@@ -583,6 +584,13 @@ void AsepriteDrawRotatedSpriteAnimation(struct AsepriteSpriteAnimation *animatio
         playdate->graphics->setDrawMode(mode);
         playdate->graphics->drawRotatedBitmap(animation->sprite->bitmaps[animation->play], x, y, degrees, centerx, centery, xscale, yscale);
     }
+}
+
+// スプライトアニメーションの現在のフレームを取得する
+//
+int AsepriteGetSpriteAnimationFrame(struct AsepriteSpriteAnimation *animation)
+{
+    return animation->play - animation->from;
 }
 
 // .json の値の名前を取得する
