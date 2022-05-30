@@ -335,7 +335,7 @@ static void GamePlayBattle(struct Game *game)
 
     // DEBUG
     if (IocsIsButtonEdge(kButtonA)) {
-        game->play = !game->play;
+        // game->play = !game->play;
     }
     if (IocsIsButtonEdge(kButtonB)) {
         GameTransition(game, (GameFunction)GameUnloadBattle);

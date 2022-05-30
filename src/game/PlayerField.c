@@ -114,8 +114,8 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
         actor->direction = kDirectionDown;
 
         // ジャンプの設定
-        actor->jump = 0;
-        actor->step = 1;
+        actor->jumpCount = 0;
+        actor->jumpStep = 1;
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, "player", playerFieldAnimationNames[actor->direction], true);
@@ -134,13 +134,13 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
             if (IocsIsButtonPush(kButtonUp)) {
                 bool jump = land;
                 if (jump) {
-                    actor->jump = actor->step;
-                    if (actor->step < 2) {
-                        ++actor->step;
+                    actor->jumpCount = actor->jumpStep;
+                    if (actor->jumpStep < kPlayerJumpMaximum) {
+                        ++actor->jumpStep;
                     }
                 } else {
-                    --actor->jump;
-                    if (actor->jump > 0) {
+                    --actor->jumpCount;
+                    if (actor->jumpCount > 0) {
                         jump = true;
                     }
                 }
@@ -216,8 +216,8 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
                 AsepriteStartSpriteAnimation(&actor->animation, "player", playerFieldAnimationNames[actor->direction], true);
             }
             if (actor->position.y == actor->destination.y) {
-                actor->jump = 0;
-                actor->step = 1;
+                actor->jumpCount = 0;
+                actor->jumpStep = 1;
             }
         }
 

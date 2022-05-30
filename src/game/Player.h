@@ -23,6 +23,18 @@ struct Player {
 
 };
 
+// ジャンプ
+//
+enum {
+    kPlayerJumpMaximum = 2, 
+};
+
+// 攻撃
+//
+enum {
+    kPlayerAttackMaximum = 3, 
+};
+
 // 矩形
 //
 enum {
@@ -30,14 +42,6 @@ enum {
     kPlayerRectTop = -23, 
     kPlayerRectRight = 11, 
     kPlayerRectBottom = 0, 
-};
-
-// 攻撃
-//
-enum {
-    kPlayerSwingOriginX = 0, 
-    kPlayerSwingOriginY = -12, 
-    kPlayerSwingDistance = 12, 
 };
 
 // プレイヤアクタ
@@ -57,14 +61,17 @@ struct PlayerActor {
     int direction;
 
     // ジャンプ
-    int jump;
-    int step;
+    int jumpCount;
+    int jumpStep;
+
+    // 攻撃
+    int attackCount;
 
     // 矩形
     struct Rect rect;
 
-    // 攻撃
-    float swing;
+    // クランク
+    float crank;
 
     // アニメーション
     struct AsepriteSpriteAnimation animation;
