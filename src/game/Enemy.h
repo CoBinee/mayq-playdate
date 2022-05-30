@@ -76,6 +76,9 @@ struct EnemyData {
     int battleAction;
     int battleSpeed;
 
+    // 矩形
+    struct Rect rect;
+
     // スプライト
     const char *sprite;
 
@@ -131,15 +134,6 @@ enum {
     kEnemyFaceSize, 
 };
 
-// 矩形
-//
-enum {
-    kEnemyRectLeft = -12, 
-    kEnemyRectTop = -23, 
-    kEnemyRectRight = 11, 
-    kEnemyRectBottom = 0, 
-};
-
 // エネミーアクタ
 //
 struct EnemyActor {
@@ -165,11 +159,9 @@ struct EnemyActor {
     // 体の向き
     int face;
 
-    // 矩形
-    struct Rect rect;
-
     // 移動
-    int move;
+    int moveStep;
+    struct Rect moveRect;
 
     // アニメーション
     struct AsepriteSpriteAnimation animation;

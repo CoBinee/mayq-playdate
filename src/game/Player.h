@@ -35,15 +35,6 @@ enum {
     kPlayerAttackMaximum = 3, 
 };
 
-// 矩形
-//
-enum {
-    kPlayerRectLeft = -12, 
-    kPlayerRectTop = -23, 
-    kPlayerRectRight = 11, 
-    kPlayerRectBottom = 0, 
-};
-
 // プレイヤアクタ
 //
 struct PlayerActor {
@@ -60,15 +51,16 @@ struct PlayerActor {
     // 向き
     int direction;
 
+    // 移動
+    struct Rect moveRect;
+
     // ジャンプ
     int jumpCount;
     int jumpStep;
 
     // 攻撃
     int attackCount;
-
-    // 矩形
-    struct Rect rect;
+    struct Rect attackRect;
 
     // クランク
     float crank;

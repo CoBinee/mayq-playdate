@@ -276,7 +276,7 @@ bool BattleIsSpace(int x, int y)
 
 // バトル内で移動できる距離を取得する
 //
-int BattleGetMoveDistance(int x, int y, int direction, int speed)
+int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside)
 {
     int distance = 0;
     if (direction == kDirectionUp) {
@@ -288,7 +288,9 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
             }
             speed -= d;
             y_0 -= d;
-            if (!BattleIsSpace(x, y_0)) {
+            if (outside && (y_0 < 0 || y_0 >= kBattleSizeY * kBattleSizePixel)) {
+                ;
+            } else if (!BattleIsSpace(x, y_0)) {
                 if (y_0 > 0) {
                     y_0 = y_0 + (kBattleSizePixel - (y_0 % kBattleSizePixel));
                 } else {
@@ -307,7 +309,9 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
             }
             speed -= d;
             y_0 += d;
-            if (!BattleIsSpace(x, y_0)) {
+            if (outside && (y_0 < 0 || y_0 >= kBattleSizeY * kBattleSizePixel)) {
+                ;
+            } else if (!BattleIsSpace(x, y_0)) {
                 y_0 = y_0 - (y_0 % kBattleSizePixel) - 1;
                 break;
             }
@@ -322,7 +326,9 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
             }
             speed -= d;
             x_0 -= d;
-            if (!BattleIsSpace(x_0, y)) {
+            if (outside && (x_0 < 0 || x_0 >= kBattleSizeX * kBattleSizePixel)) {
+                ;
+            } else if (!BattleIsSpace(x_0, y)) {
                 if (x_0 > 0) {
                     x_0 = x_0 + (kBattleSizePixel - (x_0 % kBattleSizePixel));
                 } else {
@@ -341,7 +347,9 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed)
             }
             speed -= d;
             x_0 += d;
-            if (!BattleIsSpace(x_0, y)) {
+            if (outside && (x_0 < 0 || x_0 >= kBattleSizeX * kBattleSizePixel)) {
+                ;
+            } else if (!BattleIsSpace(x_0, y)) {
                 x_0 = x_0 - (x_0 % kBattleSizePixel) - 1;
                 break;
             }

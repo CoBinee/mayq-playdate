@@ -177,7 +177,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
         actor->face = (actor->direction == kDirectionLeft || (actor->direction != kDirectionRight && IocsGetRandomBool(NULL))) ? kEnemyFaceLeft : kEnemyFaceRight;
 
         // 移動の設定
-        actor->move = 0;
+        actor->moveStep = 0;
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyBattleAnimationNames_Walk[actor->face], true);
@@ -192,47 +192,47 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
         // 移動
         {
             bool move = false;
-            if (actor->move > 0) {
+            if (actor->moveStep > 0) {
                 if (actor->direction == kDirectionUp) {
-                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, actor->data->battleSpeed);
-                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, actor->data->battleSpeed);
+                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, actor->data->battleSpeed, false);
+                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, actor->data->battleSpeed, false);
                     if (dl > 0 && dr > 0) {
                         actor->position.y -= dl < dr ? dl : dr;
                         move = true;
                     } else {
-                        actor->move = 0;
+                        actor->moveStep = 0;
                     }
                 } else if (actor->direction == kDirectionDown) {
-                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionDown, actor->data->battleSpeed);
-                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionDown, actor->data->battleSpeed);
+                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionDown, actor->data->battleSpeed, false);
+                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionDown, actor->data->battleSpeed, false);
                     if (dl > 0 && dr > 0) {
                         actor->position.y += dl < dr ? dl : dr;
                         move = true;
                     } else {
-                        actor->move = 0;
+                        actor->moveStep = 0;
                     }
                 } else if (actor->direction == kDirectionLeft) {
-                    int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, actor->data->battleSpeed);
-                    int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, actor->data->battleSpeed);
+                    int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, actor->data->battleSpeed, false);
+                    int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, actor->data->battleSpeed, false);
                     if (dt > 0 && db > 0) {
                         actor->position.x -= dt < db ? dt : db;
                         move = true;
                     } else {
-                        actor->move = 0;
+                        actor->moveStep = 0;
                     }
                 } else if (actor->direction == kDirectionRight) {
-                    int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, actor->data->battleSpeed);
-                    int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, actor->data->battleSpeed);
+                    int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, actor->data->battleSpeed, false);
+                    int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, actor->data->battleSpeed, false);
                     if (dt > 0 && db > 0) {
                         actor->position.x += dt < db ? dt : db;
                         move = true;
                     } else {
-                        actor->move = 0;
+                        actor->moveStep = 0;
                     }
                 }
-                --actor->move;
+                --actor->moveStep;
             }
-            if (actor->move <= 0) {
+            if (actor->moveStep <= 0) {
 
                 // 向きの変更
                 actor->direction = EnemyBattleGetWalkableRandomDirection(actor);
@@ -244,7 +244,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 }
 
                 // 移動の設定
-                actor->move = 16 + (IocsGetRandomNumber(NULL) % 16);
+                actor->moveStep = 16 + (IocsGetRandomNumber(NULL) % 16);
 
                 // アニメーションの開始
                 if (face != actor->face) {
@@ -274,16 +274,16 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
 static int EnemyBattleGetWalkableDirection(struct EnemyActor *actor)
 {
     int d = 0;
-    if (BattleIsSpace(actor->rect.left, actor->rect.top - 1) && BattleIsSpace(actor->rect.right, actor->rect.top - 1)) {
+    if (BattleIsSpace(actor->moveRect.left, actor->moveRect.top - 1) && BattleIsSpace(actor->moveRect.right, actor->moveRect.top - 1)) {
         d |= (1 << kDirectionUp);
     }
-    if (BattleIsSpace(actor->rect.left, actor->rect.bottom + 1) && BattleIsSpace(actor->rect.right, actor->rect.bottom + 1)) {
+    if (BattleIsSpace(actor->moveRect.left, actor->moveRect.bottom + 1) && BattleIsSpace(actor->moveRect.right, actor->moveRect.bottom + 1)) {
         d |= (1 << kDirectionDown);
     }
-    if (BattleIsSpace(actor->rect.left - 1, actor->rect.top) && BattleIsSpace(actor->rect.left - 1, actor->rect.bottom)) {
+    if (BattleIsSpace(actor->moveRect.left - 1, actor->moveRect.top) && BattleIsSpace(actor->moveRect.left - 1, actor->moveRect.bottom)) {
         d |= (1 << kDirectionLeft);
     }
-    if (BattleIsSpace(actor->rect.left + 1, actor->rect.top) && BattleIsSpace(actor->rect.left + 1, actor->rect.bottom)) {
+    if (BattleIsSpace(actor->moveRect.left + 1, actor->moveRect.top) && BattleIsSpace(actor->moveRect.left + 1, actor->moveRect.bottom)) {
         d |= (1 << kDirectionRight);
     }
     return d;
@@ -311,10 +311,10 @@ static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor)
 //
 static void EnemyBattleCalcRect(struct EnemyActor *actor)
 {
-    actor->rect.left = actor->position.x + kEnemyRectLeft;
-    actor->rect.top = actor->position.y + kEnemyRectTop;
-    actor->rect.right = actor->position.x + kEnemyRectRight;
-    actor->rect.bottom = actor->position.y + kEnemyRectBottom;
+    actor->moveRect.left = actor->position.x + actor->data->rect.left;
+    actor->moveRect.top = actor->position.y + actor->data->rect.top;
+    actor->moveRect.right = actor->position.x + actor->data->rect.right;
+    actor->moveRect.bottom = actor->position.y + actor->data->rect.bottom;
 }
 
 

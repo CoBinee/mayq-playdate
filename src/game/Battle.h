@@ -91,7 +91,7 @@ extern void BattleRelease(void);
 extern void BattleActorLoad(int type, int route);
 extern unsigned char BattleGetMap(int x, int y);
 extern bool BattleIsSpace(int x, int y);
-extern int BattleGetMoveDistance(int x, int y, int direction, int speed);
+extern int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside);
 extern void BattleGetStartPosition(int direction, struct Vector *position);
 extern void BattleGetEnemyPosition(int index, int direction, struct Vector *position);
 extern void BattleClearClip(void);

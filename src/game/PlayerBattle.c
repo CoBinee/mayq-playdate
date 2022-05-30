@@ -23,6 +23,12 @@ static void PlayerBattleControlCrank(struct PlayerActor *actor);
 
 // 内部変数
 //
+static const struct Rect playerBattleMoveRect = {
+    .left = -12, 
+    .top = -23, 
+    .right = 11, 
+    .bottom = 0, 
+};
 static const char *playerBattleAnimationNames_Walk[] = {
     "WalkUp", 
     "WalkDown", 
@@ -164,15 +170,15 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
             bool move = false;
             int direction = actor->direction;
             if (IocsIsButtonPush(kButtonUp)) {
-                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
-                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, kPlayerSpeedBattle);
+                int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, kPlayerSpeedBattle, true);
+                int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, kPlayerSpeedBattle, true);
                 if (dl == 0 && dr > 0) {
-                    int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, 1);
-                    int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, 1);
+                    int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, 1, true);
+                    int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, 1, true);
                     actor->position.x += dt < db ? dt : db;
                 } else if (dr == 0 && dl > 0) {
-                    int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, 1);
-                    int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, 1);
+                    int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, 1, true);
+                    int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, 1, true);
                     actor->position.x -= dt < db ? dt : db;
                 } else {
                     actor->position.y -= dl < dr ? dl : dr;
@@ -180,15 +186,15 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
                 actor->direction = kDirectionUp;
                 move = true;
             } else if (IocsIsButtonPush(kButtonDown)) {
-                int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
-                int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionDown, kPlayerSpeedBattle);
+                int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionDown, kPlayerSpeedBattle, true);
+                int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionDown, kPlayerSpeedBattle, true);
                 if (dl == 0 && dr > 0) {
-                    int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, 1);
-                    int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, 1);
+                    int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, 1, true);
+                    int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, 1, true);
                     actor->position.x += dt < db ? dt : db;
                 } else if (dr == 0 && dl > 0) {
-                    int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, 1);
-                    int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, 1);
+                    int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, 1, true);
+                    int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, 1, true);
                     actor->position.x -= dt < db ? dt : db;
                 } else {
                     actor->position.y += dl < dr ? dl : dr;
@@ -196,15 +202,15 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
                 actor->direction = kDirectionDown;
                 move = true;
             } else if (IocsIsButtonPush(kButtonLeft)) {
-                int dt = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionLeft, kPlayerSpeedBattle);
-                int db = BattleGetMoveDistance(actor->rect.left, actor->rect.bottom, kDirectionLeft, kPlayerSpeedBattle);
+                int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, kPlayerSpeedBattle, true);
+                int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, kPlayerSpeedBattle, true);
                 if (dt == 0 && db > 0) {
-                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionDown, 1);
-                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionDown, 1);
+                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionDown, 1, true);
+                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionDown, 1, true);
                     actor->position.y += dl < dr ? dl : dr;
                 } else if (db == 0 && dt > 0) {
-                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
-                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
+                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, 1, true);
+                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, 1, true);
                     actor->position.y -= dl < dr ? dl : dr;
                 } else {
                     actor->position.x -= dt < db ? dt : db;
@@ -212,15 +218,15 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
                 actor->direction = kDirectionLeft;
                 move = true;
             } else if (IocsIsButtonPush(kButtonRight)) {
-                int dt = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionRight, kPlayerSpeedBattle);
-                int db = BattleGetMoveDistance(actor->rect.right, actor->rect.bottom, kDirectionRight, kPlayerSpeedBattle);
+                int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, kPlayerSpeedBattle, true);
+                int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, kPlayerSpeedBattle, true);
                 if (dt == 0 && db > 0) {
-                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionDown, 1);
-                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionDown, 1);
+                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionDown, 1, true);
+                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionDown, 1, true);
                     actor->position.y += dl < dr ? dl : dr;
                 } else if (db == 0 && dt > 0) {
-                    int dl = BattleGetMoveDistance(actor->rect.left, actor->rect.top, kDirectionUp, 1);
-                    int dr = BattleGetMoveDistance(actor->rect.right, actor->rect.top, kDirectionUp, 1);
+                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, 1, true);
+                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, 1, true);
                     actor->position.y -= dl < dr ? dl : dr;
                 } else {
                     actor->position.x += dt < db ? dt : db;
@@ -310,10 +316,10 @@ static void PlayerBattleActorAttack(struct PlayerActor *actor)
 //
 static void PlayerBattleCalcRect(struct PlayerActor *actor)
 {
-    actor->rect.left = actor->position.x + kPlayerRectLeft;
-    actor->rect.top = actor->position.y + kPlayerRectTop;
-    actor->rect.right = actor->position.x + kPlayerRectRight;
-    actor->rect.bottom = actor->position.y + kPlayerRectBottom;
+    actor->moveRect.left = actor->position.x + playerBattleMoveRect.left;
+    actor->moveRect.top = actor->position.y + playerBattleMoveRect.top;
+    actor->moveRect.right = actor->position.x + playerBattleMoveRect.right;
+    actor->moveRect.bottom = actor->position.y + playerBattleMoveRect.bottom;
 }
 
 // クランクを操作する
