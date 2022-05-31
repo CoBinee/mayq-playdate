@@ -20,7 +20,7 @@ static void EnemyBattleActorWalkRandom(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableDirection(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor);
 static int EnemyBattleMove(struct EnemyActor *actor, int direction, int distance);
-static int EnemyBattleMoveToDirection(struct EnemyActor *actor);
+static int EnemyBattleForward(struct EnemyActor *actor);
 static void EnemyBattleSetDamage(struct EnemyActor *actor, int direction, int point);
 static bool EnemyBattleDamage(struct EnemyActor *actor);
 static void EnemyBattleBlink(struct EnemyActor *actor);
@@ -152,11 +152,19 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
+        // ダメージ
+        if (EnemyBattleDamage(actor)) {
+            ;
+
+        // 待機
+        } else {
+
+            // スプライトの更新
+            AsepriteUpdateSpriteAnimation(&actor->animation);
+        }
+
         // 点滅
         EnemyBattleBlink(actor);
-
-        // スプライトの更新
-        AsepriteUpdateSpriteAnimation(&actor->animation);
     }
 
     // 矩形の計算
@@ -208,10 +216,14 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
 
         // 移動
         } else {
-            int distance = EnemyBattleMoveToDirection(actor);
+
+            // 前に進む
+            int distance = EnemyBattleForward(actor);
             if (distance > 0) {
                 actor->moveParams[0] -= distance;
             }
+
+            // 移動の完了
             if (actor->moveParams[0] <= 0 || distance == 0) {
 
                 // 向きの変更
@@ -231,13 +243,13 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                     AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyBattleAnimationNames_Walk[actor->face], true);
                 }
             }
+
+            // スプライトの更新
+            AsepriteUpdateSpriteAnimation(&actor->animation);
         }
 
         // 点滅
         EnemyBattleBlink(actor);
-
-        // スプライトの更新
-        AsepriteUpdateSpriteAnimation(&actor->animation);
     }
 
     // 矩形の計算
@@ -317,7 +329,7 @@ static int EnemyBattleMove(struct EnemyActor *actor, int direction, int distance
 
 // 向いている方向に移動する
 //
-static int EnemyBattleMoveToDirection(struct EnemyActor *actor)
+static int EnemyBattleForward(struct EnemyActor *actor)
 {
     int distance = -1;
     actor->moveSpeed += actor->data->battleSpeed;
