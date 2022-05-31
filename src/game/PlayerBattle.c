@@ -125,6 +125,14 @@ static void PlayerBattleActorDraw(struct PlayerActor *actor)
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 0.75f, 1.0f, 1.0f, kDrawModeCopy);
     }
 
+    // 攻撃範囲の描画
+    if (actor->attackRect.left < actor->attackRect.right) {
+        struct Vector view;
+        GameGetBattleCameraPosition(actor->attackRect.left, actor->attackRect.top, &view);
+        playdate->graphics->setDrawMode(kDrawModeCopy);
+        playdate->graphics->drawRect(view.x, view.y, actor->attackRect.right - actor->attackRect.left + 1, actor->attackRect.bottom - actor->attackRect.top + 1, kColorWhite);
+    }
+
     // クリップの解除
     BattleClearClip();
 }
@@ -241,10 +249,10 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
                 AsepriteUpdateSpriteAnimation(&actor->animation);
             }
         }
-
-        // 矩形の計算
-        PlayerBattleCalcRect(actor);
     }
+
+    // 矩形の計算
+    PlayerBattleCalcRect(actor);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderCharacter + actor->position.y);
@@ -303,10 +311,10 @@ static void PlayerBattleActorAttack(struct PlayerActor *actor)
 
         // アニメーションの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
-
-        // 矩形の計算
-        PlayerBattleCalcRect(actor);
     }
+
+    // 矩形の計算
+    PlayerBattleCalcRect(actor);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderCharacter + actor->position.y);
@@ -316,10 +324,32 @@ static void PlayerBattleActorAttack(struct PlayerActor *actor)
 //
 static void PlayerBattleCalcRect(struct PlayerActor *actor)
 {
-    actor->moveRect.left = actor->position.x + playerBattleMoveRect.left;
-    actor->moveRect.top = actor->position.y + playerBattleMoveRect.top;
-    actor->moveRect.right = actor->position.x + playerBattleMoveRect.right;
-    actor->moveRect.bottom = actor->position.y + playerBattleMoveRect.bottom;
+    // 移動の計算
+    {
+        actor->moveRect.left = actor->position.x + playerBattleMoveRect.left;
+        actor->moveRect.top = actor->position.y + playerBattleMoveRect.top;
+        actor->moveRect.right = actor->position.x + playerBattleMoveRect.right;
+        actor->moveRect.bottom = actor->position.y + playerBattleMoveRect.bottom;
+    }
+
+    // 攻撃の計算
+    {
+        int index = AsepriteGetSpriteAnimationPlayFrameIndex(&actor->animation);
+        struct AsepriteSpriteFrame *frame = AsepriteGetSpriteFrame(&player->battleSprite, index);
+        if (frame->spriteSourceSize.w > 1 && frame->spriteSourceSize.h > 1) {
+            int ox = actor->position.x - frame->sourceSize.w / 2;
+            int oy = actor->position.y - frame->sourceSize.h * 3 / 4;
+            actor->attackRect.left = ox + frame->spriteSourceSize.x;
+            actor->attackRect.top = oy + frame->spriteSourceSize.y;
+            actor->attackRect.right = actor->attackRect.left + frame->spriteSourceSize.w - 1;
+            actor->attackRect.bottom = actor->attackRect.top + frame->spriteSourceSize.h - 1;
+        } else {
+            actor->attackRect.left = 0;
+            actor->attackRect.top = 0;
+            actor->attackRect.right = 0;
+            actor->attackRect.bottom = 0;
+        }
+    }
 }
 
 // クランクを操作する

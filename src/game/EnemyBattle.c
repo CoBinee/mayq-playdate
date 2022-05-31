@@ -19,6 +19,7 @@ static void EnemyBattleActorIdle(struct EnemyActor *actor);
 static void EnemyBattleActorWalkRandom(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableDirection(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor);
+static int EnemyBattleMove(struct EnemyActor *actor);
 static void EnemyBattleCalcRect(struct EnemyActor *actor);
 
 // 内部変数
@@ -143,12 +144,12 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
-        // 矩形の計算
-        EnemyBattleCalcRect(actor);
-
         // スプライトの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
     }
+
+    // 矩形の計算
+    EnemyBattleCalcRect(actor);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderCharacter + actor->position.y);
@@ -177,7 +178,8 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
         actor->face = (actor->direction == kDirectionLeft || (actor->direction != kDirectionRight && IocsGetRandomBool(NULL))) ? kEnemyFaceLeft : kEnemyFaceRight;
 
         // 移動の設定
-        actor->moveStep = 0;
+        actor->moveSpeed = 0;
+        actor->moveParams[0] = actor->data->battleMoveBase + (IocsGetRandomNumber(NULL) % actor->data->battleMoveRange);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyBattleAnimationNames_Walk[actor->face], true);
@@ -191,48 +193,11 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
 
         // 移動
         {
-            bool move = false;
-            if (actor->moveStep > 0) {
-                if (actor->direction == kDirectionUp) {
-                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, actor->data->battleSpeed, false);
-                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, actor->data->battleSpeed, false);
-                    if (dl > 0 && dr > 0) {
-                        actor->position.y -= dl < dr ? dl : dr;
-                        move = true;
-                    } else {
-                        actor->moveStep = 0;
-                    }
-                } else if (actor->direction == kDirectionDown) {
-                    int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionDown, actor->data->battleSpeed, false);
-                    int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionDown, actor->data->battleSpeed, false);
-                    if (dl > 0 && dr > 0) {
-                        actor->position.y += dl < dr ? dl : dr;
-                        move = true;
-                    } else {
-                        actor->moveStep = 0;
-                    }
-                } else if (actor->direction == kDirectionLeft) {
-                    int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, actor->data->battleSpeed, false);
-                    int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, actor->data->battleSpeed, false);
-                    if (dt > 0 && db > 0) {
-                        actor->position.x -= dt < db ? dt : db;
-                        move = true;
-                    } else {
-                        actor->moveStep = 0;
-                    }
-                } else if (actor->direction == kDirectionRight) {
-                    int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, actor->data->battleSpeed, false);
-                    int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, actor->data->battleSpeed, false);
-                    if (dt > 0 && db > 0) {
-                        actor->position.x += dt < db ? dt : db;
-                        move = true;
-                    } else {
-                        actor->moveStep = 0;
-                    }
-                }
-                --actor->moveStep;
+            int distance = EnemyBattleMove(actor);
+            if (distance > 0) {
+                actor->moveParams[0] -= distance;
             }
-            if (actor->moveStep <= 0) {
+            if (actor->moveParams[0] <= 0 || distance == 0) {
 
                 // 向きの変更
                 actor->direction = EnemyBattleGetWalkableRandomDirection(actor);
@@ -244,26 +209,21 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 }
 
                 // 移動の設定
-                actor->moveStep = 16 + (IocsGetRandomNumber(NULL) % 16);
+                actor->moveParams[0] = actor->data->battleMoveBase + (IocsGetRandomNumber(NULL) % actor->data->battleMoveRange);
 
                 // アニメーションの開始
                 if (face != actor->face) {
                     AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyBattleAnimationNames_Walk[actor->face], true);
                 }
             }
-
-            if (move) {
-                AsepriteUpdateSpriteAnimation(&actor->animation);
-            }
         }
-
-
-        // 矩形の計算
-        EnemyBattleCalcRect(actor);
 
         // スプライトの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
     }
+
+    // 矩形の計算
+    EnemyBattleCalcRect(actor);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderCharacter + actor->position.y);
@@ -307,14 +267,51 @@ static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor)
     return direction;
 }
 
+// 向いている方向に移動する
+//
+static int EnemyBattleMove(struct EnemyActor *actor)
+{
+    int distance = -1;
+    actor->moveSpeed += actor->data->battleSpeed;
+    if (actor->moveSpeed >= kEnemyBattleSpeedOne) {
+        distance = actor->moveSpeed >> kEnemyBattleSpeedShift;
+        actor->moveSpeed &= kEnemyBattleSpeedMask;
+        if (actor->direction == kDirectionUp) {
+            int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, distance, false);
+            int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, distance, false);
+            distance = dl < dr ? dl : dr;
+            actor->position.y -= distance;
+        } else if (actor->direction == kDirectionDown) {
+            int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionDown, distance, false);
+            int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionDown, distance, false);
+            distance = dl < dr ? dl : dr;
+            actor->position.y += distance;
+        } else if (actor->direction == kDirectionLeft) {
+            int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, distance, false);
+            int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, distance, false);
+            distance = dt < db ? dt : db;
+            actor->position.x -= distance;
+        } else if (actor->direction == kDirectionRight) {
+            int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, distance, false);
+            int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, distance, false);
+            distance = dt < db ? dt : db;
+            actor->position.x += distance;
+        }
+    }
+    return distance;
+}
+
 // 矩形を計算する
 //
 static void EnemyBattleCalcRect(struct EnemyActor *actor)
 {
-    actor->moveRect.left = actor->position.x + actor->data->rect.left;
-    actor->moveRect.top = actor->position.y + actor->data->rect.top;
-    actor->moveRect.right = actor->position.x + actor->data->rect.right;
-    actor->moveRect.bottom = actor->position.y + actor->data->rect.bottom;
+    // 移動の計算
+    {
+        actor->moveRect.left = actor->position.x + actor->data->rect.left;
+        actor->moveRect.top = actor->position.y + actor->data->rect.top;
+        actor->moveRect.right = actor->position.x + actor->data->rect.right;
+        actor->moveRect.bottom = actor->position.y + actor->data->rect.bottom;
+    }
 }
 
 

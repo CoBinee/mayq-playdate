@@ -118,10 +118,13 @@ extern void AsepriteLoadSprite(const char *spriteName);
 extern void AsepriteLoadSpriteList(const char *spriteNames[], int entry);
 extern void AsepriteUnloadSprite(const char *spriteName);
 extern void AsepriteUnloadAllSprites(void);
+extern void AsepriteLoadSpriteJson(struct AsepriteSprite *sprite, const char *path);
+extern void AsepriteUnloadSpriteJson(struct AsepriteSprite *sprite);
+extern struct AsepriteSpriteFrame *AsepriteGetSpriteFrame(struct AsepriteSprite *sprite, int index);
 extern void AsepriteStartSpriteAnimation(struct AsepriteSpriteAnimation *animation, const char *spriteName, const char *animationName, bool loop);
 extern void AsepriteUpdateSpriteAnimation(struct AsepriteSpriteAnimation *animation);
 extern bool AsepriteIsSpriteAnimationDone(struct AsepriteSpriteAnimation *animation);
 extern void AsepriteDrawSpriteAnimation(struct AsepriteSpriteAnimation *animation, int x, int y, LCDBitmapDrawMode mode, LCDBitmapFlip flip);
 extern void AsepriteDrawRotatedSpriteAnimation(struct AsepriteSpriteAnimation *animation, int x, int y, float degrees, float centerx, float centery, float xscale, float yscale, LCDBitmapDrawMode mode);
-extern int AsepriteGetSpriteAnimationFrame(struct AsepriteSpriteAnimation *animation);
+extern int AsepriteGetSpriteAnimationPlayFrameIndex(struct AsepriteSpriteAnimation *animation);
 

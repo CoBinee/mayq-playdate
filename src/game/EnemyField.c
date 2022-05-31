@@ -186,6 +186,9 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
             actor->face = kEnemyFaceRight;
         }
 
+        // 移動の設定
+        actor->moveSpeed = 0;
+
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
@@ -406,31 +409,36 @@ static int EnemyFieldGetWalkableRandomDirection(struct EnemyActor *actor)
 static bool EnemyFieldMoveToDestination(struct EnemyActor *actor)
 {
     bool move;
-    if (actor->position.x < actor->destination.x) {
-        actor->position.x += actor->data->fieldSpeed;
-        if (actor->position.x > actor->destination.x) {
-            actor->position.x = actor->destination.x;
-        }
-        move = true;
-    } else if (actor->position.x > actor->destination.x) {
-        actor->position.x -= actor->data->fieldSpeed;
+    actor->moveSpeed += actor->data->fieldSpeed;
+    if (actor->moveSpeed >= kEnemyFieldSpeedOne) {
+        int distance = actor->moveSpeed >> kEnemyFieldSpeedShift;
+        actor->moveSpeed &= kEnemyFieldSpeedMask;
         if (actor->position.x < actor->destination.x) {
-            actor->position.x = actor->destination.x;
+            actor->position.x += distance;
+            if (actor->position.x > actor->destination.x) {
+                actor->position.x = actor->destination.x;
+            }
+            move = true;
+        } else if (actor->position.x > actor->destination.x) {
+            actor->position.x -= distance;
+            if (actor->position.x < actor->destination.x) {
+                actor->position.x = actor->destination.x;
+            }
+            move = true;
         }
-        move = true;
-    }
-    if (actor->position.y < actor->destination.y) {
-        actor->position.y += actor->data->fieldSpeed;
-        if (actor->position.y > actor->destination.y) {
-            actor->position.y = actor->destination.y;
-        }
-        move = true;
-    } else if (actor->position.y > actor->destination.y) {
-        actor->position.y -= actor->data->fieldSpeed;
         if (actor->position.y < actor->destination.y) {
-            actor->position.y = actor->destination.y;
+            actor->position.y += distance;
+            if (actor->position.y > actor->destination.y) {
+                actor->position.y = actor->destination.y;
+            }
+            move = true;
+        } else if (actor->position.y > actor->destination.y) {
+            actor->position.y -= distance;
+            if (actor->position.y < actor->destination.y) {
+                actor->position.y = actor->destination.y;
+            }
+            move = true;
         }
-        move = true;
     }
     return move;
 }

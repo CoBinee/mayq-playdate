@@ -288,7 +288,7 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside)
             }
             speed -= d;
             y_0 -= d;
-            if (outside && (y_0 < 0 || y_0 >= kBattleSizeY * kBattleSizePixel)) {
+            if (outside && (x < 0 || x >= kBattleSizeX * kBattleSizePixel || y_0 < 0 || y_0 >= kBattleSizeY * kBattleSizePixel)) {
                 ;
             } else if (!BattleIsSpace(x, y_0)) {
                 if (y_0 > 0) {
@@ -309,7 +309,7 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside)
             }
             speed -= d;
             y_0 += d;
-            if (outside && (y_0 < 0 || y_0 >= kBattleSizeY * kBattleSizePixel)) {
+            if (outside && (x < 0 || x >= kBattleSizeX * kBattleSizePixel || y_0 < 0 || y_0 >= kBattleSizeY * kBattleSizePixel)) {
                 ;
             } else if (!BattleIsSpace(x, y_0)) {
                 y_0 = y_0 - (y_0 % kBattleSizePixel) - 1;
@@ -326,7 +326,7 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside)
             }
             speed -= d;
             x_0 -= d;
-            if (outside && (x_0 < 0 || x_0 >= kBattleSizeX * kBattleSizePixel)) {
+            if (outside && (x_0 < 0 || x_0 >= kBattleSizeX * kBattleSizePixel || y < 0 || y >= kBattleSizeY * kBattleSizePixel)) {
                 ;
             } else if (!BattleIsSpace(x_0, y)) {
                 if (x_0 > 0) {
@@ -347,7 +347,7 @@ int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside)
             }
             speed -= d;
             x_0 += d;
-            if (outside && (x_0 < 0 || x_0 >= kBattleSizeX * kBattleSizePixel)) {
+            if (outside && (x_0 < 0 || x_0 >= kBattleSizeX * kBattleSizePixel || y < 0 || y >= kBattleSizeY * kBattleSizePixel)) {
                 ;
             } else if (!BattleIsSpace(x_0, y)) {
                 x_0 = x_0 - (x_0 % kBattleSizePixel) - 1;

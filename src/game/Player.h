@@ -20,6 +20,7 @@ struct Player {
 
     // バトル
     struct Vector battlePosition;
+    struct AsepriteSprite battleSprite;
 
 };
 

@@ -276,7 +276,7 @@ static void GameLoadBattle(struct Game *game)
         PlayerBattleActorLoad();
 
         // エネミーアクタの読み込み
-        EnemyBattleActorLoad(kEnemyTypeSkeleton, 9, kDirectionLeft);
+        EnemyBattleActorLoad(kEnemyTypeSkeleton, 1, kDirectionLeft);
 
         // ゲームの停止
         game->play = false;

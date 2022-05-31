@@ -264,6 +264,82 @@ static struct AsepriteSprite *AsepriteFindSprite(const char *name)
     return sprite;
 }
 
+// スプライトの .json を読み込む
+//
+void AsepriteLoadSpriteJson(struct AsepriteSprite *sprite, const char *path)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // スプライトの初期化
+    memset(sprite, 0, sizeof (struct AsepriteSprite));
+
+    // .json の読み込み
+    {
+        // .json の読み込み
+        if (!AsepriteLoadJson(&sprite->json, path)) {
+            playdate->system->error("%s: %d: json is not loaded: %s", __FILE__, __LINE__, path);
+            return;
+        }
+
+        // デコーダの定義
+        struct json_decoder decoder = {
+            .decodeError = AsepriteSpriteJsonDecodeError,
+            .willDecodeSublist = AsepriteSpriteJsonWillDecodeSublist,
+            .shouldDecodeTableValueForKey = AsepriteSpriteJsonShouldDecodeTableValueForKey,
+            .didDecodeTableValue = AsepriteSpriteJsonDidDecodeTableValue,
+            .shouldDecodeArrayValueAtIndex = AsepriteSpriteJsonShouldDecodeArrayValueAtIndex,
+            .didDecodeArrayValue = AsepriteSpriteJsonDidDecodeArrayValue,
+            .didDecodeSublist = AsepriteSpriteJsonDidDecodeSublist, 
+            .userdata = sprite, 
+        };
+
+        // リーダの定義
+        json_reader reader = {
+            .read = (int (*)(void *, uint8_t *, int))AsepriteReadJson, 
+            .userdata = &sprite->json, 
+        };
+
+        // .json のデコード: 1 pass
+        {
+            json_value value;
+            sprite->json.ptr = 0;
+            sprite->pass = 1;
+            sprite->sublist = kAsepriteSpriteJsonSublistNull;
+            playdate->json->decode(&decoder, reader, &value);
+        }
+
+        // フレームの作成
+        if (sprite->frameSize > 0) {
+            sprite->frames = playdate->system->realloc(NULL, sprite->frameSize * sizeof (struct AsepriteSpriteFrame));
+        }
+
+        // タグの作成
+        if (sprite->tagSize > 0) {
+            sprite->tags = playdate->system->realloc(NULL, sprite->tagSize * sizeof (struct AsepriteSpriteTag));
+        }
+
+        // .json のデコード: 2 pass
+        {
+            json_value value;
+            sprite->json.ptr = 0;
+            sprite->pass = 2;
+            sprite->sublist = kAsepriteSpriteJsonSublistNull;
+            playdate->json->decode(&decoder, reader, &value);
+        }
+    }
+}
+
+// スプライトの .json を解放する
+//
+void AsepriteUnloadSpriteJson(struct AsepriteSprite *sprite)
+{
+    AsepriteFreeSprite(sprite);
+}
+
 // スプライトの .json をデコードする
 //
 static void AsepriteSpriteJsonDecodeError(struct json_decoder *decoder, const char *error, int linenum)
@@ -481,6 +557,13 @@ static void *AsepriteSpriteJsonDidDecodeSublist(struct json_decoder *decoder, co
     return NULL;
 }
 
+// スプライトフレームを取得する
+//
+struct AsepriteSpriteFrame *AsepriteGetSpriteFrame(struct AsepriteSprite *sprite, int index)
+{
+    return &sprite->frames[index];
+}
+
 // スプライトアニメーションを開始する
 //
 void AsepriteStartSpriteAnimation(struct AsepriteSpriteAnimation *animation, const char *spriteName, const char *animationName, bool loop)
@@ -586,11 +669,11 @@ void AsepriteDrawRotatedSpriteAnimation(struct AsepriteSpriteAnimation *animatio
     }
 }
 
-// スプライトアニメーションの現在のフレームを取得する
+// スプライトアニメーションの現在のフレームインデックスを取得する
 //
-int AsepriteGetSpriteAnimationFrame(struct AsepriteSpriteAnimation *animation)
+int AsepriteGetSpriteAnimationPlayFrameIndex(struct AsepriteSpriteAnimation *animation)
 {
-    return animation->play - animation->from;
+    return animation->play;
 }
 
 // .json の値の名前を取得する

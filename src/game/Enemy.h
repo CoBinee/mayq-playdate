@@ -36,9 +36,12 @@ enum {
     kEnemyFieldActionSize, 
 };
 enum {
-    kEnemyFieldSpeedSlow = 1, 
-    kEnemyFieldSpeedNormal = 2, 
-    kEnemyFieldSpeedFast = 3, 
+    kEnemyFieldSpeed_0_5 = 0x0080, 
+    kEnemyFieldSpeed_1_0 = 0x0100, 
+    kEnemyFieldSpeed_2_0 = 0x0200, 
+    kEnemyFieldSpeedOne = 0x0100, 
+    kEnemyFieldSpeedShift = 8, 
+    kEnemyFieldSpeedMask = 0xff, 
 };
 
 // バトル
@@ -50,9 +53,12 @@ enum {
     kEnemyBattleActionSize, 
 };
 enum {
-    kEnemyBattleSpeedSlow = 1, 
-    kEnemyBattleSpeedNormal = 2, 
-    kEnemyBattleSpeedFast = 3, 
+    kEnemyBattleSpeed_0_5 = 0x0080, 
+    kEnemyBattleSpeed_1_0 = 0x0100, 
+    kEnemyBattleSpeed_2_0 = 0x0200, 
+    kEnemyBattleSpeedOne = 0x0100, 
+    kEnemyBattleSpeedShift = 8, 
+    kEnemyBattleSpeedMask = 0xff, 
 };
 
 // データ
@@ -75,6 +81,8 @@ struct EnemyData {
     // バトル
     int battleAction;
     int battleSpeed;
+    int battleMoveBase;
+    int battleMoveRange;
 
     // 矩形
     struct Rect rect;
@@ -134,6 +142,12 @@ enum {
     kEnemyFaceSize, 
 };
 
+// 移動
+//
+enum {
+    kEnemyMoveParamSize = 8, 
+};
+
 // エネミーアクタ
 //
 struct EnemyActor {
@@ -160,7 +174,8 @@ struct EnemyActor {
     int face;
 
     // 移動
-    int moveStep;
+    int moveSpeed;
+    int moveParams[kEnemyMoveParamSize];
     struct Rect moveRect;
 
     // アニメーション
