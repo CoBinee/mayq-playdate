@@ -352,6 +352,41 @@ static void PlayerBattleCalcRect(struct PlayerActor *actor)
     }
 }
 
+// 位置を取得する
+//
+void PlayerBattleGetPosition(struct Vector *position)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    if (actor != NULL) {
+        *position = actor->position;
+    }
+}
+
+// 向きを取得する
+//
+int PlayerBattleGetDirection(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL ? actor->direction : kDirectionDown;
+}
+
+// 矩形を取得する
+//
+void PlayerBattleGetMoveRect(struct Rect *rect)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    if (actor != NULL) {
+        *rect = actor->moveRect;
+    }
+}
+void PlayerBattleGetAttackRect(struct Rect *rect)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    if (actor != NULL) {
+        *rect = actor->attackRect;
+    }
+}
+
 // クランクを操作する
 //
 static void PlayerBattleControlCrank(struct PlayerActor *actor)

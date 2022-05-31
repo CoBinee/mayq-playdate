@@ -333,6 +333,15 @@ static void GamePlayBattle(struct Game *game)
         ++game->state;
     }
 
+    // 
+    {
+        struct Rect rect;
+        PlayerBattleGetAttackRect(&rect);
+        struct Vector position;
+        PlayerBattleGetPosition(&position);
+        EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
+    }
+
     // DEBUG
     if (IocsIsButtonEdge(kButtonA)) {
         // game->play = !game->play;

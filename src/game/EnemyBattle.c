@@ -19,7 +19,11 @@ static void EnemyBattleActorIdle(struct EnemyActor *actor);
 static void EnemyBattleActorWalkRandom(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableDirection(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor);
-static int EnemyBattleMove(struct EnemyActor *actor);
+static int EnemyBattleMove(struct EnemyActor *actor, int direction, int distance);
+static int EnemyBattleMoveToDirection(struct EnemyActor *actor);
+static void EnemyBattleSetDamage(struct EnemyActor *actor, int direction, int point);
+static bool EnemyBattleDamage(struct EnemyActor *actor);
+static void EnemyBattleBlink(struct EnemyActor *actor);
 static void EnemyBattleCalcRect(struct EnemyActor *actor);
 
 // 内部変数
@@ -71,6 +75,9 @@ void EnemyBattleActorLoad(int type, int rest, int direction)
             // 位置の設定
             BattleGetEnemyPosition(i, direction, &actor->position);
 
+            // ダメージの設定
+            actor->damagePoint = 0;
+
             // 矩形の計算
             EnemyBattleCalcRect(actor);
         }
@@ -102,10 +109,11 @@ static void EnemyBattleActorDraw(struct EnemyActor *actor)
     BattleSetClip();
 
     // スプライトの描画
-    {
+    if ((actor->blink & kEnemyBattleBlinkInterval) == 0) {
         struct Vector view;
         GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
-        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, kDrawModeCopy);
+        int drawmode = actor->damagePoint > 0 ? kDrawModeInverted : kDrawModeCopy;
+        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, drawmode);
     }
 
     // クリップの解除
@@ -143,6 +151,9 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
 
     // プレイ中
     if (GameIsPlay()) {
+
+        // 点滅
+        EnemyBattleBlink(actor);
 
         // スプライトの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
@@ -191,9 +202,13 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
+        // ダメージ
+        if (EnemyBattleDamage(actor)) {
+            ;
+
         // 移動
-        {
-            int distance = EnemyBattleMove(actor);
+        } else {
+            int distance = EnemyBattleMoveToDirection(actor);
             if (distance > 0) {
                 actor->moveParams[0] -= distance;
             }
@@ -217,6 +232,9 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 }
             }
         }
+
+        // 点滅
+        EnemyBattleBlink(actor);
 
         // スプライトの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
@@ -267,38 +285,81 @@ static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor)
     return direction;
 }
 
+// 指定した方向に移動する
+//
+static int EnemyBattleMove(struct EnemyActor *actor, int direction, int distance)
+{
+    if (direction == kDirectionUp) {
+        int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, distance, false);
+        int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, distance, false);
+        distance = dl < dr ? dl : dr;
+        actor->position.y -= distance;
+    } else if (direction == kDirectionDown) {
+        int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionDown, distance, false);
+        int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionDown, distance, false);
+        distance = dl < dr ? dl : dr;
+        actor->position.y += distance;
+    } else if (direction == kDirectionLeft) {
+        int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, distance, false);
+        int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, distance, false);
+        distance = dt < db ? dt : db;
+        actor->position.x -= distance;
+    } else if (direction == kDirectionRight) {
+        int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, distance, false);
+        int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, distance, false);
+        distance = dt < db ? dt : db;
+        actor->position.x += distance;
+    } else {
+        distance = 0;
+    }
+    return distance;
+}
+
 // 向いている方向に移動する
 //
-static int EnemyBattleMove(struct EnemyActor *actor)
+static int EnemyBattleMoveToDirection(struct EnemyActor *actor)
 {
     int distance = -1;
     actor->moveSpeed += actor->data->battleSpeed;
     if (actor->moveSpeed >= kEnemyBattleSpeedOne) {
         distance = actor->moveSpeed >> kEnemyBattleSpeedShift;
         actor->moveSpeed &= kEnemyBattleSpeedMask;
-        if (actor->direction == kDirectionUp) {
-            int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionUp, distance, false);
-            int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionUp, distance, false);
-            distance = dl < dr ? dl : dr;
-            actor->position.y -= distance;
-        } else if (actor->direction == kDirectionDown) {
-            int dl = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionDown, distance, false);
-            int dr = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionDown, distance, false);
-            distance = dl < dr ? dl : dr;
-            actor->position.y += distance;
-        } else if (actor->direction == kDirectionLeft) {
-            int dt = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.top, kDirectionLeft, distance, false);
-            int db = BattleGetMoveDistance(actor->moveRect.left, actor->moveRect.bottom, kDirectionLeft, distance, false);
-            distance = dt < db ? dt : db;
-            actor->position.x -= distance;
-        } else if (actor->direction == kDirectionRight) {
-            int dt = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.top, kDirectionRight, distance, false);
-            int db = BattleGetMoveDistance(actor->moveRect.right, actor->moveRect.bottom, kDirectionRight, distance, false);
-            distance = dt < db ? dt : db;
-            actor->position.x += distance;
-        }
+        distance = EnemyBattleMove(actor, actor->direction, distance);
     }
     return distance;
+}
+
+// ダメージを受ける
+//
+static void EnemyBattleSetDamage(struct EnemyActor *actor, int direction, int point)
+{
+    if (actor->damagePoint == 0) {
+        actor->damagePoint = point;
+        actor->damageDirection = direction;
+        actor->damageSpeed = kEnemyBattleDamageSpeed;
+    }
+}
+static bool EnemyBattleDamage(struct EnemyActor *actor)
+{
+    if (actor->damagePoint > 0) {
+        EnemyBattleMove(actor, actor->damageDirection, actor->damageSpeed);
+        if (actor->damageSpeed > 0) {
+            --actor->damageSpeed;
+        } else {
+            actor->damagePoint = 0;
+            actor->blink = kEnemyBattleBlinkDamage;
+        }
+    }
+    return actor->damagePoint > 0 ? true : false;
+}
+
+// 点滅する
+//
+static void EnemyBattleBlink(struct EnemyActor *actor)
+{
+    if (actor->blink > 0) {
+        --actor->blink;
+    }
 }
 
 // 矩形を計算する
@@ -311,6 +372,24 @@ static void EnemyBattleCalcRect(struct EnemyActor *actor)
         actor->moveRect.top = actor->position.y + actor->data->rect.top;
         actor->moveRect.right = actor->position.x + actor->data->rect.right;
         actor->moveRect.bottom = actor->position.y + actor->data->rect.bottom;
+    }
+}
+
+// エネミーにヒットするかどうかを判定する
+//
+void EnemyBattleIsHitThenDamage(struct Rect *rect, int x, int y, int point)
+{
+    struct EnemyActor *actor = (struct EnemyActor *)ActorFindWithTag(kGameTagEnemy);
+    while (actor != NULL) {
+        if (actor->moveRect.left > rect->right || actor->moveRect.right < rect->left || actor->moveRect.top > rect->bottom || actor->moveRect.bottom < rect->top) {
+            ;
+        } else if (actor->damagePoint == 0 && actor->blink == 0) {
+            int dx = actor->position.x - x;
+            int dy = actor->position.y - y;
+            int direction = abs(dy) > abs(dx) ? (dy <= 0 ? kDirectionUp : kDirectionDown) : (dx <= 0 ? kDirectionLeft : kDirectionRight);
+            EnemyBattleSetDamage(actor, direction, point);
+        }
+        actor = (struct EnemyActor *)ActorNextWithTag(&actor->actor);
     }
 }
 

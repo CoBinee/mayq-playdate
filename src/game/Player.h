@@ -92,9 +92,13 @@ enum {
 //
 extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
+extern void PlayerGetFieldPosition(struct Vector *position);
 extern void PlayerFieldActorLoad(void);
 extern void PlayerBattleActorLoad(void);
-extern void PlayerGetFieldPosition(struct Vector *position);
+extern int PlayerBattleGetDirection(void);
+extern void PlayerBattleGetPosition(struct Vector *position);
+extern void PlayerBattleGetMoveRect(struct Rect *rect);
+extern void PlayerBattleGetAttackRect(struct Rect *rect);
 
 // 外部参照変数
 //

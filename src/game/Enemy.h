@@ -148,6 +148,22 @@ enum {
     kEnemyMoveParamSize = 8, 
 };
 
+// 攻撃
+//
+
+// ダメージ
+//
+enum {
+    kEnemyBattleDamageSpeed = 8, 
+};
+
+// 点滅
+//
+enum {
+    kEnemyBattleBlinkDamage = 30, 
+    kEnemyBattleBlinkInterval = 0x02, 
+};
+
 // エネミーアクタ
 //
 struct EnemyActor {
@@ -178,6 +194,16 @@ struct EnemyActor {
     int moveParams[kEnemyMoveParamSize];
     struct Rect moveRect;
 
+    // 攻撃
+
+    // ダメージ
+    int damagePoint;
+    int damageDirection;
+    int damageSpeed;
+
+    // 点滅
+    int blink;
+
     // アニメーション
     struct AsepriteSpriteAnimation animation;
 
@@ -190,6 +216,7 @@ extern void EnemyRelease(void);
 extern void EnemyActorNull(struct EnemyActor *actor);
 extern void EnemyFieldActorLoad(void);
 extern void EnemyBattleActorLoad(int type, int rest, int direction);
+extern void EnemyBattleIsHitThenDamage(struct Rect *rect, int x, int y, int point);
 
 // 外部参照変数
 //
