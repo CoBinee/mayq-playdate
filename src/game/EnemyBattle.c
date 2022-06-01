@@ -14,9 +14,11 @@
 // 内部関数
 //
 static void EnemyBattleActorUnload(struct EnemyActor *actor);
-static void EnemyBattleActorDraw(struct EnemyActor *actor);
+static void EnemyBattleActorDrawCharacter(struct EnemyActor *actor);
+static void EnemyBattleActorDrawDeath(struct EnemyActor *actor);
 static void EnemyBattleActorIdle(struct EnemyActor *actor);
 static void EnemyBattleActorWalkRandom(struct EnemyActor *actor);
+static void EnemyBattleActorDeath(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableDirection(struct EnemyActor *actor);
 static int EnemyBattleGetWalkableRandomDirection(struct EnemyActor *actor);
 static int EnemyBattleMove(struct EnemyActor *actor, int direction, int distance);
@@ -72,11 +74,17 @@ void EnemyBattleActorLoad(int type, int rest, int direction)
             // データの設定
             actor->data = data;
 
+            // 体力の設定
+            actor->life = data->life;
+
             // 位置の設定
             BattleGetEnemyPosition(i, direction, &actor->position);
 
             // ダメージの設定
             actor->damagePoint = 0;
+
+            // 点滅の設定
+            actor->blink = 0;
 
             // 矩形の計算
             EnemyBattleCalcRect(actor);
@@ -97,7 +105,7 @@ static void EnemyBattleActorUnload(struct EnemyActor *actor)
 
 // エネミーアクタを描画する
 //
-static void EnemyBattleActorDraw(struct EnemyActor *actor)
+static void EnemyBattleActorDrawCharacter(struct EnemyActor *actor)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -109,11 +117,33 @@ static void EnemyBattleActorDraw(struct EnemyActor *actor)
     BattleSetClip();
 
     // スプライトの描画
-    if ((actor->blink & kEnemyBattleBlinkInterval) == 0) {
+    if ((actor->blink & kEnemyBlinkDamageInterval) == 0) {
         struct Vector view;
         GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
         int drawmode = actor->damagePoint > 0 ? kDrawModeInverted : kDrawModeCopy;
-        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f, drawmode);
+        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, actor->data->centerX, actor->data->centerY, 1.0f, 1.0f, drawmode);
+    }
+
+    // クリップの解除
+    BattleClearClip();
+}
+static void EnemyBattleActorDrawDeath(struct EnemyActor *actor)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // クリップの設定
+    BattleSetClip();
+
+    // スプライトの描画
+    {
+        struct Vector view;
+        GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
+        int drawmode = actor->damagePoint > 0 ? kDrawModeInverted : kDrawModeCopy;
+        AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 0.8f, 1.0f, 1.0f, kDrawModeCopy);
     }
 
     // クリップの解除
@@ -159,7 +189,7 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
         // 待機
         } else {
 
-            // スプライトの更新
+            // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
 
@@ -171,7 +201,7 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
     EnemyBattleCalcRect(actor);
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderCharacter + actor->position.y);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDrawCharacter, kGameOrderCharacter + actor->position.y);
 }
 
 // エネミーアクタがランダムに歩く
@@ -244,7 +274,7 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
                 }
             }
 
-            // スプライトの更新
+            // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
 
@@ -256,7 +286,49 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
     EnemyBattleCalcRect(actor);
 
     // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDraw, kGameOrderCharacter + actor->position.y);
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDrawCharacter, kGameOrderCharacter + actor->position.y);
+}
+
+// エネミーアクタが死亡する
+//
+void EnemyBattleActorDeath(struct EnemyActor *actor)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // 初期化
+    if (actor->actor.state == 0) {
+
+        // アニメーションの開始
+        AsepriteStartSpriteAnimation(&actor->animation, "death", "Idle", false);
+
+        // 初期化の完了
+        ++actor->actor.state;
+    }
+
+    // プレイ中
+    if (GameIsPlay()) {
+
+        // アニメーションの完了
+        if (AsepriteIsSpriteAnimationDone(&actor->animation)) {
+            actor->actor.state = -1;
+
+        // アニメーションの更新
+        } else {
+            AsepriteUpdateSpriteAnimation(&actor->animation);
+        }
+    }
+
+    // 描画処理の設定
+    ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDrawDeath, kGameOrderCharacter + actor->position.y);
+
+    // 死亡の完了
+    if (actor->actor.state < 0) {
+        ActorUnload(&actor->actor);
+    }
 }
 
 // 移動できる方向を取得する
@@ -348,7 +420,7 @@ static void EnemyBattleSetDamage(struct EnemyActor *actor, int direction, int po
     if (actor->damagePoint == 0) {
         actor->damagePoint = point;
         actor->damageDirection = direction;
-        actor->damageSpeed = kEnemyBattleDamageSpeed;
+        actor->damageSpeed = kEnemyDamageSpeed;
     }
 }
 static bool EnemyBattleDamage(struct EnemyActor *actor)
@@ -358,8 +430,13 @@ static bool EnemyBattleDamage(struct EnemyActor *actor)
         if (actor->damageSpeed > 0) {
             --actor->damageSpeed;
         } else {
+            actor->life -= actor->damagePoint;
             actor->damagePoint = 0;
-            actor->blink = kEnemyBattleBlinkDamage;
+            if (actor->life > 0) {
+                actor->blink = kEnemyBlinkDamageFrame;
+            } else {
+                ActorTransition(&actor->actor, (ActorFunction)EnemyBattleActorDeath);
+            }
         }
     }
     return actor->damagePoint > 0 ? true : false;
@@ -405,4 +482,18 @@ void EnemyBattleIsHitThenDamage(struct Rect *rect, int x, int y, int point)
     }
 }
 
+// 指定した種類のエネミーの数を取得する
+//
+int EnemyBattleGetRest(int type)
+{
+    int rest = 0;
+    struct EnemyActor *actor = (struct EnemyActor *)ActorFindWithTag(kGameTagEnemy);
+    while (actor != NULL) {
+        if (actor->data->type == type) {
+            ++rest;
+        }
+        actor = (struct EnemyActor *)ActorNextWithTag(&actor->actor);
+    }
+    return rest;
+}
 

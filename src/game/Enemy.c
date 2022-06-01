@@ -80,3 +80,27 @@ void EnemyActorNull(struct EnemyActor *actor)
     ;
 }
 
+// フィールド上にいるエネミーの種類を取得する
+//
+int EnemyGetFieldType(int index)
+{
+    return enemy != NULL ? enemy->fields[index].type : kEnemyTypeNull;
+}
+
+// フィールド上にいるエネミーの数を取得する
+//
+int EnemyGetFieldRest(int index)
+{
+    return enemy != NULL ? enemy->fields[index].rest : 0;
+}
+
+// フィールド上にいるエネミーの位置を取得する
+//
+void EnemyGetFieldPosition(int index, struct Vector *position)
+{
+    if (enemy != NULL) {
+        *position = enemy->fields[index].position;
+    }
+}
+
+

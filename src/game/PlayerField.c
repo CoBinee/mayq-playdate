@@ -16,9 +16,16 @@
 static void PlayerFieldActorUnload(struct PlayerActor *actor);
 static void PlayerFieldActorDraw(struct PlayerActor *actor);
 static void PlayerFieldActorPlay(struct PlayerActor *actor);
+static void PlayerFieldCalcRect(struct PlayerActor *actor);
 
 // 内部変数
 //
+static const struct Rect playerFieldMoveRect = {
+    .left = -12, 
+    .top = -23, 
+    .right = 11, 
+    .bottom = 0, 
+};
 static const char *playerFieldAnimationNames[] = {
     "WalkUp", 
     "WalkDown", 
@@ -53,6 +60,9 @@ void PlayerFieldActorLoad(void)
 
         // 位置の設定
         actor->position = player->fieldPosition;
+
+        // 矩形の計算
+        PlayerFieldCalcRect(actor);
     }
 }
 
@@ -256,10 +266,37 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
         }
     }
 
+    // 矩形の計算
+    PlayerFieldCalcRect(actor);
+
     // カメラの設定
     GameSetFieldCamera(actor->position.x + kPlayerCameraX, actor->position.y + kPlayerCameraY);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerFieldActorDraw, kGameOrderPlayer);
 }
+
+// 矩形を計算する
+//
+static void PlayerFieldCalcRect(struct PlayerActor *actor)
+{
+    // 移動の計算
+    {
+        actor->moveRect.left = actor->position.x + playerFieldMoveRect.left;
+        actor->moveRect.top = actor->position.y + playerFieldMoveRect.top;
+        actor->moveRect.right = actor->position.x + playerFieldMoveRect.right;
+        actor->moveRect.bottom = actor->position.y + playerFieldMoveRect.bottom;
+    }
+}
+
+// 矩形を取得する
+//
+void PlayerFieldGetMoveRect(struct Rect *rect)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    if (actor != NULL) {
+        *rect = actor->moveRect;
+    }
+}
+
 

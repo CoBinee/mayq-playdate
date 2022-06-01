@@ -90,6 +90,10 @@ struct EnemyData {
     // スプライト
     const char *sprite;
 
+    // 中心
+    float centerX;
+    float centerY;
+ 
 };
 
 // プール
@@ -154,14 +158,14 @@ enum {
 // ダメージ
 //
 enum {
-    kEnemyBattleDamageSpeed = 8, 
+    kEnemyDamageSpeed = 8, 
 };
 
 // 点滅
 //
 enum {
-    kEnemyBattleBlinkDamage = 30, 
-    kEnemyBattleBlinkInterval = 0x02, 
+    kEnemyBlinkDamageFrame = 30, 
+    kEnemyBlinkDamageInterval = 0x02, 
 };
 
 // エネミーアクタ
@@ -176,6 +180,9 @@ struct EnemyActor {
 
     // データ
     const struct EnemyData *data;
+
+    // 体力
+    int life;
 
     // 位置
     struct Vector position;
@@ -214,9 +221,14 @@ struct EnemyActor {
 extern void EnemyInitialize(void);
 extern void EnemyRelease(void);
 extern void EnemyActorNull(struct EnemyActor *actor);
+extern int EnemyGetFieldType(int index);
+extern int EnemyGetFieldRest(int index);
+extern void EnemyGetFieldPosition(int index, struct Vector *position);
 extern void EnemyFieldActorLoad(void);
+extern int EnemyFieldGetHitIndex(struct Rect *rect);
 extern void EnemyBattleActorLoad(int type, int rest, int direction);
 extern void EnemyBattleIsHitThenDamage(struct Rect *rect, int x, int y, int point);
+extern int EnemyBattleGetRest(int type);
 
 // 外部参照変数
 //

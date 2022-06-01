@@ -654,7 +654,7 @@ static void FieldActorLoop(struct FieldActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
-        // スプライトの更新
+        // アニメーションの更新
         for (int i = 0; i < kFieldAnimationSize; i++) {
             AsepriteUpdateSpriteAnimation(&actor->animations[i]);
         }

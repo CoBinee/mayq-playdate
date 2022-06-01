@@ -94,5 +94,8 @@ extern bool BattleIsSpace(int x, int y);
 extern int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside);
 extern void BattleGetStartPosition(int direction, struct Vector *position);
 extern void BattleGetEnemyPosition(int index, int direction, struct Vector *position);
+extern bool BattleIsInside(int x, int y);
+extern bool BattleIsInsideX(int x);
+extern bool BattleIsInsideY(int y);
 extern void BattleClearClip(void);
 extern void BattleSetClip(void);

@@ -30,6 +30,14 @@ struct Game {
     // カメラ
     struct Vector camera;
 
+    // バトル
+    int battleEncount;
+    int battleType;
+    int battleRest;
+    int battleRoute;
+    int battleDirection;
+    struct Vector battlePosition;
+
 };
 
 // オーディオ

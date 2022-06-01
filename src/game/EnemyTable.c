@@ -28,7 +28,7 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
     {
         .name = "SKELETON", 
         .type = kEnemyTypeSkeleton, 
-        .life = 100, 
+        .life = 3, 
         .fieldAction = kEnemyFieldActionWalk, 
         .fieldSpeed = kEnemyFieldSpeed_0_5, 
         .battleAction = kEnemyBattleActionWalkRandom, 
@@ -40,6 +40,8 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
         .rect.right = 11, 
         .rect.bottom = 0, 
         .sprite = "skeleton", 
+        .centerX = 0.5f, 
+        .centerY = 1.0f, 
     }, 
 };
 

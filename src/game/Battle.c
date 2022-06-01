@@ -241,7 +241,7 @@ static void BattleActorLoop(struct BattleActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
-        // スプライトの更新
+        // アニメーションの更新
         for (int i = 0; i < kBattleAnimationSize; i++) {
             AsepriteUpdateSpriteAnimation(&actor->animations[i]);
         }
@@ -413,6 +413,21 @@ void BattleGetEnemyPosition(int index, int direction, struct Vector *position)
         position->x = o.x - offsets[index].y;
         position->y = o.y + offsets[index].x;
     }
+}
+
+// 指定した位置がバトル内かどうかを判定する
+//
+bool BattleIsInside(int x, int y)
+{
+    return BattleIsInsideX(x) && BattleIsInsideY(y) ? true : false;
+}
+bool BattleIsInsideX(int x)
+{
+    return x >=0 && x < kBattleSizeX * kBattleSizePixel ? true : false;
+}
+bool BattleIsInsideY(int y)
+{
+    return y >= 0 || y < kBattleSizeY * kBattleSizePixel ? true : false;
 }
 
 // クリップを設定する

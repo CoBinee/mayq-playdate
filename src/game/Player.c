@@ -74,7 +74,7 @@ void PlayerRelease(void)
     }
 }
 
-// プレイヤのフィールド上の位置を取得する
+// フィールド上にいるプレイヤの位置を取得する
 //
 void PlayerGetFieldPosition(struct Vector *position)
 {

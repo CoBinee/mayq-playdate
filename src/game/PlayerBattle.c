@@ -352,6 +352,18 @@ static void PlayerBattleCalcRect(struct PlayerActor *actor)
     }
 }
 
+// クランクを操作する
+//
+static void PlayerBattleControlCrank(struct PlayerActor *actor)
+{
+    float change = IocsGetCrankChange();
+    if (change == 0.0f || (actor->crank < 0.0f && change > 0.0f) || (actor->crank > 0.0f && change < 0.0f)) {
+        actor->crank = change;
+    } else {
+        actor->crank += change;
+    }
+}
+
 // 位置を取得する
 //
 void PlayerBattleGetPosition(struct Vector *position)
@@ -368,6 +380,26 @@ int PlayerBattleGetDirection(void)
 {
     struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
     return actor != NULL ? actor->direction : kDirectionDown;
+}
+
+// バトルから抜けた方向を取得する
+//
+int PlayerBattleGetEscapeDirection(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    int direction = -1;
+    if (actor != NULL) {
+        if (!BattleIsInsideY(actor->moveRect.top)) {
+            direction = kDirectionUp;
+        } else if (!BattleIsInsideY(actor->moveRect.bottom)) {
+            direction = kDirectionDown;
+        } else if (!BattleIsInsideX(actor->moveRect.left)) {
+            direction = kDirectionLeft;
+        } else if (!BattleIsInsideX(actor->moveRect.right)) {
+            direction = kDirectionUp;
+        }
+    }
+    return direction;
 }
 
 // 矩形を取得する
@@ -387,14 +419,3 @@ void PlayerBattleGetAttackRect(struct Rect *rect)
     }
 }
 
-// クランクを操作する
-//
-static void PlayerBattleControlCrank(struct PlayerActor *actor)
-{
-    float change = IocsGetCrankChange();
-    if (change == 0.0f || (actor->crank < 0.0f && change > 0.0f) || (actor->crank > 0.0f && change < 0.0f)) {
-        actor->crank = change;
-    } else {
-        actor->crank += change;
-    }
-}

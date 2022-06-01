@@ -36,7 +36,8 @@ static const char *gameSpriteNames[] = {
     "tileset", 
     "player", 
     "weapon", 
-    "skeleton",     
+    "skeleton", 
+    "death", 
 };
 static const char *gameAudioSamplePaths[] = {
     "", 
@@ -162,6 +163,9 @@ static void GameLoadField(struct Game *game)
         // ゲームの停止
         game->play = false;
 
+        // バトルの設定
+        game->battleEncount = -1;
+
         // 初期化の完了
         ++game->state;
     }
@@ -214,6 +218,19 @@ static void GamePlayField(struct Game *game)
         ++game->state;
     }
 
+    // ヒット判定
+    {
+        // エネミーとの接触
+        {
+            struct Rect rect;
+            PlayerFieldGetMoveRect(&rect);
+            game->battleEncount = EnemyFieldGetHitIndex(&rect);
+            if (game->battleEncount >= 0) {
+                GameTransition(game, (GameFunction)GameUnloadField);
+            }
+        }
+    }
+
     // DEBUG
     if (IocsIsButtonEdge(kButtonA)) {
         game->play = !game->play;
@@ -247,8 +264,13 @@ static void GameUnloadField(struct Game *game)
     // アクタの解放
     ActorUnloadAll();
 
-    // 処理の遷移
-    GameTransition(game, (GameFunction)GameLoadBattle);
+    // エンカウント
+    if (game->battleEncount >= 0) {
+        GameTransition(game, (GameFunction)GameLoadBattle);
+    } else {
+        GameTransition(game, (GameFunction)GameLoadBattle);
+    }
+
 }
 
 // バトルを読み込む
@@ -264,19 +286,67 @@ static void GameLoadBattle(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
-        // バトルアクタの読み込み
+        // バトルの設定
         {
-            struct Vector position;
-            PlayerGetFieldPosition(&position);
-            int route = FieldGetBattleRoute(position.x, position.y);
-            BattleActorLoad(kBattleTypeDungeon, route);
+            struct Vector pp;
+            PlayerGetFieldPosition(&pp);
+            struct Vector ep;
+            if (game->battleEncount >= 0) {
+                EnemyGetFieldPosition(game->battleEncount, &ep);
+            } else {
+                ep = pp;
+            }
+            if (game->battleEncount >= 0) {
+                game->battleType = EnemyGetFieldType(game->battleEncount);
+                game->battleRest = EnemyGetFieldRest(game->battleEncount);
+                game->battlePosition = ep;
+            } else {
+                game->battleType = kEnemyTypeSkeleton;
+                game->battleRest = 9;
+                game->battlePosition = pp;
+            }
+            game->battleRoute = FieldGetBattleRoute(game->battlePosition.x, game->battlePosition.y);
+            game->battleDirection = -1;
+            {
+                int dx = pp.x - ep.x;
+                int dy = pp.y - ep.y;
+                if (abs(dy) > abs(dx)) {
+                    if (dy < 0 && (game->battleRoute & (1 << kDirectionUp)) != 0) {
+                        game->battleDirection = kDirectionUp;
+                    } else if (dy > 0 && (game->battleRoute & (1 << kDirectionDown)) != 0) {
+                        game->battleDirection = kDirectionDown;
+                    }
+                } else {
+                    if (dx < 0 && (game->battleRoute & (1 << kDirectionLeft)) != 0) {
+                        game->battleDirection = kDirectionLeft;
+                    } else if (dx > 0 && (game->battleRoute & (1 << kDirectionRight)) != 0) {
+                        game->battleDirection = kDirectionRight;
+                    }
+                }
+                if (game->battleDirection < 0) {
+                    if ((game->battleRoute & (1 << kDirectionUp)) != 0) {
+                        game->battleDirection = kDirectionUp;
+                    } else if ((game->battleRoute & (1 << kDirectionDown)) != 0) {
+                        game->battleDirection = kDirectionDown;
+                    } else if ((game->battleRoute & (1 << kDirectionLeft)) != 0) {
+                        game->battleDirection = kDirectionLeft;
+                    } else if ((game->battleRoute & (1 << kDirectionRight)) != 0) {
+                        game->battleDirection = kDirectionRight;
+                    } else {
+                        playdate->system->error("%s: %d: encount error.", __FILE__, __LINE__);
+                    }
+                }
+            }
         }
+
+        // バトルアクタの読み込み
+        BattleActorLoad(kBattleTypeField, game->battleRoute);
 
         // プレイヤアクタの読み込み
         PlayerBattleActorLoad();
 
         // エネミーアクタの読み込み
-        EnemyBattleActorLoad(kEnemyTypeSkeleton, 1, kDirectionLeft);
+        EnemyBattleActorLoad(game->battleType, game->battleRest, game->battleDirection);
 
         // ゲームの停止
         game->play = false;
@@ -333,13 +403,24 @@ static void GamePlayBattle(struct Game *game)
         ++game->state;
     }
 
+    // ヒット判定
+    {
+        // プレイヤの攻撃の判定
+        {
+            struct Rect rect;
+            PlayerBattleGetAttackRect(&rect);
+            struct Vector position;
+            PlayerBattleGetPosition(&position);
+            EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
+        }
+    }
+
     // 
     {
-        struct Rect rect;
-        PlayerBattleGetAttackRect(&rect);
-        struct Vector position;
-        PlayerBattleGetPosition(&position);
-        EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
+        game->battleRest = EnemyBattleGetRest(game->battleType);
+        if (game->battleRest == 0) {
+            GameTransition(game, (GameFunction)GameUnloadBattle);
+        }
     }
 
     // DEBUG

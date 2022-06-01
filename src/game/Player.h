@@ -39,6 +39,15 @@ enum {
     kPlayerAttackFrameSize = 4, 
 };
 
+// 点滅
+//
+enum {
+    kPlayerBlinkEscapeFrame = 30, 
+    kPlayerBlinkEscapeInterval = 0x02, 
+    kPlayerBlinkDamageFrame = 30, 
+    kPlayerBlinkDamageInterval = 0x02, 
+};
+
 // プレイヤアクタ
 //
 struct PlayerActor {
@@ -69,6 +78,9 @@ struct PlayerActor {
     // クランク
     float crank;
 
+    // 点滅
+    int blink;
+
     // アニメーション
     struct AsepriteSpriteAnimation animation;
 
@@ -94,8 +106,10 @@ extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
 extern void PlayerGetFieldPosition(struct Vector *position);
 extern void PlayerFieldActorLoad(void);
+extern void PlayerFieldGetMoveRect(struct Rect *rect);
 extern void PlayerBattleActorLoad(void);
 extern int PlayerBattleGetDirection(void);
+extern int PlayerBattleGetEscapeDirection(void);
 extern void PlayerBattleGetPosition(struct Vector *position);
 extern void PlayerBattleGetMoveRect(struct Rect *rect);
 extern void PlayerBattleGetAttackRect(struct Rect *rect);
