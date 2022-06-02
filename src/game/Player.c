@@ -47,9 +47,7 @@ void PlayerInitialize(void)
 
         // フィールドの設定
         FieldGetStartPosition(&player->fieldPosition);
-
     }
-
 }
 
 // プレイヤを解放する
@@ -80,5 +78,14 @@ void PlayerGetFieldPosition(struct Vector *position)
 {
     if (player != NULL) {
         *position = player->fieldPosition;
+    }
+}
+
+// フィールド上にいるプレイヤの位置を設定する
+//
+void PlayerSetFieldPosition(struct Vector *position)
+{
+    if (player != NULL) {
+        player->fieldPosition = *position;
     }
 }

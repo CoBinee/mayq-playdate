@@ -24,9 +24,6 @@ struct Game {
     // 状態
     int state;
 
-    // プレイ中
-    bool play;
-
     // カメラ
     struct Vector camera;
 
@@ -37,6 +34,9 @@ struct Game {
     int battleRoute;
     int battleDirection;
     struct Vector battlePosition;
+
+    // プレイ中
+    bool play;
 
 };
 

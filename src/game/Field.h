@@ -171,6 +171,7 @@ extern bool FieldWalk(int x, int y, int direction, bool jump, bool fall, struct 
 extern void FieldAdjustMovePosition(struct Vector *from, struct Vector *to);
 extern void FieldGetStartPosition(struct Vector *position);
 extern void FieldGetEnemyPosition(struct Vector *position, bool land);
+extern void FieldGetDirectinalPosition(int x, int y, int direction, struct Vector *position);
 extern int FieldGetBattleRoute(int x, int y);
 extern void FieldClearClip(void);
 extern void FieldSetClip(void);

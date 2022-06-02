@@ -930,6 +930,25 @@ void FieldGetEnemyPosition(struct Vector *position, bool land)
     }
 }
 
+// 指定された方向の位置を取得する
+//
+void FieldGetDirectinalPosition(int x, int y, int direction, struct Vector *position)
+{
+    if (direction == kDirectionUp) {
+        position->x = x;
+        position->y = y - kFieldSizePixel;
+    } else if (direction == kDirectionDown) {
+        position->x = x;
+        position->y = y + kFieldSizePixel;
+    } else if (direction == kDirectionLeft) {
+        position->x = x - kFieldSizePixel;
+        position->y = y;
+    } else if (direction == kDirectionRight) {
+        position->x = x + kFieldSizePixel;
+        position->y = y;
+    }
+}
+
 // バトルの経路を取得する
 //
 int FieldGetBattleRoute(int x, int y)

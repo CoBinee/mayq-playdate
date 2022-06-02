@@ -18,6 +18,7 @@ static void PlayerBattleActorUnload(struct PlayerActor *actor);
 static void PlayerBattleActorDraw(struct PlayerActor *actor);
 static void PlayerBattleActorWalk(struct PlayerActor *actor);
 static void PlayerBattleActorAttack(struct PlayerActor *actor);
+static void PlayerBattleBlink(struct PlayerActor *actor);
 static void PlayerBattleCalcRect(struct PlayerActor *actor);
 static void PlayerBattleControlCrank(struct PlayerActor *actor);
 
@@ -61,7 +62,7 @@ static const char *playerBattleAnimationNames_Attack[][kPlayerAttackMaximum] = {
 
 // プレイヤアクタを読み込む
 //
-void PlayerBattleActorLoad(void)
+void PlayerBattleActorLoad(int direction)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -84,10 +85,13 @@ void PlayerBattleActorLoad(void)
         ActorSetTag(&actor->actor, kGameTagPlayer);
 
         // 位置の設定
-        BattleGetStartPosition(kDirectionRight, &actor->position);
+        BattleGetStartPosition(direction, &actor->position);
 
         // 向きの設定
-        actor->direction = kDirectionDown;
+        actor->direction = direction ^ 0x01;
+
+        // 点滅の設定
+        actor->blink = 0;
 
         // 矩形の計算
         PlayerBattleCalcRect(actor);
@@ -119,7 +123,7 @@ static void PlayerBattleActorDraw(struct PlayerActor *actor)
     BattleSetClip();
 
     // スプライトの描画
-    {
+    if ((actor->blink & kPlayerBlinkInterval) == 0) {
         struct Vector view;
         GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 0.75f, 1.0f, 1.0f, kDrawModeCopy);
@@ -249,6 +253,9 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
                 AsepriteUpdateSpriteAnimation(&actor->animation);
             }
         }
+
+        // 点滅
+        PlayerBattleBlink(actor);
     }
 
     // 矩形の計算
@@ -318,6 +325,15 @@ static void PlayerBattleActorAttack(struct PlayerActor *actor)
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderCharacter + actor->position.y);
+}
+
+// 点滅する
+//
+static void PlayerBattleBlink(struct PlayerActor *actor)
+{
+    if (actor->blink > 0) {
+        --actor->blink;
+    }
 }
 
 // 矩形を計算する
@@ -396,7 +412,7 @@ int PlayerBattleGetEscapeDirection(void)
         } else if (!BattleIsInsideX(actor->moveRect.left)) {
             direction = kDirectionLeft;
         } else if (!BattleIsInsideX(actor->moveRect.right)) {
-            direction = kDirectionUp;
+            direction = kDirectionRight;
         }
     }
     return direction;

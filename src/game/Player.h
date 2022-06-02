@@ -42,10 +42,9 @@ enum {
 // 点滅
 //
 enum {
-    kPlayerBlinkEscapeFrame = 30, 
-    kPlayerBlinkEscapeInterval = 0x02, 
-    kPlayerBlinkDamageFrame = 30, 
-    kPlayerBlinkDamageInterval = 0x02, 
+    kPlayerBlinkEscape = 30, 
+    kPlayerBlinkDamage = 30, 
+    kPlayerBlinkInterval = 0x02, 
 };
 
 // プレイヤアクタ
@@ -57,8 +56,7 @@ struct PlayerActor {
 
     // 位置
     struct Vector position;
-
-    // 目的地
+    struct Vector origin;
     struct Vector destination;
 
     // 向き
@@ -105,9 +103,10 @@ enum {
 extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
 extern void PlayerGetFieldPosition(struct Vector *position);
+extern void PlayerSetFieldPosition(struct Vector *position);
 extern void PlayerFieldActorLoad(void);
 extern void PlayerFieldGetMoveRect(struct Rect *rect);
-extern void PlayerBattleActorLoad(void);
+extern void PlayerBattleActorLoad(int direction);
 extern int PlayerBattleGetDirection(void);
 extern int PlayerBattleGetEscapeDirection(void);
 extern void PlayerBattleGetPosition(struct Vector *position);

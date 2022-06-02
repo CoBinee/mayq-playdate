@@ -117,7 +117,7 @@ static void EnemyBattleActorDrawCharacter(struct EnemyActor *actor)
     BattleSetClip();
 
     // スプライトの描画
-    if ((actor->blink & kEnemyBlinkDamageInterval) == 0) {
+    if ((actor->blink & kEnemyBlinkInterval) == 0) {
         struct Vector view;
         GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
         int drawmode = actor->damagePoint > 0 ? kDrawModeInverted : kDrawModeCopy;
@@ -162,9 +162,6 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
 
     // 初期化
     if (actor->actor.state == 0) {
-
-        // 目的地の設定
-        actor->destination = actor->position;
 
         // 向きの設定
         actor->direction = IocsGetRandomNumber(NULL) % 4;
@@ -216,9 +213,6 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
 
     // 初期化
     if (actor->actor.state == 0) {
-
-        // 目的地の設定
-        actor->destination = actor->position;
 
         // 向きの設定
         actor->direction = EnemyBattleGetWalkableRandomDirection(actor);
@@ -433,7 +427,7 @@ static bool EnemyBattleDamage(struct EnemyActor *actor)
             actor->life -= actor->damagePoint;
             actor->damagePoint = 0;
             if (actor->life > 0) {
-                actor->blink = kEnemyBlinkDamageFrame;
+                actor->blink = kEnemyBlinkDamage;
             } else {
                 ActorTransition(&actor->actor, (ActorFunction)EnemyBattleActorDeath);
             }

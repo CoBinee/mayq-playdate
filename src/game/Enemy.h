@@ -164,8 +164,9 @@ enum {
 // 点滅
 //
 enum {
-    kEnemyBlinkDamageFrame = 30, 
-    kEnemyBlinkDamageInterval = 0x02, 
+    kEnemyBlinkEscape = 30, 
+    kEnemyBlinkDamage = 30, 
+    kEnemyBlinkInterval = 0x02, 
 };
 
 // エネミーアクタ
@@ -186,8 +187,7 @@ struct EnemyActor {
 
     // 位置
     struct Vector position;
-
-    // 目的地
+    struct Vector origin;
     struct Vector destination;
 
     // 向き
@@ -223,9 +223,11 @@ extern void EnemyRelease(void);
 extern void EnemyActorNull(struct EnemyActor *actor);
 extern int EnemyGetFieldType(int index);
 extern int EnemyGetFieldRest(int index);
+extern void EnemySetFieldRest(int index, int rest);
 extern void EnemyGetFieldPosition(int index, struct Vector *position);
 extern void EnemyFieldActorLoad(void);
 extern int EnemyFieldGetHitIndex(struct Rect *rect);
+extern void EnemyFieldSetEscapeBlink(int index);
 extern void EnemyBattleActorLoad(int type, int rest, int direction);
 extern void EnemyBattleIsHitThenDamage(struct Rect *rect, int x, int y, int point);
 extern int EnemyBattleGetRest(int type);

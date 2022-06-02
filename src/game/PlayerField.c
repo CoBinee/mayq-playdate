@@ -16,6 +16,7 @@
 static void PlayerFieldActorUnload(struct PlayerActor *actor);
 static void PlayerFieldActorDraw(struct PlayerActor *actor);
 static void PlayerFieldActorPlay(struct PlayerActor *actor);
+static void PlayerFieldBlink(struct PlayerActor *actor);;
 static void PlayerFieldCalcRect(struct PlayerActor *actor);
 
 // 内部変数
@@ -61,6 +62,9 @@ void PlayerFieldActorLoad(void)
         // 位置の設定
         actor->position = player->fieldPosition;
 
+        // 点滅の設定
+        actor->blink = 0;
+
         // 矩形の計算
         PlayerFieldCalcRect(actor);
     }
@@ -77,7 +81,7 @@ static void PlayerFieldActorUnload(struct PlayerActor *actor)
     }
 
     // 位置の保存
-    player->fieldPosition = actor->destination;
+    player->fieldPosition = actor->origin;
 }
 
 // プレイヤアクタを描画する
@@ -94,7 +98,7 @@ static void PlayerFieldActorDraw(struct PlayerActor *actor)
     FieldSetClip();
 
     // スプライトの描画
-    {
+    if ((actor->blink & kPlayerBlinkInterval) == 0) {
         struct Vector view;
         GameGetFieldCameraPosition(actor->position.x, actor->position.y, &view);
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 0.75f, 1.0f, 1.0f, kDrawModeCopy);
@@ -117,7 +121,8 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 目的地の設定
+        // 位置の設定
+        actor->origin = actor->position;
         actor->destination = actor->position;
 
         // 向きの設定
@@ -137,8 +142,13 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
-        // 移動の操作
+        // 移動の完了
         if (actor->destination.x == actor->position.x && actor->destination.y == actor->position.y) {
+
+            // 位置の保存
+            actor->origin = actor->position;
+
+            // 移動の操作
             bool land = FieldIsLand(actor->position.x, actor->position.y);
             int direction = actor->direction;
             if (IocsIsButtonPush(kButtonUp)) {
@@ -264,6 +274,9 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
                 AsepriteUpdateSpriteAnimation(&actor->animation);
             }
         }
+
+        // 点滅
+        PlayerFieldBlink(actor);
     }
 
     // 矩形の計算
@@ -274,6 +287,15 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerFieldActorDraw, kGameOrderPlayer);
+}
+
+// 点滅する
+//
+static void PlayerFieldBlink(struct PlayerActor *actor)
+{
+    if (actor->blink > 0) {
+        --actor->blink;
+    }
 }
 
 // 矩形を計算する

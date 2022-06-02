@@ -73,6 +73,12 @@ void GameUpdate(struct Game *game)
 
             // 解放の設定
             SceneSetUnload((SceneFunction)GameUnload);
+
+            // バトルの設定
+            game->battleEncount = -1;
+
+            // プレイの設定
+            game->play = false;
         }
 
         // スプライトの読み込み
@@ -164,7 +170,14 @@ static void GameLoadField(struct Game *game)
         game->play = false;
 
         // バトルの設定
-        game->battleEncount = -1;
+        {
+            // 直前のバトルで逃げた場合、敵を一定時間エンカウントさせない
+            if (game->battleEncount >= 0) {
+                EnemyFieldSetEscapeBlink(game->battleEncount);
+            }
+            game->battleEncount = -1;
+        }
+
 
         // 初期化の完了
         ++game->state;
@@ -308,6 +321,7 @@ static void GameLoadBattle(struct Game *game)
             game->battleRoute = FieldGetBattleRoute(game->battlePosition.x, game->battlePosition.y);
             game->battleDirection = -1;
             {
+                playdate->system->logToConsole("encount = %d, %d - %d, %d", pp.x, pp.y, ep.x, ep.y);
                 int dx = pp.x - ep.x;
                 int dy = pp.y - ep.y;
                 if (abs(dy) > abs(dx)) {
@@ -343,7 +357,7 @@ static void GameLoadBattle(struct Game *game)
         BattleActorLoad(kBattleTypeField, game->battleRoute);
 
         // プレイヤアクタの読み込み
-        PlayerBattleActorLoad();
+        PlayerBattleActorLoad(game->battleDirection);
 
         // エネミーアクタの読み込み
         EnemyBattleActorLoad(game->battleType, game->battleRest, game->battleDirection);
@@ -415,10 +429,20 @@ static void GamePlayBattle(struct Game *game)
         }
     }
 
-    // 
+    // バトルの監視
     {
+        // エネミーの数の取得
         game->battleRest = EnemyBattleGetRest(game->battleType);
+
+        // 逃げる方向の取得
+        game->battleDirection = PlayerBattleGetEscapeDirection();
+
+        // エネミーを倒した
         if (game->battleRest == 0) {
+            GameTransition(game, (GameFunction)GameUnloadBattle);
+
+        // 逃げた
+        } else if (game->battleDirection >= 0) {
             GameTransition(game, (GameFunction)GameUnloadBattle);
         }
     }
@@ -445,6 +469,20 @@ static void GameUnloadBattle(struct Game *game)
 
     // 初期化
     if (game->state == 0) {
+
+        // エネミーの数の反映
+        EnemySetFieldRest(game->battleEncount, game->battleRest);
+
+        // エネミーを全て倒した
+        if (game->battleRest == 0) {
+            game->battleEncount = -1;
+
+        // バトルから逃げた
+        } else {
+            struct Vector position;
+            FieldGetDirectinalPosition(game->battlePosition.x, game->battlePosition.y, game->battleDirection, &position);
+            PlayerSetFieldPosition(&position);
+        }
 
         // ゲームの停止
         game->play = false;

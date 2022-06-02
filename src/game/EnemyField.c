@@ -22,6 +22,7 @@ static void EnemyFieldActorStep(struct EnemyActor *actor);
 static int EnemyFieldGetWalkableDirection(struct EnemyActor *actor);
 static int EnemyFieldGetWalkableRandomDirection(struct EnemyActor *actor);
 static bool EnemyFieldMoveToDestination(struct EnemyActor *actor);
+static void EnemyFieldBlink(struct EnemyActor *actor);
 static void EnemyFieldCalcRect(struct EnemyActor *actor);
 
 // 内部変数
@@ -78,6 +79,11 @@ void EnemyFieldActorLoad(void)
 
                 // 位置の設定
                 actor->position = enemy->fields[i].position;
+                actor->origin = actor->position;
+                actor->destination = actor->position;
+
+                // 点滅の設定
+                actor->blink = 0;
 
                 // 矩形の計算
                 EnemyFieldCalcRect(actor);
@@ -97,7 +103,7 @@ static void EnemyFieldActorUnload(struct EnemyActor *actor)
     }
 
     // 位置の保存
-    enemy->fields[actor->index].position = actor->destination;
+    enemy->fields[actor->index].position = actor->origin;
 }
 
 // エネミーアクタを描画する
@@ -114,7 +120,7 @@ static void EnemyFieldActorDraw(struct EnemyActor *actor)
     FieldSetClip();
 
     // スプライトの描画
-    {
+    if ((actor->blink & kEnemyBlinkInterval) == 0) {
         struct Vector view;
         GameGetFieldCameraPosition(actor->position.x, actor->position.y, &view);
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, actor->data->centerX, actor->data->centerY, 1.0f, 1.0f, kDrawModeCopy);
@@ -137,7 +143,8 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 目的地の設定
+        // 位置の設定
+        actor->origin = actor->position;
         actor->destination = actor->position;
 
         // 向きの設定
@@ -155,6 +162,9 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
 
     // プレイ中
     if (GameIsPlay()) {
+
+        // 点滅
+        EnemyFieldBlink(actor);
 
         // アニメーションの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
@@ -180,7 +190,8 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 目的地の設定
+        // 位置の設定
+        actor->origin = actor->position;
         actor->destination = actor->position;
 
         // 向きの設定
@@ -206,14 +217,14 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
-        // 移動の設定
+        // 移動の完了
         if (actor->position.x == actor->destination.x && actor->position.y == actor->destination.y) {
-            static const int reverses[] = {
-                kDirectionDown, 
-                kDirectionUp, 
-                kDirectionRight, 
-                kDirectionLeft, 
-            };
+
+            // 位置の保存
+            actor->origin = actor->position;
+
+            // 移動の設定
+            int reverse = actor->direction ^ 0x01;
             int way = -1;
             int d = EnemyFieldGetWalkableDirection(actor);
             if (d == (1 << kDirectionUp)) {
@@ -225,7 +236,7 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
             } else if (d == (1 << kDirectionRight)) {
                 way = kDirectionRight;
             } else {
-                int c = d & ~(1 << reverses[actor->direction]);
+                int c = d & ~(1 << reverse);
                 if (c == (1 << kDirectionUp)) {
                     way = kDirectionUp;
                 } else if (c == (1 << kDirectionDown)) {
@@ -269,6 +280,9 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
         // 移動
         EnemyFieldMoveToDestination(actor);
 
+        // 点滅
+        EnemyFieldBlink(actor);
+
         // アニメーションの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
     }
@@ -293,7 +307,8 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 目的地の設定
+        // 位置の設定
+        actor->origin = actor->position;
         actor->destination = actor->position;
 
         // 向きの設定
@@ -311,6 +326,9 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
 
     // プレイ中
     if (GameIsPlay()) {
+
+        // 点滅
+        EnemyFieldBlink(actor);
 
         // アニメーションの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
@@ -336,7 +354,8 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 目的地の設定
+        // 位置の設定
+        actor->origin = actor->position;
         actor->destination = actor->position;
 
         // 向きの設定
@@ -354,6 +373,9 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
 
     // プレイ中
     if (GameIsPlay()) {
+
+        // 点滅
+        EnemyFieldBlink(actor);
 
         // アニメーションの更新
         AsepriteUpdateSpriteAnimation(&actor->animation);
@@ -459,6 +481,15 @@ static bool EnemyFieldMoveToDestination(struct EnemyActor *actor)
     return move;
 }
 
+// 点滅する
+//
+static void EnemyFieldBlink(struct EnemyActor *actor)
+{
+    if (actor->blink > 0) {
+        --actor->blink;
+    }
+}
+
 // 矩形を計算する
 //
 static void EnemyFieldCalcRect(struct EnemyActor *actor)
@@ -481,7 +512,7 @@ int EnemyFieldGetHitIndex(struct Rect *rect)
     while (actor != NULL) {
         if (actor->moveRect.left > rect->right || actor->moveRect.right < rect->left || actor->moveRect.top > rect->bottom || actor->moveRect.bottom < rect->top) {
             ;
-        } else {
+        } else if (actor->blink == 0) {
             index = actor->index;
             break;
         }
@@ -490,5 +521,16 @@ int EnemyFieldGetHitIndex(struct Rect *rect)
     return index;
 }
 
-
-
+// 指定したインデックスのエネミーを点滅させる
+//
+void EnemyFieldSetEscapeBlink(int index)
+{
+    struct EnemyActor *actor = (struct EnemyActor *)ActorFindWithTag(kGameTagEnemy);
+    while (actor != NULL) {
+        if (actor->index == index) {
+            actor->blink = kEnemyBlinkEscape;
+            break;
+        }
+        actor = (struct EnemyActor *)ActorNextWithTag(&actor->actor);
+    }
+}

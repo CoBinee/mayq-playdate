@@ -94,6 +94,14 @@ int EnemyGetFieldRest(int index)
     return enemy != NULL ? enemy->fields[index].rest : 0;
 }
 
+// フィールド上にいるエネミーの数を設定する
+//
+void EnemySetFieldRest(int index, int rest)
+{
+    if (enemy != NULL) {
+        enemy->fields[index].rest = rest;
+    }
+}
 // フィールド上にいるエネミーの位置を取得する
 //
 void EnemyGetFieldPosition(int index, struct Vector *position)
