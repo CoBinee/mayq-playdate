@@ -321,7 +321,6 @@ static void GameLoadBattle(struct Game *game)
             game->battleRoute = FieldGetBattleRoute(game->battlePosition.x, game->battlePosition.y);
             game->battleDirection = -1;
             {
-                playdate->system->logToConsole("encount = %d, %d - %d, %d", pp.x, pp.y, ep.x, ep.y);
                 int dx = pp.x - ep.x;
                 int dy = pp.y - ep.y;
                 if (abs(dy) > abs(dx)) {

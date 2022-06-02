@@ -427,7 +427,7 @@ bool BattleIsInsideX(int x)
 }
 bool BattleIsInsideY(int y)
 {
-    return y >= 0 || y < kBattleSizeY * kBattleSizePixel ? true : false;
+    return y >= 0 && y < kBattleSizeY * kBattleSizePixel ? true : false;
 }
 
 // クリップを設定する

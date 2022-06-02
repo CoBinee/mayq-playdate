@@ -224,8 +224,13 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
             }
             if (actor->position.y == actor->destination.y) {
                 if (FieldIsFall(actor->destination.x, actor->destination.y)) {
-                    if (FieldWalk(actor->destination.x, actor->destination.y, kDirectionDown, land, true, &actor->destination)) {
-                        ;
+                    if (
+                        actor->position.x == actor->destination.x || 
+                        FieldIsFall(actor->position.x, actor->position.y)
+                    ) {
+                        if (FieldWalk(actor->destination.x, actor->destination.y, kDirectionDown, land, true, &actor->destination)) {
+                            ;
+                        }
                     }
                 }
             }

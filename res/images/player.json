@@ -559,7 +559,115 @@
    },
    {
     "filename": "player 62.ase",
+    "frame": { "x": 240, "y": 0, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 63.ase",
+    "frame": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 64.ase",
+    "frame": { "x": 320, "y": 0, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 65.ase",
+    "frame": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 66.ase",
     "frame": { "x": 160, "y": 320, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 67.ase",
+    "frame": { "x": 240, "y": 320, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 68.ase",
+    "frame": { "x": 320, "y": 320, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 69.ase",
+    "frame": { "x": 240, "y": 320, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 70.ase",
+    "frame": { "x": 400, "y": 320, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 71.ase",
+    "frame": { "x": 480, "y": 320, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 72.ase",
+    "frame": { "x": 0, "y": 384, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 73.ase",
+    "frame": { "x": 480, "y": 320, "w": 80, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
+    "sourceSize": { "w": 80, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "player 74.ase",
+    "frame": { "x": 80, "y": 384, "w": 80, "h": 64 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 80, "h": 64 },
@@ -569,10 +677,10 @@
  ],
  "meta": {
   "app": "https://www.aseprite.org/",
-  "version": "1.3-beta14-x64",
+  "version": "1.3-beta14-arm64",
   "image": "player.png",
   "format": "RGBA8888",
-  "size": { "w": 560, "h": 384 },
+  "size": { "w": 560, "h": 448 },
   "scale": "1",
   "frameTags": [
    { "name": "IdleUp", "from": 0, "to": 0, "direction": "forward", "color": "#000000ff" },
@@ -594,7 +702,8 @@
    { "name": "AttackLeft3", "from": 50, "to": 51, "direction": "forward", "color": "#000000ff" },
    { "name": "AttackRight1", "from": 52, "to": 55, "direction": "forward", "color": "#000000ff" },
    { "name": "AttackRight2", "from": 56, "to": 59, "direction": "forward", "color": "#000000ff" },
-   { "name": "AttackRight3", "from": 60, "to": 61, "direction": "forward", "color": "#000000ff" }
+   { "name": "AttackRight3", "from": 60, "to": 61, "direction": "forward", "color": "#000000ff" },
+   { "name": "Enter", "from": 62, "to": 73, "direction": "forward", "color": "#000000ff" }
   ],
   "layers": [
    { "name": "Layer 0", "opacity": 255, "blendMode": "normal" },
