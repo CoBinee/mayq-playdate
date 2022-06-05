@@ -422,9 +422,11 @@ static void GamePlayBattle(struct Game *game)
         {
             struct Rect rect;
             PlayerBattleGetAttackRect(&rect);
-            struct Vector position;
-            PlayerBattleGetPosition(&position);
-            EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
+            if (rect.left < rect.right) {
+                struct Vector position;
+                PlayerBattleGetPosition(&position);
+                EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
+            }
         }
     }
 
