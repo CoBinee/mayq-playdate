@@ -451,6 +451,15 @@ static void GamePlayBattle(struct Game *game)
         // game->play = !game->play;
     }
     if (IocsIsButtonEdge(kButtonB)) {
+        if ((game->battleRoute & (1 << kDirectionUp)) != 0) {
+            game->battleDirection = kDirectionUp;
+        } else if ((game->battleRoute & (1 << kDirectionDown)) != 0) {
+            game->battleDirection = kDirectionDown;
+        } else if ((game->battleRoute & (1 << kDirectionLeft)) != 0) {
+            game->battleDirection = kDirectionLeft;
+        } else {
+            game->battleDirection = kDirectionRight;
+        }
         GameTransition(game, (GameFunction)GameUnloadBattle);
     }
 

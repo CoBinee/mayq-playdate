@@ -53,6 +53,41 @@ enum {
     kFieldMapCave10, 
     kFieldMapCave11, 
     kFieldMapCave12, 
+    kFieldMapCastle00, 
+    kFieldMapCastle01, 
+    kFieldMapCastle02, 
+    kFieldMapCastle03, 
+    kFieldMapCastle04, 
+    kFieldMapCastle05, 
+    kFieldMapCastle06, 
+    kFieldMapCastle10, 
+    kFieldMapCastle11, 
+    kFieldMapCastle12, 
+    kFieldMapCastle13, 
+    kFieldMapCastle14, 
+    kFieldMapCastle15, 
+    kFieldMapCastle16, 
+    kFieldMapCastle20, 
+    kFieldMapCastle21, 
+    kFieldMapCastle22, 
+    kFieldMapCastle23, 
+    kFieldMapCastle24, 
+    kFieldMapCastle25, 
+    kFieldMapCastle26, 
+    kFieldMapCastle30, 
+    kFieldMapCastle31, 
+    kFieldMapCastle32, 
+    kFieldMapCastle33, 
+    kFieldMapCastle34, 
+    kFieldMapCastle35, 
+    kFieldMapCastle36, 
+    kFieldMapCastle40, 
+    kFieldMapCastle41, 
+    kFieldMapCastle42, 
+    kFieldMapCastle43, 
+    kFieldMapCastle44, 
+    kFieldMapCastle45, 
+    kFieldMapCastle46, 
 };
 
 // ダンジョン
@@ -79,7 +114,8 @@ enum {
     kFieldLocationStart, 
     kFieldLocationCave, 
     kFieldLocationCaveSize = 7, 
-    kFieldLocationEnemy = kFieldLocationCave + kFieldLocationCaveSize, 
+    kFieldLocationCastle = kFieldLocationCave + kFieldLocationCaveSize, 
+    kFieldLocationEnemy
 };
 
 // 洞窟
@@ -87,6 +123,13 @@ enum {
 enum {
     kFieldCaveSizeX = 3, 
     kFieldCaveSizeY = 2, 
+};
+
+// 城
+//
+enum {
+    kFieldCastleSizeX = 7, 
+    kFieldCastleSizeY = 5, 
 };
 
 // フィールド
@@ -140,6 +183,41 @@ enum {
     kFieldAniamtionCave10, 
     kFieldAniamtionCave11, 
     kFieldAniamtionCave12, 
+    kFieldAnimationCastle00, 
+    kFieldAnimationCastle01, 
+    kFieldAnimationCastle02, 
+    kFieldAnimationCastle03, 
+    kFieldAnimationCastle04, 
+    kFieldAnimationCastle05, 
+    kFieldAnimationCastle06, 
+    kFieldAnimationCastle10, 
+    kFieldAnimationCastle11, 
+    kFieldAnimationCastle12, 
+    kFieldAnimationCastle13, 
+    kFieldAnimationCastle14, 
+    kFieldAnimationCastle15, 
+    kFieldAnimationCastle16, 
+    kFieldAnimationCastle20, 
+    kFieldAnimationCastle21, 
+    kFieldAnimationCastle22, 
+    kFieldAnimationCastle23, 
+    kFieldAnimationCastle24, 
+    kFieldAnimationCastle25, 
+    kFieldAnimationCastle26, 
+    kFieldAnimationCastle30, 
+    kFieldAnimationCastle31, 
+    kFieldAnimationCastle32, 
+    kFieldAnimationCastle33, 
+    kFieldAnimationCastle34, 
+    kFieldAnimationCastle35, 
+    kFieldAnimationCastle36, 
+    kFieldAnimationCastle40, 
+    kFieldAnimationCastle41, 
+    kFieldAnimationCastle42, 
+    kFieldAnimationCastle43, 
+    kFieldAnimationCastle44, 
+    kFieldAnimationCastle45, 
+    kFieldAnimationCastle46, 
     kFieldAnimationSize, 
 };
 
@@ -151,7 +229,7 @@ struct FieldActor {
     struct Actor actor;
 
     // アニメーション
-    struct AsepriteSpriteAnimation animations[kFieldAnimationSize];
+    struct AsepriteSpriteAnimation *animations;
 
 };
 

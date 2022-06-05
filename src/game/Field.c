@@ -47,6 +47,41 @@ static const char *fieldAnimationNames[kFieldAnimationSize] = {
     "Cave10", 
     "Cave11", 
     "Cave12", 
+    "Castle00", 
+    "Castle01", 
+    "Castle02", 
+    "Castle03", 
+    "Castle04", 
+    "Castle05", 
+    "Castle06", 
+    "Castle10", 
+    "Castle11", 
+    "Castle12", 
+    "Castle13", 
+    "Castle14", 
+    "Castle15", 
+    "Castle16", 
+    "Castle20", 
+    "Castle21", 
+    "Castle22", 
+    "Castle23", 
+    "Castle24", 
+    "Castle25", 
+    "Castle26", 
+    "Castle30", 
+    "Castle31", 
+    "Castle32", 
+    "Castle33", 
+    "Castle34", 
+    "Castle35", 
+    "Castle36", 
+    "Castle40", 
+    "Castle41", 
+    "Castle42", 
+    "Castle43", 
+    "Castle44", 
+    "Castle45", 
+    "Castle46", 
 };
 
 
@@ -127,10 +162,15 @@ static void FieldBuildLocation(void)
     }
     */
 
-    // 開始位置の大きさの設定
+    // 大きさの設定
     {
+        // 開始位置の大きさの設定
         ++field->locations[kFieldLocationStart].right;
         ++field->locations[kFieldLocationStart].bottom;
+
+        // 城の大きさの設定
+        ++field->locations[kFieldLocationCastle].right;
+        ++field->locations[kFieldLocationCastle].bottom;
     }
 
     // 配置の範囲でランダムに設定
@@ -176,6 +216,9 @@ static void FieldBuildMap(void)
             for (int i = 0; i < kFieldLocationCaveSize; i++) {
                 FieldLockLocation(kFieldLocationCave + i);
             }
+
+            // 城をロック
+            FieldLockLocation(kFieldLocationCastle);
         }
 
         // 穴を掘る
@@ -183,7 +226,6 @@ static void FieldBuildMap(void)
             int x = field->locations[kFieldLocationDig].left * kFieldLocationMazeSizeX * 2 + 1;
             int y = field->locations[kFieldLocationDig].top * kFieldLocationMazeSizeY * 2 + 1;
             MazeDig(field->maze, x, y);
-
         }
 
         // 経路の設定
@@ -396,6 +438,39 @@ static void FieldBuildMap(void)
         for (int i = 0; i < kFieldLocationCaveSize; i++) {
             FieldDigLocation(kFieldLocationCave + i);
         }
+
+        // 城を開ける
+        FieldDigLocation(kFieldLocationCastle);
+    }
+
+    // 建物などを置く
+    {
+        // 開始位置を置く
+
+        // 洞窟の入り口を置く
+        for (int i = 0; i < kFieldLocationCaveSize; i++) {
+            int location = kFieldLocationCave + i;
+            if (location >= kFieldLocationCave && location < kFieldLocationCave + kFieldLocationCaveSize) {
+                int x = ((field->locations[location].right - field->locations[location].left + 1) - kFieldCaveSizeX) / 2 + field->locations[location].left;
+                int y = field->locations[location].bottom - kFieldCaveSizeY;
+                for (int h = 0; h < kFieldCaveSizeY; h++) {
+                    for (int w = 0; w < kFieldCaveSizeX; w++) {
+                        field->maps[y + h][x + w] = kFieldMapCave00 + h * kFieldCaveSizeX + w;
+                    }
+                }
+            }
+        }
+
+        // 城を置く
+        {
+            int x = ((field->locations[kFieldLocationCastle].right - field->locations[kFieldLocationCastle].left + 1) - kFieldCastleSizeX) / 2 + field->locations[kFieldLocationCastle].left;
+            int y = field->locations[kFieldLocationCastle].bottom - kFieldCastleSizeY;
+            for (int h = 0; h < kFieldCastleSizeY; h++) {
+                for (int w = 0; w < kFieldCastleSizeX; w++) {
+                    field->maps[y + h][x + w] = kFieldMapCastle00 + h * kFieldCastleSizeX + w;
+                }
+            }
+        }
     }
 
     // 柱を立てる
@@ -534,17 +609,6 @@ static void FieldDigLocation(int location)
             ++y;
         }
     }
-
-    // 洞窟の入り口を置く
-    if (location >= kFieldLocationCave && location < kFieldLocationCave + kFieldLocationCaveSize) {
-        int x = ((field->locations[location].right - field->locations[location].left + 1) - kFieldCaveSizeX) / 2 + field->locations[location].left;
-        int y = field->locations[location].bottom - kFieldCaveSizeY;
-        for (int h = 0; h < kFieldCaveSizeY; h++) {
-            for (int w = 0; w < kFieldCaveSizeX; w++) {
-                field->maps[y + h][x + w] = kFieldMapCave00 + h * kFieldCaveSizeX + w;
-            }
-        }
-    }
 }
 
 // フィールドアクタを読み込む
@@ -570,6 +634,13 @@ void FieldActorLoad(void)
 
         // タグの設定
         ActorSetTag(&actor->actor, kGameTagField);
+
+        // スプライトの作成
+        actor->animations = (struct AsepriteSpriteAnimation *)playdate->system->realloc(NULL, kFieldAnimationSize * sizeof (struct AsepriteSpriteAnimation));
+        if (actor->animations == NULL) {
+            playdate->system->error("%s: %d: field actor animation is not created.", __FILE__, __LINE__);
+        }
+
     }
 }
 
@@ -581,6 +652,11 @@ static void FieldActorUnload(struct FieldActor *actor)
     PlaydateAPI *playdate = IocsGetPlaydate();
     if (playdate == NULL) {
         return;
+    }
+
+    // スプライトの解放
+    if (actor->animations != NULL) {
+        playdate->system->realloc(actor->animations, 0);
     }
 }
 
