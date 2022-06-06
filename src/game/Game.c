@@ -231,16 +231,38 @@ static void GamePlayField(struct Game *game)
         ++game->state;
     }
 
-    // ヒット判定
+    // プレイの監視
     {
+        // 遷移の初期化
+        GameFunction function = NULL;
+
         // エネミーとの接触
         {
             struct Rect rect;
             PlayerFieldGetMoveRect(&rect);
             game->battleEncount = EnemyFieldGetHitIndex(&rect);
             if (game->battleEncount >= 0) {
-                GameTransition(game, (GameFunction)GameUnloadField);
+                function = (GameFunction)GameUnloadField;
             }
+        }
+
+        // 洞窟に入る
+        if (function == NULL) {
+            if (PlayerFieldIsEnterCave()) {
+                function = (GameFunction)GameUnloadField;
+            }
+        }
+
+        // 城に入る
+        if (function == NULL) {
+            if (PlayerFieldIsEnterCastle()) {
+                function = (GameFunction)GameUnloadField;
+            }
+        }
+
+        // ゲームの遷移
+        if (function != NULL) {
+            GameTransition(game, function);
         }
     }
 

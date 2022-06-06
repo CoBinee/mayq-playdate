@@ -62,6 +62,9 @@ void PlayerFieldActorLoad(void)
         // 位置の設定
         actor->position = player->fieldPosition;
 
+        // 入るの設定
+        actor->enter = kPlayerEnterNull;
+
         // 点滅の設定
         actor->blink = 0;
 
@@ -183,7 +186,11 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
                     }
                     actor->direction = kDirectionRight;
                 } else {
-                    if (FieldWalk(actor->position.x, actor->position.y, kDirectionUp, jump, true, &actor->destination)) {
+                    if (FieldIsCave(actor->position.x, actor->position.y)) {
+                        actor->enter = kPlayerEnterCave;
+                    } else if (FieldIsCastle(actor->position.x, actor->position.y)) {
+                        actor->enter = kPlayerEnterCastle;
+                    } else if (FieldWalk(actor->position.x, actor->position.y, kDirectionUp, jump, true, &actor->destination)) {
                         ;
                     }
                     actor->direction = kDirectionUp;
@@ -326,4 +333,16 @@ void PlayerFieldGetMoveRect(struct Rect *rect)
     }
 }
 
+// プレイヤーが何かに入ったかどうかを判定する
+//
+bool PlayerFieldIsEnterCave(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL && actor->enter == kPlayerEnterCave ? true : false;
+}
+bool PlayerFieldIsEnterCastle(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL && actor->enter == kPlayerEnterCastle ? true : false;
+}
 

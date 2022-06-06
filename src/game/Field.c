@@ -149,7 +149,7 @@ static void FieldBuildLocation(void)
     // 配置の初期化
     for (int i = 0; i < kFieldLocationSize; i++) {
         field->locations[i].left = i % kFieldLocationSizeX;
-        field->locations[i].top = i / kFieldLocationSizeY;
+        field->locations[i].top = i / kFieldLocationSizeX;
         field->locations[i].right = field->locations[i].left;
         field->locations[i].bottom = field->locations[i].top;
     }
@@ -787,6 +787,20 @@ bool FieldIsSpace(int x, int y)
 bool FieldIsLadder(int x, int y)
 {
     return FieldIsMapLadder(FieldGetMap(x, y));
+}
+
+// フィールドが洞窟かどうかを判定する
+//
+bool FieldIsCave(int x, int y)
+{
+    return FieldGetMap(x, y) == kFieldMapCaveEntrance ? true : false;
+}
+
+// フィールドが城かどうかを判定する
+//
+bool FieldIsCastle(int x, int y)
+{
+    return FieldGetMap(x, y) == kFieldMapCastleEntrance ? true : false;
 }
 
 // フィールドで落下するかどうかを判定する

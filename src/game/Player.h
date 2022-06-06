@@ -30,6 +30,14 @@ enum {
     kPlayerJumpMaximum = 2, 
 };
 
+// 入る
+//
+enum {
+    kPlayerEnterNull = 0, 
+    kPlayerEnterCave, 
+    kPlayerEnterCastle, 
+};
+
 // 攻撃
 //
 enum {
@@ -69,6 +77,9 @@ struct PlayerActor {
     int jumpCount;
     int jumpStep;
 
+    // 入る
+    int enter;
+
     // 攻撃
     int attackCount;
     struct Rect attackRect;
@@ -106,6 +117,8 @@ extern void PlayerGetFieldPosition(struct Vector *position);
 extern void PlayerSetFieldPosition(struct Vector *position);
 extern void PlayerFieldActorLoad(void);
 extern void PlayerFieldGetMoveRect(struct Rect *rect);
+extern bool PlayerFieldIsEnterCave(void);
+extern bool PlayerFieldIsEnterCastle(void);
 extern void PlayerBattleActorLoad(int direction);
 extern int PlayerBattleGetDirection(void);
 extern int PlayerBattleGetEscapeDirection(void);

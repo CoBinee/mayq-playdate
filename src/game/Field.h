@@ -52,6 +52,7 @@ enum {
     kFieldMapCave02, 
     kFieldMapCave10, 
     kFieldMapCave11, 
+    kFieldMapCaveEntrance = kFieldMapCave11, 
     kFieldMapCave12, 
     kFieldMapCastle00, 
     kFieldMapCastle01, 
@@ -85,6 +86,7 @@ enum {
     kFieldMapCastle41, 
     kFieldMapCastle42, 
     kFieldMapCastle43, 
+    kFieldMapCastleEntrance = kFieldMapCastle43, 
     kFieldMapCastle44, 
     kFieldMapCastle45, 
     kFieldMapCastle46, 
@@ -242,6 +244,8 @@ extern unsigned char FieldGetMap(int x, int y);
 extern bool FieldIsSpace(int x, int y);
 extern bool FieldIsBlock(int x, int y);
 extern bool FieldIsLadder(int x, int y);
+extern bool FieldIsCave(int x, int y);
+extern bool FieldIsCastle(int x, int y);
 extern bool FieldIsLand(int x, int y);
 extern bool FieldIsFall(int x, int y);
 extern bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall);
