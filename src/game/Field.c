@@ -179,10 +179,16 @@ static void FieldBuildLocation(void)
         int locationy = field->locations[i].top;
         int sizex = field->locations[i].right - locationx + 1;
         int sizey = field->locations[i].bottom - locationy + 1;
-        int mazex = (IocsGetRandomNumber(&field->xorshift) % ((kFieldLocationMazeSizeX - 1) - sizex)) + locationx * kFieldLocationMazeSizeX;
-        int mazey = (IocsGetRandomNumber(&field->xorshift) % ((kFieldLocationMazeSizeY - 1) - sizey)) + locationy * kFieldLocationMazeSizeY;
-        field->locations[i].left = mazex * kFieldSectionSizeX;
-        field->locations[i].top = mazey * kFieldSectionSizeY;
+        int areax = locationx * kFieldLocationAreaSizeX;
+        int areay = locationy * kFieldLocationAreaSizeY;
+        if (sizex < kFieldLocationAreaSizeX - 1) {
+            areax += IocsGetRandomNumber(&field->xorshift) % ((kFieldLocationAreaSizeX - 1 - sizex));
+        }
+        if (sizey < kFieldLocationAreaSizeY - 1) {
+            areay += IocsGetRandomNumber(&field->xorshift) % ((kFieldLocationAreaSizeY - 1 - sizey));
+        }
+        field->locations[i].left = areax * kFieldSectionSizeX;
+        field->locations[i].top = areay * kFieldSectionSizeY;
         field->locations[i].right = field->locations[i].left + sizex * kFieldSectionSizeX- 1;
         field->locations[i].bottom = field->locations[i].top + sizey * kFieldSectionSizeY- 1;
     }
@@ -223,8 +229,8 @@ static void FieldBuildMap(void)
 
         // 穴を掘る
         {
-            int x = field->locations[kFieldLocationDig].left * kFieldLocationMazeSizeX * 2 + 1;
-            int y = field->locations[kFieldLocationDig].top * kFieldLocationMazeSizeY * 2 + 1;
+            int x = (field->locations[kFieldLocationDig].left / kFieldSectionSizeX) * 2 + 1;
+            int y = (field->locations[kFieldLocationDig].top / kFieldSectionSizeY) * 2 + 1;
             MazeDig(field->maze, x, y);
         }
 

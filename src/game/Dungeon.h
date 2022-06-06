@@ -16,8 +16,8 @@
 // 迷路
 //
 enum {
-    kDungeonMazeSizeX = 12, 
-    kDungeonMazeSizeY = 12, 
+    kDungeonMazeSizeX = 16, 
+    kDungeonMazeSizeY = 16, 
 };
 
 // ダンジョン
@@ -33,6 +33,8 @@ enum {
     kDungeonLocationSizeX = 4, 
     kDungeonLocationSizeY = 4, 
     kDungeonLocationSize = kDungeonLocationSizeX * kDungeonLocationSizeY, 
+    kDungeonLocationAreaSizeX = kDungeonMazeSizeX / kDungeonLocationSizeX, 
+    kDungeonLocationAreaSizeY = kDungeonMazeSizeY / kDungeonLocationSizeY, 
     kDungeonLocationDig = 0, 
     kDungeonLocationEntrance, 
     kDungeonLocationEntranceSize = 8, 
@@ -52,7 +54,7 @@ struct Dungeon {
     struct Maze *maze;
 
     // 配置
-    struct Rect locations[kDungeonLocationSize];
+    struct Vector locations[kDungeonLocationSize];
 
 };
 

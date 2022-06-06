@@ -20,6 +20,7 @@ struct Game {
 
     // 処理関数
     GameFunction function;
+    GameFunction transition;
 
     // 状態
     int state;
@@ -51,7 +52,8 @@ enum {
 enum {
     kGamePriorityNull = 0, 
     kGamePriorityField, 
-    kGamePriorityBattle = kGamePriorityField, 
+    kGamePriorityDungeon = kGamePriorityField, 
+    kGamePriorityBattle, 
     kGamePriorityPlayer, 
     kGamePriorityEnemy, 
 };
@@ -61,7 +63,8 @@ enum {
 enum {
     kGameTagNull = 0, 
     kGameTagField, 
-    kGameTagBattle = kGameTagField, 
+    kGameTagDungeon = kGameTagField, 
+    kGameTagBattle, 
     kGameTagPlayer, 
     kGameTagEnemy, 
 };
@@ -71,7 +74,8 @@ enum {
 enum {
     kGameOrderNull = 0, 
     kGameOrderField, 
-    kGameOrderBattle = kGameOrderField, 
+    kGameOrderDungeon = kGameOrderField, 
+    kGameOrderBattle, 
     kGameOrderEnemy, 
     kGameOrderPlayer, 
     kGameOrderCharacter, 

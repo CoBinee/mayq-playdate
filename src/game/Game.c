@@ -12,6 +12,7 @@
 #include "Application.h"
 #include "Game.h"
 #include "Field.h"
+#include "Dungeon.h"
 #include "Battle.h"
 #include "Player.h"
 #include "Enemy.h"
@@ -24,6 +25,10 @@ static void GameLoadField(struct Game *game);
 static void GameStartField(struct Game *game);
 static void GamePlayField(struct Game *game);
 static void GameUnloadField(struct Game *game);
+static void GameLoadDungeon(struct Game *game);
+static void GameStartDungeon(struct Game *game);
+static void GamePlayDungeon(struct Game *game);
+static void GameUnloadDungeon(struct Game *game);
 static void GameLoadBattle(struct Game *game);
 static void GameStartBattle(struct Game *game);
 static void GamePlayBattle(struct Game *game);
@@ -90,6 +95,9 @@ void GameUpdate(struct Game *game)
         // フィールドの初期化
         FieldInitialize();
 
+        // ダンジョンの初期化
+        DungeonInitialize();
+
         // バトルの初期化
         BattleInitialize();
 
@@ -124,6 +132,9 @@ static void GameUnload(struct Game *game)
 
     // バトルの解放
     BattleRelease();
+
+    // ダンジョンの解放
+    DungeonRelease();
 
     // フィールドの解放
     FieldRelease();
@@ -178,7 +189,6 @@ static void GameLoadField(struct Game *game)
             game->battleEncount = -1;
         }
 
-
         // 初期化の完了
         ++game->state;
     }
@@ -227,42 +237,42 @@ static void GamePlayField(struct Game *game)
         // ゲームの停止
         game->play = true;
 
+        // 遷移の設定
+        game->transition = NULL;
+
         // 初期化の完了
         ++game->state;
     }
 
     // プレイの監視
     {
-        // 遷移の初期化
-        GameFunction function = NULL;
-
         // エネミーとの接触
-        {
+        if (game->transition == NULL) {
             struct Rect rect;
             PlayerFieldGetMoveRect(&rect);
             game->battleEncount = EnemyFieldGetHitIndex(&rect);
             if (game->battleEncount >= 0) {
-                function = (GameFunction)GameUnloadField;
+                game->transition = (GameFunction)GameLoadBattle;
             }
         }
 
         // 洞窟に入る
-        if (function == NULL) {
+        if (game->transition == NULL) {
             if (PlayerFieldIsEnterCave()) {
-                function = (GameFunction)GameUnloadField;
+                game->transition = (GameFunction)GameLoadDungeon;
             }
         }
 
         // 城に入る
-        if (function == NULL) {
+        if (game->transition == NULL) {
             if (PlayerFieldIsEnterCastle()) {
-                function = (GameFunction)GameUnloadField;
+                game->transition = (GameFunction)GameLoadBattle;
             }
         }
 
-        // ゲームの遷移
-        if (function != NULL) {
-            GameTransition(game, function);
+        // 処理の遷移
+        if (game->transition != NULL) {
+            GameTransition(game, (GameFunction)GameUnloadField);
         }
     }
 
@@ -271,6 +281,7 @@ static void GamePlayField(struct Game *game)
         game->play = !game->play;
     }
     if (IocsIsButtonEdge(kButtonB)) {
+        game->transition = (GameFunction)GameLoadBattle;
         GameTransition(game, (GameFunction)GameUnloadField);
     }
 
@@ -299,13 +310,113 @@ static void GameUnloadField(struct Game *game)
     // アクタの解放
     ActorUnloadAll();
 
-    // エンカウント
-    if (game->battleEncount >= 0) {
-        GameTransition(game, (GameFunction)GameLoadBattle);
-    } else {
-        GameTransition(game, (GameFunction)GameLoadBattle);
+    // 処理の遷移
+    GameTransition(game, game->transition);
+}
+
+// ダンジョンを読み込む
+//
+static void GameLoadDungeon(struct Game *game)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
     }
 
+    // 初期化
+    if (game->state == 0) {
+
+        // ダンジョンアクタの読み込み
+        DungeonActorLoad();
+
+        // ゲームの停止
+        game->play = false;
+
+        // 初期化の完了
+        ++game->state;
+    }
+
+    // 処理の遷移
+    GameTransition(game, (GameFunction)GameStartDungeon);
+}
+
+// ダンジョンを開始する
+//
+static void GameStartDungeon(struct Game *game)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // 初期化
+    if (game->state == 0) {
+
+        // ゲームの停止
+        game->play = false;
+
+        // 初期化の完了
+        ++game->state;
+    }
+
+    // 処理の遷移
+    GameTransition(game, (GameFunction)GamePlayDungeon);
+}
+
+// ダンジョンをプレイする
+//
+static void GamePlayDungeon(struct Game *game)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // 初期化
+    if (game->state == 0) {
+
+        // ゲームの停止
+        game->play = true;
+
+        // 初期化の完了
+        ++game->state;
+    }
+
+    // DEBUG
+    if (IocsIsButtonEdge(kButtonB)) {
+        GameTransition(game, (GameFunction)GameUnloadDungeon);
+    }
+
+}
+
+// ダンジョンを解放する
+//
+static void GameUnloadDungeon(struct Game *game)
+{
+    // Playdate の取得
+    PlaydateAPI *playdate = IocsGetPlaydate();
+    if (playdate == NULL) {
+        return;
+    }
+
+    // 初期化
+    if (game->state == 0) {
+
+        // ゲームの停止
+        game->play = false;
+
+        // 初期化の完了
+        ++game->state;
+    }
+
+    // アクタの解放
+    ActorUnloadAll();
+
+    // 処理の遷移
+    GameTransition(game, (GameFunction)GameLoadField);
 }
 
 // バトルを読み込む
