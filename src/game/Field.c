@@ -171,16 +171,22 @@ static void FieldBuildLocation(void)
         // 城の大きさの設定
         ++field->locations[kFieldLocationCastle].right;
         ++field->locations[kFieldLocationCastle].bottom;
+
+        // エネミーの大きさの設定
+        for (int i = kFieldLocationEnemy; i < kFieldLocationSize; i++) {
+            field->locations[i].right = field->locations[i].left + kFieldLocationAreaSizeX - 1;
+            field->locations[i].bottom = field->locations[i].top + kFieldLocationAreaSizeY - 1;
+        }
     }
 
-    // 配置の範囲でランダムに設定
+    // 配置の範囲をランダムに設定
     for (int i = 0; i < kFieldLocationSize; i++) {
         int locationx = field->locations[i].left;
         int locationy = field->locations[i].top;
-        int sizex = field->locations[i].right - locationx + 1;
-        int sizey = field->locations[i].bottom - locationy + 1;
         int areax = locationx * kFieldLocationAreaSizeX;
         int areay = locationy * kFieldLocationAreaSizeY;
+        int sizex = field->locations[i].right - locationx + 1;
+        int sizey = field->locations[i].bottom - locationy + 1;
         if (sizex < kFieldLocationAreaSizeX - 1) {
             areax += IocsGetRandomNumber(&field->xorshift) % ((kFieldLocationAreaSizeX - 1 - sizex));
         }
@@ -1006,7 +1012,7 @@ void FieldGetStartPosition(struct Vector *position)
 //
 void FieldGetEnemyPosition(struct Vector *position, bool land)
 {
-    int x = (field->locations[field->locationEnemy].left + field->locations[field->locationEnemy].right + 1) / 2;
+    int x = field->locations[field->locationEnemy].left + (IocsGetRandomNumber(&field->xorshift) % (field->locations[field->locationEnemy].right - field->locations[field->locationEnemy].left + 1));
     int y = field->locations[field->locationEnemy].top;
     while (!FieldIsSpace(x * kFieldSizePixel, y * kFieldSizePixel)) {
         ++y;
