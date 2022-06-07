@@ -90,6 +90,16 @@ enum {
     kFieldMapCastle44, 
     kFieldMapCastle45, 
     kFieldMapCastle46, 
+    kFieldMapShop00, 
+    kFieldMapShop01, 
+    kFieldMapShop02, 
+    kFieldMapShop10, 
+    kFieldMapShop11, 
+    kFieldMapShop12, 
+    kFieldMapShop20, 
+    kFieldMapShop21, 
+    kFieldMapShopEntrance = kFieldMapShop21, 
+    kFieldMapShop22, 
 };
 
 // ダンジョン
@@ -115,9 +125,11 @@ enum {
     kFieldLocationDig = 0, 
     kFieldLocationStart, 
     kFieldLocationCave, 
-    kFieldLocationCaveSize = 7, 
+    kFieldLocationCaveSize = 8, 
     kFieldLocationCastle = kFieldLocationCave + kFieldLocationCaveSize, 
-    kFieldLocationEnemy
+    kFieldLocationShop, 
+    kFieldLocationShopSize = 4, 
+    kFieldLocationEnemy = kFieldLocationShop + kFieldLocationShopSize, 
 };
 
 // 洞窟
@@ -132,6 +144,13 @@ enum {
 enum {
     kFieldCastleSizeX = 7, 
     kFieldCastleSizeY = 5, 
+};
+
+// 店
+//
+enum {
+    kFieldShopSizeX = 3, 
+    kFieldShopSizeY = 3, 
 };
 
 // フィールド
@@ -209,6 +228,15 @@ enum {
     kFieldAnimationCastle44, 
     kFieldAnimationCastle45, 
     kFieldAnimationCastle46, 
+    kFieldAnimationShop00, 
+    kFieldAnimationShop01, 
+    kFieldAnimationShop02, 
+    kFieldAnimationShop10, 
+    kFieldAnimationShop11, 
+    kFieldAnimationShop12, 
+    kFieldAnimationShop20, 
+    kFieldAnimationShop21, 
+    kFieldAnimationShop22, 
     kFieldAnimationSize, 
 };
 
@@ -244,6 +272,7 @@ extern void FieldGetStartPosition(struct Vector *position);
 extern void FieldGetEnemyPosition(struct Vector *position, bool land);
 extern void FieldGetDirectinalPosition(int x, int y, int direction, struct Vector *position);
 extern int FieldGetBattleRoute(int x, int y);
+extern int FieldGetCaveIndex(int x, int y);
 extern void FieldClearClip(void);
 extern void FieldSetClip(void);
 

@@ -23,6 +23,8 @@ static void FieldDigLocation(int location);
 static void FieldActorUnload(struct FieldActor *actor);
 static void FieldActorDraw(struct FieldActor *actor);
 static void FieldActorLoop(struct FieldActor *actor);
+static int FieldGetMapX(int x);
+static int FieldGetMapY(int x);
 static bool FieldIsMapBack(unsigned char map);
 static bool FieldIsMapBlock(unsigned char map);
 static bool FieldIsMapLadder(unsigned char map);
@@ -82,6 +84,15 @@ static const char *fieldAnimationNames[kFieldAnimationSize] = {
     "Castle44", 
     "Castle45", 
     "Castle46", 
+    "Shop00", 
+    "Shop01", 
+    "Shop02", 
+    "Shop10", 
+    "Shop11", 
+    "Shop12", 
+    "Shop20", 
+    "Shop21", 
+    "Shop22", 
 };
 
 
@@ -168,9 +179,17 @@ static void FieldBuildLocation(void)
         ++field->locations[kFieldLocationStart].right;
         ++field->locations[kFieldLocationStart].bottom;
 
+        // 洞窟の大きさの設定
+
         // 城の大きさの設定
         ++field->locations[kFieldLocationCastle].right;
         ++field->locations[kFieldLocationCastle].bottom;
+
+        // 店の大きさの設定
+        for (int i = 0; i < kFieldLocationShopSize; i++) {
+            ++field->locations[kFieldLocationShop + i].right;
+            ++field->locations[kFieldLocationShop + i].bottom;
+        }
 
         // エネミーの大きさの設定
         for (int i = kFieldLocationEnemy; i < kFieldLocationSize; i++) {
@@ -231,6 +250,11 @@ static void FieldBuildMap(void)
 
             // 城をロック
             FieldLockLocation(kFieldLocationCastle);
+
+            // 店をロック
+            for (int i = 0; i < kFieldLocationShopSize; i++) {
+                FieldLockLocation(kFieldLocationShop + i);
+            }
         }
 
         // 穴を掘る
@@ -453,6 +477,11 @@ static void FieldBuildMap(void)
 
         // 城を開ける
         FieldDigLocation(kFieldLocationCastle);
+
+        // 店を開ける
+        for (int i = 0; i < kFieldLocationShopSize; i++) {
+            FieldDigLocation(kFieldLocationShop + i);
+        }
     }
 
     // 建物などを置く
@@ -462,13 +491,11 @@ static void FieldBuildMap(void)
         // 洞窟の入り口を置く
         for (int i = 0; i < kFieldLocationCaveSize; i++) {
             int location = kFieldLocationCave + i;
-            if (location >= kFieldLocationCave && location < kFieldLocationCave + kFieldLocationCaveSize) {
-                int x = ((field->locations[location].right - field->locations[location].left + 1) - kFieldCaveSizeX) / 2 + field->locations[location].left;
-                int y = field->locations[location].bottom - kFieldCaveSizeY;
-                for (int h = 0; h < kFieldCaveSizeY; h++) {
-                    for (int w = 0; w < kFieldCaveSizeX; w++) {
-                        field->maps[y + h][x + w] = kFieldMapCave00 + h * kFieldCaveSizeX + w;
-                    }
+            int x = ((field->locations[location].right - field->locations[location].left + 1) - kFieldCaveSizeX) / 2 + field->locations[location].left;
+            int y = field->locations[location].bottom - kFieldCaveSizeY;
+            for (int h = 0; h < kFieldCaveSizeY; h++) {
+                for (int w = 0; w < kFieldCaveSizeX; w++) {
+                    field->maps[y + h][x + w] = kFieldMapCave00 + h * kFieldCaveSizeX + w;
                 }
             }
         }
@@ -480,6 +507,18 @@ static void FieldBuildMap(void)
             for (int h = 0; h < kFieldCastleSizeY; h++) {
                 for (int w = 0; w < kFieldCastleSizeX; w++) {
                     field->maps[y + h][x + w] = kFieldMapCastle00 + h * kFieldCastleSizeX + w;
+                }
+            }
+        }
+
+        // 店を置く
+        for (int i = 0; i < kFieldLocationShopSize; i++) {
+            int location = kFieldLocationShop + i;
+            int x = ((field->locations[location].right - field->locations[location].left + 1) - kFieldShopSizeX) / 2 + field->locations[location].left;
+            int y = field->locations[location].bottom - kFieldShopSizeY;
+            for (int h = 0; h < kFieldShopSizeY; h++) {
+                for (int w = 0; w < kFieldShopSizeX; w++) {
+                    field->maps[y + h][x + w] = kFieldMapShop00 + h * kFieldShopSizeX + w;
                 }
             }
         }
@@ -759,12 +798,20 @@ unsigned char FieldGetMap(int x, int y)
     unsigned char result = kFieldMapBlock;
     if (field != NULL) {
         if (y >= 0 && y < kFieldSizeY * kFieldSizePixel) {
-            x = (x < 0 ? x + kFieldSizeX * kFieldSizePixel : (x >= kFieldSizeX * kFieldSizePixel ? x - kFieldSizeX * kFieldSizePixel : x)) / kFieldSizePixel;
-            y = y / kFieldSizePixel;
+            x = FieldGetMapX(x); // (x < 0 ? x + kFieldSizeX * kFieldSizePixel : (x >= kFieldSizeX * kFieldSizePixel ? x - kFieldSizeX * kFieldSizePixel : x)) / kFieldSizePixel;
+            y = FieldGetMapY(y); // y / kFieldSizePixel;
             result = field->maps[y][x];
         }
     }
     return result;
+}
+static int FieldGetMapX(int x)
+{
+    return (x < 0 ? x + kFieldSizeX * kFieldSizePixel : (x >= kFieldSizeX * kFieldSizePixel ? x - kFieldSizeX * kFieldSizePixel : x)) / kFieldSizePixel;
+}
+static int FieldGetMapY(int y)
+{
+    return y / kFieldSizePixel;
 }
 
 // フィールドマップを判定する
@@ -1070,6 +1117,30 @@ int FieldGetBattleRoute(int x, int y)
     }
     return route;
 }
+
+// 洞窟のインデックスを取得する
+//
+int FieldGetCaveIndex(int x, int y)
+{
+    int index = -1;
+    if (FieldIsCave(x, y)) {
+        x = FieldGetMapX(x);
+        y = FieldGetMapY(y);
+        for (int i = 0; i < kFieldLocationCaveSize; i++) {
+            if (
+                x >= field->locations[kFieldLocationCave + i].left && 
+                x <= field->locations[kFieldLocationCave + i].right && 
+                y >= field->locations[kFieldLocationCave + i].top && 
+                y <= field->locations[kFieldLocationCave + i].bottom
+            ) {
+                index = i;
+                break;
+            }
+        }
+    }
+    return index;
+}
+
 
 // クリップを設定する
 //

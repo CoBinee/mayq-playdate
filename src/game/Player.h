@@ -78,7 +78,8 @@ struct PlayerActor {
     int jumpStep;
 
     // 入る
-    int enter;
+    int enterLocation;
+    int enterIndex;
 
     // 攻撃
     int attackCount;
@@ -114,6 +115,7 @@ extern void PlayerFieldGetMoveRect(struct Rect *rect);
 extern bool PlayerFieldIsBlink(void);
 extern void PlayerFieldSetEscapeBlink(void);
 extern bool PlayerFieldIsEnterCave(void);
+extern int PlayerFieldGetEnterCaveIndex(void);
 extern bool PlayerFieldIsEnterCastle(void);
 extern void PlayerBattleActorLoad(int direction);
 extern int PlayerBattleGetDirection(void);

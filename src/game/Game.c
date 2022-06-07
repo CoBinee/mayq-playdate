@@ -272,7 +272,8 @@ static void GamePlayField(struct Game *game)
 
         // 洞窟に入る
         if (game->transition == NULL) {
-            if (PlayerFieldIsEnterCave()) {
+            int cave = PlayerFieldGetEnterCaveIndex();
+            if (cave >= 0) {
                 game->transition = (GameFunction)GameLoadDungeon;
             }
         }

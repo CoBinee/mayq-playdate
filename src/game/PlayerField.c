@@ -63,7 +63,7 @@ void PlayerFieldActorLoad(void)
         actor->position = player->fieldPosition;
 
         // 入るの設定
-        actor->enter = kPlayerEnterNull;
+        actor->enterLocation = kPlayerEnterNull;
 
         // 点滅の設定
         actor->blink = 0;
@@ -187,9 +187,10 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
                     actor->direction = kDirectionRight;
                 } else {
                     if (FieldIsCave(actor->position.x, actor->position.y)) {
-                        actor->enter = kPlayerEnterCave;
+                        actor->enterLocation = kPlayerEnterCave;
+                        actor->enterIndex = FieldGetCaveIndex(actor->position.x, actor->position.y);
                     } else if (FieldIsCastle(actor->position.x, actor->position.y)) {
-                        actor->enter = kPlayerEnterCastle;
+                        actor->enterLocation = kPlayerEnterCastle;
                     } else if (FieldWalk(actor->position.x, actor->position.y, kDirectionUp, jump, true, &actor->destination)) {
                         ;
                     }
@@ -340,7 +341,7 @@ void PlayerFieldGetMoveRect(struct Rect *rect)
     }
 }
 
-// プレイヤーが点滅しているかどうかを判定する
+// プレイヤが点滅しているかどうかを判定する
 //
 bool PlayerFieldIsBlink(void)
 {
@@ -356,16 +357,24 @@ void PlayerFieldSetEscapeBlink(void)
         actor->blink = kPlayerBlinkEscape;
     }
 }
-// プレイヤーが何かに入ったかどうかを判定する
+// プレイヤが洞窟に入ったかどうかを判定する
 //
 bool PlayerFieldIsEnterCave(void)
 {
     struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
-    return actor != NULL && actor->enter == kPlayerEnterCave ? true : false;
+    return actor != NULL && actor->enterLocation == kPlayerEnterCave ? true : false;
 }
+int PlayerFieldGetEnterCaveIndex(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL && actor->enterLocation == kPlayerEnterCave ? actor->enterIndex : -1;
+}
+
+// プレイヤが白に入ったかどうかを判定する
+//
 bool PlayerFieldIsEnterCastle(void)
 {
     struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
-    return actor != NULL && actor->enter == kPlayerEnterCastle ? true : false;
+    return actor != NULL && actor->enterLocation == kPlayerEnterCastle ? true : false;
 }
 
