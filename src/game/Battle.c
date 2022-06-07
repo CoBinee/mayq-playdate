@@ -192,14 +192,14 @@ static void BattleActorDraw(struct BattleActor *actor)
         int mapx = camera->x >= 0 ? camera->x / kBattleSizePixel : camera->x / kBattleSizePixel - 1;
         int mapy = camera->y >= 0 ? camera->y / kBattleSizePixel : camera->y / kBattleSizePixel - 1;
         int my = mapy;
-        for (int vy = viewy; vy < kBattleViewSizeY; vy += kBattleSizePixel) {
+        for (int vy = viewy; vy < kGameViewBattleSizeY; vy += kBattleSizePixel) {
             int mx = mapx;
-            for (int vx = viewx; vx < kBattleViewSizeX; vx += kBattleSizePixel) {
+            for (int vx = viewx; vx < kGameViewBattleSizeX; vx += kBattleSizePixel) {
                 int animation = kBattleAnimationNull;
                 if (mx >= 0 && mx < kBattleSizeX && my >= 0 && my < kBattleSizeY) {
                     animation = battle->maps[my][mx];
                 }
-                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx, vy, kDrawModeCopy, kBitmapUnflipped);
+                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx + kGameViewBattleLeft, vy + kGameViewBattleTop, kDrawModeCopy, kBitmapUnflipped);
                 ++mx;
             }
             ++my;
@@ -435,5 +435,5 @@ void BattleClearClip(void)
 }
 void BattleSetClip(void)
 {
-    IocsGetPlaydate()->graphics->setClipRect(kBattleViewLeft, kBattleViewTop, kBattleViewSizeX, kBattleViewSizeY);
+    IocsGetPlaydate()->graphics->setClipRect(kGameViewBattleLeft, kGameViewBattleTop, kGameViewBattleSizeX, kGameViewBattleSizeY);
 }

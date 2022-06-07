@@ -15,7 +15,7 @@
 // バトル
 //
 enum {
-    kBattleSizeX = 16, 
+    kBattleSizeX = 10, 
     kBattleSizeY = 10, 
     kBattleSizePixel = 24, 
 };
@@ -50,17 +50,6 @@ struct Battle {
     // マップ
     unsigned char maps[kBattleSizeY][kBattleSizeX];
 
-};
-
-// 視界
-//
-enum {
-    kBattleViewSizeX = 384, 
-    kBattleViewSizeY = 240, 
-    kBattleViewLeft = 8, 
-    kBattleViewTop = 0, 
-    kBattleViewRight = 391, 
-    kBattleViewBottom = 239, 
 };
 
 // アニメーション

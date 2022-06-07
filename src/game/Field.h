@@ -156,17 +156,6 @@ struct Field {
 
 };
 
-// 視界
-//
-enum {
-    kFieldViewSizeX = 400, 
-    kFieldViewSizeY = 240, 
-    kFieldViewLeft = 0, 
-    kFieldViewTop = 0, 
-    kFieldViewRight = 399, 
-    kFieldViewBottom = 239, 
-};
-
 // アニメーション
 //
 enum {

@@ -87,6 +87,29 @@ enum {
     kGameCameraFieldX = -200, 
     kGameCameraFieldY = -131, 
 };
+enum {
+    kGameCameraBattleX = 0, 
+    kGameCameraBattleY = 0, 
+};
+
+// 視界
+//
+enum {
+    kGameViewFieldSizeX = 400, 
+    kGameViewFieldSizeY = 240, 
+    kGameViewFieldLeft = 0, 
+    kGameViewFieldTop = 0, 
+    kGameViewFieldRight = 399, 
+    kGameViewFieldBottom = 239, 
+};
+enum {
+    kGameViewBattleSizeX = 240, 
+    kGameViewBattleSizeY = 240, 
+    kGameViewBattleLeft = 80, 
+    kGameViewBattleTop = 0, 
+    kGameViewBattleRight = 319, 
+    kGameViewBattleBottom = 239, 
+};
 
 
 // 外部参照関数

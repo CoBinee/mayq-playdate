@@ -736,8 +736,8 @@ static void GameSetBattleCamera(void)
 {
     struct Game *game = (struct Game *)SceneGetUserdata();
     if (game != NULL) {
-        game->camera.x = ((kBattleSizeX * kBattleSizePixel) - kBattleViewSizeX) / 2 - kBattleViewLeft;
-        game->camera.y = ((kBattleSizeY * kBattleSizePixel) - kBattleViewSizeY) / 2 - kBattleViewTop;
+        game->camera.x = kGameCameraBattleX;
+        game->camera.y = kGameCameraBattleY;
     }
 }
 
@@ -754,13 +754,13 @@ void GameGetFieldCameraPosition(int x, int y, struct Vector *position)
             while (y < 0) {
                 y += kFieldSizeY * kFieldSizePixel;
             }
-            position->x = x - game->camera.x;
+            position->x = x - game->camera.x + kGameViewFieldLeft;
             if (position->x < -kFieldSizeX * kFieldSizePixel / 2) {
                 position->x += kFieldSizeX * kFieldSizePixel;
             } else if (position->x > kFieldSizeX * kFieldSizePixel / 2) {
                 position->x -= kFieldSizeX * kFieldSizePixel;
             }
-            position->y = y - game->camera.y;
+            position->y = y - game->camera.y + kGameViewFieldTop;
             // if (position->y < -kFieldSizeY * kFieldSizePixel / 2) {
             //     position->y += kFieldSizeY * kFieldSizePixel;
             // } else if (position->y > kFieldSizeY * kFieldSizePixel / 2) {
@@ -774,8 +774,8 @@ void GameGetBattleCameraPosition(int x, int y, struct Vector *position)
     struct Game *game = (struct Game *)SceneGetUserdata();
     if (game != NULL) {
         if (position != NULL) {
-            position->x = x - game->camera.x;
-            position->y = y - game->camera.y;
+            position->x = x - game->camera.x + kGameViewBattleLeft;
+            position->y = y - game->camera.y + kGameViewBattleTop;
         }
     }
 }

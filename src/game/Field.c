@@ -689,15 +689,15 @@ static void FieldActorDraw(struct FieldActor *actor)
         int mapx = camera->x >= 0 ? camera->x / kFieldSizePixel : camera->x / kFieldSizePixel - 1;
         int mapy = camera->y >= 0 ? camera->y / kFieldSizePixel : camera->y / kFieldSizePixel - 1;
         int my = mapy;
-        for (int vy = viewy; vy < kFieldViewSizeY; vy += kFieldSizePixel) {
+        for (int vy = viewy; vy < kGameViewFieldSizeY; vy += kFieldSizePixel) {
             int mx = mapx;
-            for (int vx = viewx; vx < kFieldViewSizeX; vx += kFieldSizePixel) {
+            for (int vx = viewx; vx < kGameViewFieldSizeX; vx += kFieldSizePixel) {
                 int animation = kFieldAnimationBlock;
                 if (my >= 0 && my < kFieldSizeY) {
                     int ax = mx < 0 ? mx + kFieldSizeX : (mx >= kFieldSizeX ? mx - kFieldSizeX : mx);
                     animation = field->maps[my][ax];
                 }
-                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx, vy, kDrawModeCopy, kBitmapUnflipped);
+                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx + kGameViewFieldLeft, vy + kGameViewFieldTop, kDrawModeCopy, kBitmapUnflipped);
                 ++mx;
             }
             ++my;
@@ -1073,7 +1073,7 @@ void FieldClearClip(void)
 }
 void FieldSetClip(void)
 {
-    IocsGetPlaydate()->graphics->setClipRect(kFieldViewLeft, kFieldViewTop, kFieldViewSizeX, kFieldViewSizeY);
+    IocsGetPlaydate()->graphics->setClipRect(kGameViewFieldLeft, kGameViewFieldTop, kGameViewFieldSizeX, kGameViewFieldSizeY);
 }
 
 
