@@ -20,7 +20,7 @@
 // 内部関数
 //
 static void GameUnload(struct Game *game);
-static void GameTransition(struct Game *game, GameFunction function);
+static void GameTransition(GameFunction function);
 static void GameLoadField(struct Game *game);
 static void GameStartField(struct Game *game);
 static void GamePlayField(struct Game *game);
@@ -34,6 +34,8 @@ static void GameStartBattle(struct Game *game);
 static void GamePlayBattle(struct Game *game);
 static void GameUnloadBattle(struct Game *game);
 static void GameDone(struct Game *game);
+static void GameSetFieldCamera(void);
+static void GameSetBattleCamera(void);
 
 // 内部変数
 //
@@ -108,7 +110,7 @@ void GameUpdate(struct Game *game)
         EnemyInitialize();
 
         // 処理の設定
-        GameTransition(game, (GameFunction)GameLoadField);
+        GameTransition((GameFunction)GameLoadField);
     }
 
     // 処理の更新
@@ -149,10 +151,13 @@ static void GameUnload(struct Game *game)
 
 // 処理を遷移する
 //
-static void GameTransition(struct Game *game, GameFunction function)
+static void GameTransition(GameFunction function)
 {
-    game->function = function;
-    game->state = 0;
+    struct Game *game = (struct Game *)SceneGetUserdata();
+    if (game != NULL) {
+        game->function = function;
+        game->state = 0;
+    }
 }
 
 // フィールドを読み込む
@@ -193,8 +198,11 @@ static void GameLoadField(struct Game *game)
         ++game->state;
     }
 
+    // カメラの設定
+    GameSetFieldCamera();
+
     // 処理の遷移
-    GameTransition(game, (GameFunction)GameStartField);
+    GameTransition((GameFunction)GameStartField);
 }
 
 // フィールドを開始する
@@ -217,8 +225,11 @@ static void GameStartField(struct Game *game)
         ++game->state;
     }
 
+    // カメラの設定
+    GameSetFieldCamera();
+
     // 処理の遷移
-    GameTransition(game, (GameFunction)GamePlayField);
+    GameTransition((GameFunction)GamePlayField);
 }
 
 // フィールドをプレイする
@@ -272,9 +283,12 @@ static void GamePlayField(struct Game *game)
 
         // 処理の遷移
         if (game->transition != NULL) {
-            GameTransition(game, (GameFunction)GameUnloadField);
+            GameTransition((GameFunction)GameUnloadField);
         }
     }
+
+    // カメラの設定
+    GameSetFieldCamera();
 
     // DEBUG
     if (IocsIsButtonEdge(kButtonA)) {
@@ -282,7 +296,7 @@ static void GamePlayField(struct Game *game)
     }
     if (IocsIsButtonEdge(kButtonB)) {
         game->transition = (GameFunction)GameLoadBattle;
-        GameTransition(game, (GameFunction)GameUnloadField);
+        GameTransition((GameFunction)GameUnloadField);
     }
 
 }
@@ -311,7 +325,7 @@ static void GameUnloadField(struct Game *game)
     ActorUnloadAll();
 
     // 処理の遷移
-    GameTransition(game, game->transition);
+    GameTransition(game->transition);
 }
 
 // ダンジョンを読み込む
@@ -337,8 +351,11 @@ static void GameLoadDungeon(struct Game *game)
         ++game->state;
     }
 
+    // カメラの設定
+    GameSetBattleCamera();
+
     // 処理の遷移
-    GameTransition(game, (GameFunction)GameStartDungeon);
+    GameTransition((GameFunction)GameStartDungeon);
 }
 
 // ダンジョンを開始する
@@ -361,8 +378,11 @@ static void GameStartDungeon(struct Game *game)
         ++game->state;
     }
 
+    // カメラの設定
+    GameSetBattleCamera();
+
     // 処理の遷移
-    GameTransition(game, (GameFunction)GamePlayDungeon);
+    GameTransition((GameFunction)GamePlayDungeon);
 }
 
 // ダンジョンをプレイする
@@ -385,9 +405,12 @@ static void GamePlayDungeon(struct Game *game)
         ++game->state;
     }
 
+    // カメラの設定
+    GameSetBattleCamera();
+
     // DEBUG
     if (IocsIsButtonEdge(kButtonB)) {
-        GameTransition(game, (GameFunction)GameUnloadDungeon);
+        GameTransition((GameFunction)GameUnloadDungeon);
     }
 
 }
@@ -416,7 +439,7 @@ static void GameUnloadDungeon(struct Game *game)
     ActorUnloadAll();
 
     // 処理の遷移
-    GameTransition(game, (GameFunction)GameLoadField);
+    GameTransition((GameFunction)GameLoadField);
 }
 
 // バトルを読み込む
@@ -501,8 +524,11 @@ static void GameLoadBattle(struct Game *game)
         ++game->state;
     }
 
+    // カメラの設定
+    GameSetBattleCamera();
+
     // 処理の遷移
-    GameTransition(game, (GameFunction)GameStartBattle);
+    GameTransition((GameFunction)GameStartBattle);
 }
 
 // バトルを開始する
@@ -525,8 +551,11 @@ static void GameStartBattle(struct Game *game)
         ++game->state;
     }
 
+    // カメラの設定
+    GameSetBattleCamera();
+
     // 処理の遷移
-    GameTransition(game, (GameFunction)GamePlayBattle);
+    GameTransition((GameFunction)GamePlayBattle);
 }
 
 // バトルをプレイする
@@ -573,13 +602,16 @@ static void GamePlayBattle(struct Game *game)
 
         // エネミーを倒した
         if (game->battleRest == 0) {
-            GameTransition(game, (GameFunction)GameUnloadBattle);
+            GameTransition((GameFunction)GameUnloadBattle);
 
         // 逃げた
         } else if (game->battleDirection >= 0) {
-            GameTransition(game, (GameFunction)GameUnloadBattle);
+            GameTransition((GameFunction)GameUnloadBattle);
         }
     }
+
+    // カメラの設定
+    GameSetBattleCamera();
 
     // DEBUG
     if (IocsIsButtonEdge(kButtonA)) {
@@ -595,9 +627,8 @@ static void GamePlayBattle(struct Game *game)
         } else {
             game->battleDirection = kDirectionRight;
         }
-        GameTransition(game, (GameFunction)GameUnloadBattle);
+        GameTransition((GameFunction)GameUnloadBattle);
     }
-
 }
 
 // バトルを解放する
@@ -638,7 +669,7 @@ static void GameUnloadBattle(struct Game *game)
     ActorUnloadAll();
 
     // 処理の遷移
-    GameTransition(game, (GameFunction)GameLoadField);
+    GameTransition((GameFunction)GameLoadField);
 }
 
 // ゲームを完了する
@@ -679,32 +710,34 @@ struct Vector *GameGetCamera(void)
 
 // カメラを設定する
 //
-void GameSetFieldCamera(int x, int y)
+static void GameSetFieldCamera(void)
 {
     struct Game *game = (struct Game *)SceneGetUserdata();
     if (game != NULL) {
-        while (x < 0) {
-            x += kFieldSizeX * kFieldSizePixel;
+        struct Vector position;
+        PlayerFieldGetPosition(&position);
+        while (position.x < 0) {
+            position.x += kFieldSizeX * kFieldSizePixel;
         }
-        while (x >= kFieldSizeX * kFieldSizePixel) {
-            x -= kFieldSizeX * kFieldSizePixel;
+        while (position.x >= kFieldSizeX * kFieldSizePixel) {
+            position.x -= kFieldSizeX * kFieldSizePixel;
         }
-        // while (y < 0) {
-        //     y += kFieldSizeY * kFieldSizePixel;
+        // while (position.y < 0) {
+        //     position.y += kFieldSizeY * kFieldSizePixel;
         // }
-        // while (y >= kFieldSizeY * kFieldSizePixel) {
-        //     y -= kFieldSizeY * kFieldSizePixel;
+        // while (position.y >= kFieldSizeY * kFieldSizePixel) {
+        //     position.y -= kFieldSizeY * kFieldSizePixel;
         // }
-        game->camera.x = x;
-        game->camera.y = y;
+        game->camera.x = position.x + kGameCameraFieldX;
+        game->camera.y = position.y + kGameCameraFieldY;
     }
 }
-void GameSetBattleCamera(int x, int y)
+static void GameSetBattleCamera(void)
 {
     struct Game *game = (struct Game *)SceneGetUserdata();
     if (game != NULL) {
-        game->camera.x = x;
-        game->camera.y = y;
+        game->camera.x = ((kBattleSizeX * kBattleSizePixel) - kBattleViewSizeX) / 2 - kBattleViewLeft;
+        game->camera.y = ((kBattleSizeY * kBattleSizePixel) - kBattleViewSizeY) / 2 - kBattleViewTop;
     }
 }
 

@@ -95,13 +95,6 @@ struct PlayerActor {
 
 };
 
-// カメラ
-//
-enum {
-    kPlayerCameraX = -200, 
-    kPlayerCameraY = -131, 
-};
-
 // 移動
 //
 enum {
@@ -116,6 +109,7 @@ extern void PlayerRelease(void);
 extern void PlayerGetFieldPosition(struct Vector *position);
 extern void PlayerSetFieldPosition(struct Vector *position);
 extern void PlayerFieldActorLoad(void);
+extern void PlayerFieldGetPosition(struct Vector *position);
 extern void PlayerFieldGetMoveRect(struct Rect *rect);
 extern bool PlayerFieldIsEnterCave(void);
 extern bool PlayerFieldIsEnterCastle(void);

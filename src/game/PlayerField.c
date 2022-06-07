@@ -294,9 +294,6 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
     // 矩形の計算
     PlayerFieldCalcRect(actor);
 
-    // カメラの設定
-    GameSetFieldCamera(actor->position.x + kPlayerCameraX, actor->position.y + kPlayerCameraY);
-
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerFieldActorDraw, kGameOrderPlayer);
 }
@@ -320,6 +317,16 @@ static void PlayerFieldCalcRect(struct PlayerActor *actor)
         actor->moveRect.top = actor->position.y + playerFieldMoveRect.top;
         actor->moveRect.right = actor->position.x + playerFieldMoveRect.right;
         actor->moveRect.bottom = actor->position.y + playerFieldMoveRect.bottom;
+    }
+}
+
+// 位置を取得する
+//
+void PlayerFieldGetPosition(struct Vector *position)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    if (actor != NULL) {
+        *position = actor->position;
     }
 }
 

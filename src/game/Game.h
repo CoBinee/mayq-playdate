@@ -81,14 +81,19 @@ enum {
     kGameOrderCharacter, 
 };
 
+// カメラ
+//
+enum {
+    kGameCameraFieldX = -200, 
+    kGameCameraFieldY = -131, 
+};
+
 
 // 外部参照関数
 //
 extern void GameUpdate(struct Game *game);
 extern bool GameIsPlay(void);
 extern struct Vector *GameGetCamera(void);
-extern void GameSetFieldCamera(int x, int y);
-extern void GameSetBattleCamera(int x, int y);
 extern void GameGetFieldCameraPosition(int x, int y, struct Vector *position);
 extern void GameGetBattleCameraPosition(int x, int y, struct Vector *position);
 

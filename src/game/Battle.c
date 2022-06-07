@@ -226,9 +226,6 @@ static void BattleActorLoop(struct BattleActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // カメラの設定
-        GameSetBattleCamera(((kBattleSizeX * kBattleSizePixel) - kBattleViewSizeX) / 2 - kBattleViewLeft, ((kBattleSizeY * kBattleSizePixel) - kBattleViewSizeY) / 2 - kBattleViewTop);
-
         // アニメーションの開始
         for (int i = 0; i < kBattleAnimationSize; i++) {
             AsepriteStartSpriteAnimation(&actor->animations[i], "tileset", battleAnimationNames[i], false);
