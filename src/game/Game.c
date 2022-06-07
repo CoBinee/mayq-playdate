@@ -187,8 +187,9 @@ static void GameLoadField(struct Game *game)
 
         // バトルの設定
         {
-            // 直前のバトルで逃げた場合、敵を一定時間エンカウントさせない
+            // 直前のバトルで逃げた場合、プレイヤとエネミーを一定時間エンカウントさせない
             if (game->battleEncount >= 0) {
+                PlayerFieldSetEscapeBlink();
                 EnemyFieldSetEscapeBlink(game->battleEncount);
             }
             game->battleEncount = -1;
@@ -259,11 +260,13 @@ static void GamePlayField(struct Game *game)
     {
         // エネミーとの接触
         if (game->transition == NULL) {
-            struct Rect rect;
-            PlayerFieldGetMoveRect(&rect);
-            game->battleEncount = EnemyFieldGetHitIndex(&rect);
-            if (game->battleEncount >= 0) {
-                game->transition = (GameFunction)GameLoadBattle;
+            if (!PlayerFieldIsBlink()) {
+                struct Rect rect;
+                PlayerFieldGetMoveRect(&rect);
+                game->battleEncount = EnemyFieldGetHitIndex(&rect);
+                if (game->battleEncount >= 0) {
+                    game->transition = (GameFunction)GameLoadBattle;
+                }
             }
         }
 

@@ -340,6 +340,22 @@ void PlayerFieldGetMoveRect(struct Rect *rect)
     }
 }
 
+// プレイヤーが点滅しているかどうかを判定する
+//
+bool PlayerFieldIsBlink(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL && actor->blink > 0 ? true : false;
+}
+// プレイヤを点滅させる
+//
+void PlayerFieldSetEscapeBlink(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    if (actor != NULL) {
+        actor->blink = kPlayerBlinkEscape;
+    }
+}
 // プレイヤーが何かに入ったかどうかを判定する
 //
 bool PlayerFieldIsEnterCave(void)

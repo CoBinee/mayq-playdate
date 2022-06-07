@@ -111,6 +111,8 @@ extern void PlayerSetFieldPosition(struct Vector *position);
 extern void PlayerFieldActorLoad(void);
 extern void PlayerFieldGetPosition(struct Vector *position);
 extern void PlayerFieldGetMoveRect(struct Rect *rect);
+extern bool PlayerFieldIsBlink(void);
+extern void PlayerFieldSetEscapeBlink(void);
 extern bool PlayerFieldIsEnterCave(void);
 extern bool PlayerFieldIsEnterCastle(void);
 extern void PlayerBattleActorLoad(int direction);
