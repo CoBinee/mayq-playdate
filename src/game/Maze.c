@@ -68,6 +68,13 @@ struct Maze *MazeLoad(int sizex, int sizey, struct XorShift *xorshift)
     return maze;
 }
 
+// 迷路をロックする
+//
+void MazeLock(struct Maze *maze, int x, int y)
+{
+    maze->maps[(y * 2 + 1) * maze->mapSize.x + (x * 2 + 1)] |= kMazeMapLock;
+}
+
 // 迷路を解放する
 //
 void MazeUnload(struct Maze *maze)
@@ -187,3 +194,38 @@ void MazeSetRoute(struct Maze *maze)
     }
 }
 
+// 行き止まりを解消する
+//
+void MazeSolveDeadend(struct Maze *maze)
+{
+    for (int routey = 0; routey < maze->routeSize.y; routey++) {
+        for (int routex = 0; routex < maze->routeSize.x; routex++) {
+            int r_0 = routey * maze->routeSize.x + routex;
+            if (maze->routes[r_0] == kMazeRouteUp) {
+                int r_1 = (routey < maze->routeSize.y - 1 ? routey + 1 : 0) * maze->routeSize.x + routex;
+                if (maze->routes[r_1] != 0) {
+                    maze->routes[r_0] |= kMazeRouteDown;
+                    maze->routes[r_1] |= kMazeRouteUp;
+                }
+            } else if (maze->routes[r_0] == kMazeRouteDown) {
+                int r_1 = (routey > 0 ? routey - 1 : maze->routeSize.y - 1) * maze->routeSize.x + routex;
+                if (maze->routes[r_1] != 0) {
+                    maze->routes[r_0] |= kMazeRouteUp;
+                    maze->routes[r_1] |= kMazeRouteDown;
+                }
+            } else if (maze->routes[r_0] == kMazeRouteLeft) {
+                int r_1 = routey * maze->routeSize.x + (routex < maze->routeSize.x - 1 ? routex + 1 : 0);
+                if (maze->routes[r_1] != 0) {
+                    maze->routes[r_0] |= kMazeRouteRight;
+                    maze->routes[r_1] |= kMazeRouteLeft;
+                }
+            } else if (maze->routes[r_0] == kMazeRouteRight) {
+                int r_1 = routey * maze->routeSize.x + (routex > 0 ? routex - 1 : maze->routeSize.x - 1);
+                if (maze->routes[r_1] != 0) {
+                    maze->routes[r_0] |= kMazeRouteLeft;
+                    maze->routes[r_1] |= kMazeRouteRight;
+                }
+            }
+        }
+    }
+}

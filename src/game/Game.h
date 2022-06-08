@@ -28,13 +28,27 @@ struct Game {
     // カメラ
     struct Vector camera;
 
+    // フィールド
+
+    // ダンジョン
+    int dungeonIndex;
+    struct Vector dungeonPosition;
+    int dungeonDirection;
+    int dungeonType;
+    int dungeonRest;
+
     // バトル
     int battleEncount;
+    struct Vector battlePosition;
     int battleType;
     int battleRest;
     int battleRoute;
     int battleDirection;
-    struct Vector battlePosition;
+
+    // 城
+
+    // 店
+    int shopIndex;
 
     // プレイ中
     bool play;

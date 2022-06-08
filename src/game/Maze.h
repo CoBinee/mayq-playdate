@@ -49,5 +49,7 @@ struct Maze {
 //
 extern struct Maze *MazeLoad(int sizex, int sizey, struct XorShift *xorshift);
 extern void MazeUnload(struct Maze *maze);
+extern void MazeLock(struct Maze *maze, int x, int y);
 extern void MazeDig(struct Maze *maze, int x, int y);
 extern void MazeSetRoute(struct Maze *maze);
+extern void MazeSolveDeadend(struct Maze *maze);

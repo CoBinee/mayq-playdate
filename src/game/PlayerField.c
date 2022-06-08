@@ -191,6 +191,10 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
                         actor->enterIndex = FieldGetCaveIndex(actor->position.x, actor->position.y);
                     } else if (FieldIsCastle(actor->position.x, actor->position.y)) {
                         actor->enterLocation = kPlayerEnterCastle;
+                        actor->enterIndex = 0;
+                    } else if (FieldIsShop(actor->position.x, actor->position.y)) {
+                        actor->enterLocation = kPlayerEnterShop;
+                        actor->enterIndex = FieldGetShopIndex(actor->position.x, actor->position.y);
                     } else if (FieldWalk(actor->position.x, actor->position.y, kDirectionUp, jump, true, &actor->destination)) {
                         ;
                     }
@@ -348,6 +352,7 @@ bool PlayerFieldIsBlink(void)
     struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
     return actor != NULL && actor->blink > 0 ? true : false;
 }
+
 // プレイヤを点滅させる
 //
 void PlayerFieldSetEscapeBlink(void)
@@ -357,6 +362,7 @@ void PlayerFieldSetEscapeBlink(void)
         actor->blink = kPlayerBlinkEscape;
     }
 }
+
 // プレイヤが洞窟に入ったかどうかを判定する
 //
 bool PlayerFieldIsEnterCave(void)
@@ -370,11 +376,24 @@ int PlayerFieldGetEnterCaveIndex(void)
     return actor != NULL && actor->enterLocation == kPlayerEnterCave ? actor->enterIndex : -1;
 }
 
-// プレイヤが白に入ったかどうかを判定する
+// プレイヤが城に入ったかどうかを判定する
 //
 bool PlayerFieldIsEnterCastle(void)
 {
     struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
     return actor != NULL && actor->enterLocation == kPlayerEnterCastle ? true : false;
+}
+
+// プレイヤが店に入ったかどうかを判定する
+//
+bool PlayerFieldIsEnterShop(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL && actor->enterLocation == kPlayerEnterShop ? true : false;
+}
+int PlayerFieldGetEnterShopIndex(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL && actor->enterLocation == kPlayerEnterShop ? actor->enterIndex : -1;
 }
 

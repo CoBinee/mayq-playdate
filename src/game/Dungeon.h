@@ -72,4 +72,7 @@ struct DungeonActor {
 extern void DungeonInitialize(void);
 extern void DungeonRelease(void);
 extern void DungeonActorLoad(void);
+extern unsigned char DungeonGetRoute(int x, int y);
+extern void DungeonGetDirectionalPosition(int x, int y, int direction, struct Vector *position);
+extern void DungeonGetEntrancePosition(int entrance, struct Vector *position);
 

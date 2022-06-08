@@ -263,6 +263,7 @@ extern bool FieldIsBlock(int x, int y);
 extern bool FieldIsLadder(int x, int y);
 extern bool FieldIsCave(int x, int y);
 extern bool FieldIsCastle(int x, int y);
+extern bool FieldIsShop(int x, int y);
 extern bool FieldIsLand(int x, int y);
 extern bool FieldIsFall(int x, int y);
 extern bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall);
@@ -273,6 +274,7 @@ extern void FieldGetEnemyPosition(struct Vector *position, bool land);
 extern void FieldGetDirectinalPosition(int x, int y, int direction, struct Vector *position);
 extern int FieldGetBattleRoute(int x, int y);
 extern int FieldGetCaveIndex(int x, int y);
+extern int FieldGetShopIndex(int x, int y);
 extern void FieldClearClip(void);
 extern void FieldSetClip(void);
 

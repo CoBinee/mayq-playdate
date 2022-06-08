@@ -143,6 +143,19 @@ static void DungeonBuildMap(void)
 
         // 経路の設定
         MazeSetRoute(dungeon->maze);
+
+        // 行き止まりの解消
+        MazeSolveDeadend(dungeon->maze);
+
+        // 入り口を開ける
+        for (int i = 0; i < kDungeonLocationEntranceSize; i++) {
+            dungeon->maze->routes[dungeon->locations[kDungeonLocationEntrance + i].y * dungeon->maze->routeSize.x + dungeon->locations[kDungeonLocationEntrance + i].x] |= (kMazeRouteUp | kMazeRouteDown);
+            {
+                struct Vector position;
+                DungeonGetDirectionalPosition(dungeon->locations[kDungeonLocationEntrance + i].x, dungeon->locations[kDungeonLocationEntrance + i].y, kDirectionUp, &position);
+                dungeon->maze->routes[position.y * dungeon->maze->routeSize.x + position.x] |= kMazeRouteDown;
+            }
+        }
     }
 }
 
@@ -166,9 +179,7 @@ static void DungeonUnbuildMap(void)
 //
 static void DungeonLockLocation(int location)
 {
-    int x = dungeon->locations[location].x * 2 + 1;
-    int y = dungeon->locations[location].y * 2 + 1;
-    dungeon->maze->maps[y * dungeon->maze->mapSize.x + x] |= kMazeMapLock;
+    MazeLock(dungeon->maze, dungeon->locations[location].x, dungeon->locations[location].y);
 }
 
 // ダンジョンアクタを読み込む
@@ -277,3 +288,35 @@ static void DungeonActorLoop(struct DungeonActor *actor)
     ActorSetDraw(&actor->actor, (ActorFunction)DungeonActorDraw, kGameOrderDungeon);
 }
 
+// ダンジョンの経路を取得する
+//
+unsigned char DungeonGetRoute(int x, int y)
+{
+    return dungeon->maze->routes[y * dungeon->maze->routeSize.x + x];
+}
+
+// 指定された方向の位置を取得する
+//
+void DungeonGetDirectionalPosition(int x, int y, int direction, struct Vector *position)
+{
+    if (direction == kDirectionUp) {
+        position->x = x;
+        position->y = y > 0 ? y - 1 : kDungeonSizeY - 1;
+    } else if (direction == kDirectionDown) {
+        position->x = x;
+        position->y = y < kDungeonSizeY - 1 ? y + 1 : 0;
+    } else if (direction == kDirectionLeft) {
+        position->x = x > 0 ? x - 1 : kDungeonSizeX - 1;
+        position->y = y;
+    } else if (direction == kDirectionRight) {
+        position->x = x < kDungeonSizeX - 1 ? x + 1 : 0;
+        position->y = y;
+    }
+}
+
+// 入り口の位置を取得する
+//
+void DungeonGetEntrancePosition(int entrance, struct Vector *position)
+{
+    *position = dungeon->locations[kDungeonLocationEntrance + entrance];
+}

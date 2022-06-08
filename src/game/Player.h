@@ -18,6 +18,9 @@ struct Player {
     // フィールド
     struct Vector fieldPosition;
 
+    // ダンジョン
+    struct Vector dungeonPosition;
+
     // バトル
     struct Vector battlePosition;
     struct AsepriteSprite battleSprite;
@@ -36,6 +39,7 @@ enum {
     kPlayerEnterNull = 0, 
     kPlayerEnterCave, 
     kPlayerEnterCastle, 
+    kPlayerEnterShop, 
 };
 
 // 攻撃
@@ -117,6 +121,8 @@ extern void PlayerFieldSetEscapeBlink(void);
 extern bool PlayerFieldIsEnterCave(void);
 extern int PlayerFieldGetEnterCaveIndex(void);
 extern bool PlayerFieldIsEnterCastle(void);
+extern bool PlayerFieldIsEnterShop(void);
+extern int PlayerFieldGetEnterShopIndex(void);
 extern void PlayerBattleActorLoad(int direction);
 extern int PlayerBattleGetDirection(void);
 extern int PlayerBattleGetEscapeDirection(void);

@@ -34,6 +34,7 @@ static void GameStartBattle(struct Game *game);
 static void GamePlayBattle(struct Game *game);
 static void GameUnloadBattle(struct Game *game);
 static void GameDone(struct Game *game);
+static void GameHit(void);
 static void GameSetFieldCamera(void);
 static void GameSetBattleCamera(void);
 
@@ -81,8 +82,16 @@ void GameUpdate(struct Game *game)
             // 解放の設定
             SceneSetUnload((SceneFunction)GameUnload);
 
+            // フィールドの設定
+
+            // ダンジョンの設定
+
             // バトルの設定
             game->battleEncount = -1;
+
+            // 城の設定
+
+            // 店の設定
 
             // プレイの設定
             game->play = false;
@@ -173,6 +182,9 @@ static void GameLoadField(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
+        // ゲームの停止
+        game->play = false;
+
         // フィールドアクタの読み込み
         FieldActorLoad();
 
@@ -181,9 +193,6 @@ static void GameLoadField(struct Game *game)
 
         // エネミーアクタの読み込み
         EnemyFieldActorLoad();
-
-        // ゲームの停止
-        game->play = false;
 
         // バトルの設定
         {
@@ -246,7 +255,7 @@ static void GamePlayField(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
-        // ゲームの停止
+        // ゲームの再開
         game->play = true;
 
         // 遷移の設定
@@ -274,6 +283,9 @@ static void GamePlayField(struct Game *game)
         if (game->transition == NULL) {
             int cave = PlayerFieldGetEnterCaveIndex();
             if (cave >= 0) {
+                game->dungeonIndex = cave;
+                DungeonGetEntrancePosition(game->dungeonIndex, &game->dungeonPosition);
+                game->dungeonDirection = kDirectionDown;
                 game->transition = (GameFunction)GameLoadDungeon;
             }
         }
@@ -281,6 +293,15 @@ static void GamePlayField(struct Game *game)
         // 城に入る
         if (game->transition == NULL) {
             if (PlayerFieldIsEnterCastle()) {
+                game->transition = (GameFunction)GameLoadBattle;
+            }
+        }
+
+        // 店に入る
+        if (game->transition == NULL) {
+            int shop = PlayerFieldGetEnterShopIndex();
+            if (shop >= 0) {
+                game->shopIndex = shop;
                 game->transition = (GameFunction)GameLoadBattle;
             }
         }
@@ -345,11 +366,29 @@ static void GameLoadDungeon(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
+        // ゲームの停止
+        game->play = false;
+
+        // ダンジョンの設定
+        {
+            game->dungeonType = kEnemyTypeSkeleton;
+            game->dungeonRest = 4;
+        }
+
         // ダンジョンアクタの読み込み
         DungeonActorLoad();
 
-        // ゲームの停止
-        game->play = false;
+        // バトルアクタの読み込み
+        {
+            unsigned char route = DungeonGetRoute(game->dungeonPosition.x, game->dungeonPosition.y);
+            BattleActorLoad(kBattleTypeDungeon, route);
+        }
+
+        // プレイヤアクタの読み込み
+        PlayerBattleActorLoad(game->dungeonDirection);
+
+        // エネミーアクタの読み込み
+        EnemyBattleActorLoad(game->dungeonType, game->dungeonRest, game->dungeonDirection);
 
         // 初期化の完了
         ++game->state;
@@ -402,11 +441,28 @@ static void GamePlayDungeon(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
-        // ゲームの停止
+        // ゲームの再開
         game->play = true;
 
         // 初期化の完了
         ++game->state;
+    }
+
+    // ヒット判定
+    GameHit();
+
+    // ダンジョンの監視
+    {
+        // エネミーの数の取得
+        game->dungeonRest = EnemyBattleGetRest(game->dungeonType);
+
+        // 逃げる方向の取得
+        game->dungeonDirection = PlayerBattleGetEscapeDirection();
+
+        // 逃げた
+        if (game->dungeonDirection >= 0) {
+            GameTransition((GameFunction)GameUnloadDungeon);
+        }
     }
 
     // カメラの設定
@@ -416,7 +472,6 @@ static void GamePlayDungeon(struct Game *game)
     if (IocsIsButtonEdge(kButtonB)) {
         GameTransition((GameFunction)GameUnloadDungeon);
     }
-
 }
 
 // ダンジョンを解放する
@@ -459,6 +514,9 @@ static void GameLoadBattle(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
+        // ゲームの停止
+        game->play = false;
+
         // バトルの設定
         {
             struct Vector pp;
@@ -470,13 +528,13 @@ static void GameLoadBattle(struct Game *game)
                 ep = pp;
             }
             if (game->battleEncount >= 0) {
+                game->battlePosition = ep;
                 game->battleType = EnemyGetFieldType(game->battleEncount);
                 game->battleRest = EnemyGetFieldRest(game->battleEncount);
-                game->battlePosition = ep;
             } else {
+                game->battlePosition = pp;
                 game->battleType = kEnemyTypeSkeleton;
                 game->battleRest = 9;
-                game->battlePosition = pp;
             }
             game->battleRoute = FieldGetBattleRoute(game->battlePosition.x, game->battlePosition.y);
             game->battleDirection = -1;
@@ -520,9 +578,6 @@ static void GameLoadBattle(struct Game *game)
 
         // エネミーアクタの読み込み
         EnemyBattleActorLoad(game->battleType, game->battleRest, game->battleDirection);
-
-        // ゲームの停止
-        game->play = false;
 
         // 初期化の完了
         ++game->state;
@@ -575,7 +630,7 @@ static void GamePlayBattle(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
-        // ゲームの停止
+        // ゲームの再開
         game->play = true;
 
         // 初期化の完了
@@ -583,18 +638,7 @@ static void GamePlayBattle(struct Game *game)
     }
 
     // ヒット判定
-    {
-        // プレイヤの攻撃の判定
-        {
-            struct Rect rect;
-            PlayerBattleGetAttackRect(&rect);
-            if (rect.left < rect.right) {
-                struct Vector position;
-                PlayerBattleGetPosition(&position);
-                EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
-            }
-        }
-    }
+    GameHit();
 
     // バトルの監視
     {
@@ -648,6 +692,9 @@ static void GameUnloadBattle(struct Game *game)
     // 初期化
     if (game->state == 0) {
 
+        // ゲームの停止
+        game->play = false;
+
         // エネミーの数の反映
         EnemySetFieldRest(game->battleEncount, game->battleRest);
 
@@ -661,9 +708,6 @@ static void GameUnloadBattle(struct Game *game)
             FieldGetDirectinalPosition(game->battlePosition.x, game->battlePosition.y, game->battleDirection, &position);
             PlayerSetFieldPosition(&position);
         }
-
-        // ゲームの停止
-        game->play = false;
 
         // 初期化の完了
         ++game->state;
@@ -694,6 +738,25 @@ static void GameDone(struct Game *game)
     }
     // シーンの遷移
     ApplicationTransition(kApplicationSceneTitle);
+}
+
+// ヒット判定を行う
+//
+static void GameHit(void)
+{
+    // ゲームの取得
+    struct Game *game = (struct Game *)SceneGetUserdata();
+
+    // プレイヤの攻撃の判定
+    {
+        struct Rect rect;
+        PlayerBattleGetAttackRect(&rect);
+        if (rect.left < rect.right) {
+            struct Vector position;
+            PlayerBattleGetPosition(&position);
+            EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
+        }
+    }
 }
 
 // プレイ中かどうかを判定する

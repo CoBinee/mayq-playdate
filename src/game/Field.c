@@ -586,13 +586,13 @@ static void FieldUnbuildMap(void)
 //
 static void FieldLockLocation(int location)
 {
-    int left = (field->locations[location].left / kFieldSectionSizeX) * 2 + 1;
-    int top = (field->locations[location].top / kFieldSectionSizeY) * 2 + 1;
-    int right = (field->locations[location].right / kFieldSectionSizeX) * 2 + 1;
-    int bottom = (field->locations[location].bottom / kFieldSectionSizeY) * 2 + 1;
-    for (int y = top; y <= bottom; y += 2) {
-        for (int x = left; x <= right; x += 2) {
-            field->maze->maps[y * field->maze->mapSize.x + x] |= kMazeMapLock;
+    int left = field->locations[location].left / kFieldSectionSizeX;
+    int top = field->locations[location].top / kFieldSectionSizeY;
+    int right = field->locations[location].right / kFieldSectionSizeX;
+    int bottom = field->locations[location].bottom / kFieldSectionSizeY;
+    for (int y = top; y <= bottom; y++) {
+        for (int x = left; x <= right; x++) {
+            MazeLock(field->maze, x, y);
         }
     }
 }
@@ -862,6 +862,13 @@ bool FieldIsCastle(int x, int y)
     return FieldGetMap(x, y) == kFieldMapCastleEntrance ? true : false;
 }
 
+// フィールドが店かどうかを判定する
+//
+bool FieldIsShop(int x, int y)
+{
+    return FieldGetMap(x, y) == kFieldMapShopEntrance ? true : false;
+}
+
 // フィールドで落下するかどうかを判定する
 //
 bool FieldIsLand(int x, int y)
@@ -1060,10 +1067,14 @@ void FieldGetStartPosition(struct Vector *position)
 void FieldGetEnemyPosition(struct Vector *position, bool land)
 {
     int x = field->locations[field->locationEnemy].left + (IocsGetRandomNumber(&field->xorshift) % (field->locations[field->locationEnemy].right - field->locations[field->locationEnemy].left + 1));
-    int y = field->locations[field->locationEnemy].top;
+    int y = field->locations[field->locationEnemy].top + (IocsGetRandomNumber(&field->xorshift) % (field->locations[field->locationEnemy].bottom - field->locations[field->locationEnemy].top + 1));
     while (!FieldIsSpace(x * kFieldSizePixel, y * kFieldSizePixel)) {
         ++y;
+        if (y > kFieldSizeY) {
+            y = 0;
+        }
     }
+    int top = y;
     while (FieldIsSpace(x * kFieldSizePixel, y * kFieldSizePixel)) {
         ++y;
     }
@@ -1071,7 +1082,7 @@ void FieldGetEnemyPosition(struct Vector *position, bool land)
     if (land) {
         position->y = y * kFieldSizePixel - 1;
     } else {
-        position->y = ((y + field->locations[field->locationEnemy].top) / 2) * kFieldSizePixel - 1;
+        position->y = ((y + top) / 2) * kFieldSizePixel - 1;
     }
     ++field->locationEnemy;
     if (field->locationEnemy >= kFieldLocationSize) {
@@ -1141,6 +1152,28 @@ int FieldGetCaveIndex(int x, int y)
     return index;
 }
 
+// 店のインデックスを取得する
+//
+int FieldGetShopIndex(int x, int y)
+{
+    int index = -1;
+    if (FieldIsShop(x, y)) {
+        x = FieldGetMapX(x);
+        y = FieldGetMapY(y);
+        for (int i = 0; i < kFieldLocationShopSize; i++) {
+            if (
+                x >= field->locations[kFieldLocationShop + i].left && 
+                x <= field->locations[kFieldLocationShop + i].right && 
+                y >= field->locations[kFieldLocationShop + i].top && 
+                y <= field->locations[kFieldLocationShop + i].bottom
+            ) {
+                index = i;
+                break;
+            }
+        }
+    }
+    return index;
+}
 
 // クリップを設定する
 //
