@@ -21,10 +21,22 @@ static void BattleActorLoop(struct BattleActor *actor);
 // 内部変数
 //
 static struct Battle *battle = NULL;
-static const char *battleAnimationNames[kBattleAnimationSize] = {
-    "Null", 
-    "Back", 
-    "Block", 
+static const char *battleAnimationNames[kBattleTypeSize][kBattleAnimationSize] = {
+    {
+        "Null", 
+        "Back", 
+        "Block", 
+    }, 
+    {
+        "Null", 
+        "Floor", 
+        "Solid", 
+    }, 
+    {
+        "Null", 
+        "Floor", 
+        "Checker", 
+    }, 
 };
 
 
@@ -95,6 +107,9 @@ void BattleActorLoad(int type, int route)
 
         // タグの設定
         ActorSetTag(&actor->actor, kGameTagBattle);
+
+        // 種類の設定
+        actor->type = type;
 
         // マップの作成
         {
@@ -199,7 +214,7 @@ static void BattleActorDraw(struct BattleActor *actor)
                 if (mx >= 0 && mx < kBattleSizeX && my >= 0 && my < kBattleSizeY) {
                     animation = battle->maps[my][mx];
                 }
-                AsepriteDrawSpriteAnimation(&actor->animations[animation], vx + kGameViewBattleLeft, vy + kGameViewBattleTop, kDrawModeCopy, kBitmapUnflipped);
+                AsepriteDrawSpriteAnimation(&actor->animations[actor->type][animation], vx + kGameViewBattleLeft, vy + kGameViewBattleTop, kDrawModeCopy, kBitmapUnflipped);
                 ++mx;
             }
             ++my;
@@ -227,8 +242,10 @@ static void BattleActorLoop(struct BattleActor *actor)
     if (actor->actor.state == 0) {
 
         // アニメーションの開始
-        for (int i = 0; i < kBattleAnimationSize; i++) {
-            AsepriteStartSpriteAnimation(&actor->animations[i], "tileset", battleAnimationNames[i], false);
+        for (int i = 0; i < kBattleTypeSize; i++) {
+            for (int j = 0; j < kBattleAnimationSize; j++) {
+                AsepriteStartSpriteAnimation(&actor->animations[i][j], "tileset", battleAnimationNames[i][j], false);
+            }
         }
 
         // 初期化の完了
@@ -239,8 +256,10 @@ static void BattleActorLoop(struct BattleActor *actor)
     if (GameIsPlay()) {
 
         // アニメーションの更新
-        for (int i = 0; i < kBattleAnimationSize; i++) {
-            AsepriteUpdateSpriteAnimation(&actor->animations[i]);
+        for (int i = 0; i < kBattleTypeSize; i++) {
+            for (int j = 0; j < kBattleAnimationSize; j++) {
+                AsepriteUpdateSpriteAnimation(&actor->animations[i][j]);
+            }
         }
     }
 

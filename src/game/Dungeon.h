@@ -75,4 +75,5 @@ extern void DungeonActorLoad(void);
 extern unsigned char DungeonGetRoute(int x, int y);
 extern void DungeonGetDirectionalPosition(int x, int y, int direction, struct Vector *position);
 extern void DungeonGetEntrancePosition(int entrance, struct Vector *position);
+extern int DungeonGetEntranceIndex(int x, int y);
 

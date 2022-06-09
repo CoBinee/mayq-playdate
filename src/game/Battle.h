@@ -68,8 +68,11 @@ struct BattleActor {
     // アクタ
     struct Actor actor;
 
+    // 種類
+    int type;
+
     // アニメーション
-    struct AsepriteSpriteAnimation animations[kBattleAnimationSize];
+    struct AsepriteSpriteAnimation animations[kBattleTypeSize][kBattleAnimationSize];
 
 };
 

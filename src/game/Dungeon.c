@@ -320,3 +320,19 @@ void DungeonGetEntrancePosition(int entrance, struct Vector *position)
 {
     *position = dungeon->locations[kDungeonLocationEntrance + entrance];
 }
+
+// 入り口のインデックスを取得する
+//
+int DungeonGetEntranceIndex(int x, int y)
+{
+    int index = -1;
+    for (int i = 0; i < kDungeonLocationEntranceSize; i++) {
+        if (dungeon->locations[kDungeonLocationEntrance + i].x == x && dungeon->locations[kDungeonLocationEntrance + i].y == y) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+

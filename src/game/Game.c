@@ -380,8 +380,9 @@ static void GameLoadDungeon(struct Game *game)
 
         // バトルアクタの読み込み
         {
+            int entrance = DungeonGetEntranceIndex(game->dungeonPosition.x, game->dungeonPosition.y);
             unsigned char route = DungeonGetRoute(game->dungeonPosition.x, game->dungeonPosition.y);
-            BattleActorLoad(kBattleTypeDungeon, route);
+            BattleActorLoad(entrance >= 0 ? kBattleTypeEntrance : kBattleTypeDungeon, route);
         }
 
         // プレイヤアクタの読み込み
@@ -389,6 +390,9 @@ static void GameLoadDungeon(struct Game *game)
 
         // エネミーアクタの読み込み
         EnemyBattleActorLoad(game->dungeonType, game->dungeonRest, game->dungeonDirection);
+
+        // DEBUG
+        playdate->system->logToConsole("dungeon = %d, %d", game->dungeonPosition.x, game->dungeonPosition.y);
 
         // 初期化の完了
         ++game->state;
@@ -490,6 +494,29 @@ static void GameUnloadDungeon(struct Game *game)
         // ゲームの停止
         game->play = false;
 
+        // 遷移の設定
+        game->transition = NULL;
+
+        // ダンジョンから出た
+        if (game->transition == NULL) {
+            int entrance = DungeonGetEntranceIndex(game->dungeonPosition.x, game->dungeonPosition.y);
+            if (entrance >= 0 && game->dungeonDirection == kDirectionDown) {
+                struct Vector position;
+                FieldGetCavePosition(entrance, &position);
+                PlayerSetFieldPosition(position.x, position.y);
+                game->transition = (GameFunction)GameLoadField;
+            }
+        }
+
+        // ダンジョン内の移動
+        if (game->transition == NULL) {
+            struct Vector position;
+            DungeonGetDirectionalPosition(game->dungeonPosition.x, game->dungeonPosition.y, game->dungeonDirection, &position);
+            game->dungeonPosition = position;
+            game->dungeonDirection = game->dungeonDirection ^ 0x01;
+            game->transition = (GameFunction)GameLoadDungeon;
+        }
+
         // 初期化の完了
         ++game->state;
     }
@@ -498,7 +525,7 @@ static void GameUnloadDungeon(struct Game *game)
     ActorUnloadAll();
 
     // 処理の遷移
-    GameTransition((GameFunction)GameLoadField);
+    GameTransition(game->transition);
 }
 
 // バトルを読み込む
@@ -706,7 +733,7 @@ static void GameUnloadBattle(struct Game *game)
         } else {
             struct Vector position;
             FieldGetDirectinalPosition(game->battlePosition.x, game->battlePosition.y, game->battleDirection, &position);
-            PlayerSetFieldPosition(&position);
+            PlayerSetFieldPosition(position.x, position.y);
         }
 
         // 初期化の完了

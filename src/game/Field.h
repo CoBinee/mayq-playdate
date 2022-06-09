@@ -274,6 +274,7 @@ extern void FieldGetEnemyPosition(struct Vector *position, bool land);
 extern void FieldGetDirectinalPosition(int x, int y, int direction, struct Vector *position);
 extern int FieldGetBattleRoute(int x, int y);
 extern int FieldGetCaveIndex(int x, int y);
+extern void FieldGetCavePosition(int index, struct Vector *position);
 extern int FieldGetShopIndex(int x, int y);
 extern void FieldClearClip(void);
 extern void FieldSetClip(void);

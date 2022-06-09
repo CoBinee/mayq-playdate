@@ -798,8 +798,8 @@ unsigned char FieldGetMap(int x, int y)
     unsigned char result = kFieldMapBlock;
     if (field != NULL) {
         if (y >= 0 && y < kFieldSizeY * kFieldSizePixel) {
-            x = FieldGetMapX(x); // (x < 0 ? x + kFieldSizeX * kFieldSizePixel : (x >= kFieldSizeX * kFieldSizePixel ? x - kFieldSizeX * kFieldSizePixel : x)) / kFieldSizePixel;
-            y = FieldGetMapY(y); // y / kFieldSizePixel;
+            x = FieldGetMapX(x);
+            y = FieldGetMapY(y);
             result = field->maps[y][x];
         }
     }
@@ -1150,6 +1150,21 @@ int FieldGetCaveIndex(int x, int y)
         }
     }
     return index;
+}
+
+// 洞窟の位置を取得する
+//
+void FieldGetCavePosition(int index, struct Vector *position)
+{
+    for (int y = field->locations[kFieldLocationCave + index].top; y <= field->locations[kFieldLocationCave + index].bottom; y++) {
+        for (int x = field->locations[kFieldLocationCave + index].left; x <= field->locations[kFieldLocationCave + index].right; x++) {
+            if (field->maps[y][x] == kFieldMapCaveEntrance) {
+                position->x = x * kFieldSizePixel + kFieldSizePixel / 2;
+                position->y = y * kFieldSizePixel + kFieldSizePixel - 1;
+                break;
+            }
+        }
+    }
 }
 
 // 店のインデックスを取得する

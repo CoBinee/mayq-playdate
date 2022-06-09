@@ -83,9 +83,10 @@ void PlayerGetFieldPosition(struct Vector *position)
 
 // フィールド上にいるプレイヤの位置を設定する
 //
-void PlayerSetFieldPosition(struct Vector *position)
+void PlayerSetFieldPosition(int x, int y)
 {
     if (player != NULL) {
-        player->fieldPosition = *position;
+        player->fieldPosition.x = x;
+        player->fieldPosition.y = y;
     }
 }

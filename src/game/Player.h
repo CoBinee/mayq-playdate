@@ -112,7 +112,7 @@ enum {
 extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
 extern void PlayerGetFieldPosition(struct Vector *position);
-extern void PlayerSetFieldPosition(struct Vector *position);
+extern void PlayerSetFieldPosition(int x, int y);
 extern void PlayerFieldActorLoad(void);
 extern void PlayerFieldGetPosition(struct Vector *position);
 extern void PlayerFieldGetMoveRect(struct Rect *rect);
