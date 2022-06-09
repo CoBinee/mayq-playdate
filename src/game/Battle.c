@@ -170,6 +170,24 @@ void BattleActorLoad(int type, int route)
                 }
             }
         }
+
+        // エネミーの作成
+        {
+            int ox = (kBattleSizeX - kBattleEnemySizeX) * kBattleSizePixel / 2;
+            int oy = (kBattleSizeY - kBattleEnemySizeY) * kBattleSizePixel / 2;
+            for (int y = 0; y < kBattleEnemySizeY; y++) {
+                for (int x = 0; x < kBattleEnemySizeX; x++) {
+                    battle->enemyPositions[y * kBattleEnemySizeX + x].x = ox + x * kBattleSizePixel + kBattleSizePixel / 2;
+                    battle->enemyPositions[y * kBattleEnemySizeX + x].y = oy + y * kBattleSizePixel + kBattleSizePixel - 1;
+                }
+            }
+            for (int i = 0; i < kBattleEnemySize; i++) {
+                int j = IocsGetRandomNumber(NULL) % kBattleEnemySize;
+                struct Vector v = battle->enemyPositions[i];
+                battle->enemyPositions[i] = battle->enemyPositions[j];
+                battle->enemyPositions[j] = v;
+            }
+        }
     }
 }
 
@@ -400,35 +418,9 @@ void BattleGetStartPosition(int direction, struct Vector *position)
 
 // エネミーの配置位置を取得する
 //
-void BattleGetEnemyPosition(int index, int direction, struct Vector *position)
+void BattleGetEnemyPosition(int index, struct Vector *position)
 {
-    static const struct Vector o = {
-        .x = (kBattleSizeX * kBattleSizePixel) / 2, .y = (kBattleSizeY * kBattleSizePixel) / 2 + (kBattleSizePixel / 2 - 1), 
-    };
-    static const struct Vector offsets[] = {
-        { 0 * kBattleSizePixel,  0 * kBattleSizePixel, }, 
-        { 1 * kBattleSizePixel,  1 * kBattleSizePixel, }, 
-        {-1 * kBattleSizePixel,  1 * kBattleSizePixel, }, 
-        {-1 * kBattleSizePixel,  0 * kBattleSizePixel, }, 
-        { 1 * kBattleSizePixel, -1 * kBattleSizePixel, }, 
-        { 0 * kBattleSizePixel, -1 * kBattleSizePixel, }, 
-        { 0 * kBattleSizePixel,  1 * kBattleSizePixel, }, 
-        { 1 * kBattleSizePixel,  0 * kBattleSizePixel, }, 
-        {-1 * kBattleSizePixel, -1 * kBattleSizePixel, }, 
-    };
-    if (direction == kDirectionUp) {
-        position->x = o.x + offsets[index].x;
-        position->y = o.y + offsets[index].y;
-    } else if (direction == kDirectionDown) {
-        position->x = o.x - offsets[index].x;
-        position->y = o.y - offsets[index].y;
-    } else if (direction == kDirectionLeft) {
-        position->x = o.x + offsets[index].y;
-        position->y = o.y - offsets[index].x;
-    } else {
-        position->x = o.x - offsets[index].y;
-        position->y = o.y + offsets[index].x;
-    }
+    *position = battle->enemyPositions[index];
 }
 
 // 指定した位置がバトル内かどうかを判定する

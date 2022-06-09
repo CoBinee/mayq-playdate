@@ -158,7 +158,7 @@ enum {
 // ダメージ
 //
 enum {
-    kEnemyDamageSpeed = 8, 
+    kEnemyDamageSpeed = 5, 
 };
 
 // 点滅

@@ -78,7 +78,7 @@ void EnemyBattleActorLoad(int type, int rest, int direction)
             actor->life = data->life;
 
             // 位置の設定
-            BattleGetEnemyPosition(i, direction, &actor->position);
+            BattleGetEnemyPosition(i, &actor->position);
 
             // ダメージの設定
             actor->damagePoint = 0;
@@ -189,9 +189,6 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-
-        // 点滅
-        EnemyBattleBlink(actor);
     }
 
     // 矩形の計算
@@ -271,9 +268,6 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-
-        // 点滅
-        EnemyBattleBlink(actor);
     }
 
     // 矩形の計算
@@ -420,17 +414,20 @@ static void EnemyBattleSetDamage(struct EnemyActor *actor, int direction, int po
 static bool EnemyBattleDamage(struct EnemyActor *actor)
 {
     if (actor->damagePoint > 0) {
-        EnemyBattleMove(actor, actor->damageDirection, actor->damageSpeed);
         if (actor->damageSpeed > 0) {
-            --actor->damageSpeed;
-        } else {
-            actor->life -= actor->damagePoint;
-            actor->damagePoint = 0;
-            if (actor->life > 0) {
-                actor->blink = kEnemyBlinkDamage;
-            } else {
-                ActorTransition(&actor->actor, (ActorFunction)EnemyBattleActorDeath);
+            EnemyBattleMove(actor, actor->damageDirection, actor->damageSpeed);
+            if (--actor->damageSpeed == 0) {
+                actor->life -= actor->damagePoint;
+                if (actor->life > 0) {
+                    actor->blink = kEnemyBlinkDamage;
+                } else {
+                    ActorTransition(&actor->actor, (ActorFunction)EnemyBattleActorDeath);
+                }
             }
+        } else if (actor->blink > 0) {
+            --actor->blink;
+        } else {
+            actor->damagePoint = 0;
         }
     }
     return actor->damagePoint > 0 ? true : false;

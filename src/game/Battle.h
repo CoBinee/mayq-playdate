@@ -40,7 +40,9 @@ enum {
 // エネミー
 //
 enum {
-    kBattleEnemySize = 9, 
+    kBattleEnemySizeX = 5, 
+    kBattleEnemySizeY = 5, 
+    kBattleEnemySize = kBattleEnemySizeX * kBattleEnemySizeY, 
 };
 
 // バトル
@@ -49,6 +51,9 @@ struct Battle {
 
     // マップ
     unsigned char maps[kBattleSizeY][kBattleSizeX];
+
+    // エネミー
+    struct Vector enemyPositions[kBattleEnemySize];
 
 };
 
@@ -85,7 +90,7 @@ extern unsigned char BattleGetMap(int x, int y);
 extern bool BattleIsSpace(int x, int y);
 extern int BattleGetMoveDistance(int x, int y, int direction, int speed, bool outside);
 extern void BattleGetStartPosition(int direction, struct Vector *position);
-extern void BattleGetEnemyPosition(int index, int direction, struct Vector *position);
+extern void BattleGetEnemyPosition(int index, struct Vector *position);
 extern bool BattleIsInside(int x, int y);
 extern bool BattleIsInsideX(int x);
 extern bool BattleIsInsideY(int y);
