@@ -286,6 +286,7 @@ static void GamePlayField(struct Game *game)
                 game->dungeonIndex = cave;
                 DungeonGetEntrancePosition(game->dungeonIndex, &game->dungeonPosition);
                 game->dungeonDirection = kDirectionDown;
+                BattleGetStartPosition(game->dungeonDirection, &game->dungeonLast);
                 game->transition = (GameFunction)GameLoadDungeon;
             }
         }
@@ -386,7 +387,16 @@ static void GameLoadDungeon(struct Game *game)
         }
 
         // プレイヤアクタの読み込み
-        PlayerBattleActorLoad(game->dungeonDirection);
+        {
+            struct Vector position;
+            BattleGetStartPosition(game->dungeonDirection, &position);
+            if (game->dungeonDirection == kDirectionUp || game->dungeonDirection == kDirectionDown) {
+                position.x = game->dungeonLast.x;
+            } else {
+                position.y = game->dungeonLast.y;
+            }
+            PlayerBattleActorLoad(position.x, position.y, game->dungeonDirection);
+        }
 
         // エネミーアクタの読み込み
         EnemyBattleActorLoad(game->dungeonType, game->dungeonRest, game->dungeonDirection);
@@ -471,11 +481,6 @@ static void GamePlayDungeon(struct Game *game)
 
     // カメラの設定
     GameSetBattleCamera();
-
-    // DEBUG
-    if (IocsIsButtonEdge(kButtonB)) {
-        GameTransition((GameFunction)GameUnloadDungeon);
-    }
 }
 
 // ダンジョンを解放する
@@ -514,6 +519,7 @@ static void GameUnloadDungeon(struct Game *game)
             DungeonGetDirectionalPosition(game->dungeonPosition.x, game->dungeonPosition.y, game->dungeonDirection, &position);
             game->dungeonPosition = position;
             game->dungeonDirection = game->dungeonDirection ^ 0x01;
+            PlayerFieldGetPosition(&game->dungeonLast);
             game->transition = (GameFunction)GameLoadDungeon;
         }
 
@@ -601,7 +607,11 @@ static void GameLoadBattle(struct Game *game)
         BattleActorLoad(kBattleTypeField, game->battleRoute);
 
         // プレイヤアクタの読み込み
-        PlayerBattleActorLoad(game->battleDirection);
+        {
+            struct Vector position;
+            BattleGetStartPosition(game->battleDirection, &position);
+            PlayerBattleActorLoad(position.x, position.y, game->battleDirection);
+        }
 
         // エネミーアクタの読み込み
         EnemyBattleActorLoad(game->battleType, game->battleRest, game->battleDirection);
@@ -689,9 +699,6 @@ static void GamePlayBattle(struct Game *game)
     GameSetBattleCamera();
 
     // DEBUG
-    if (IocsIsButtonEdge(kButtonA)) {
-        // game->play = !game->play;
-    }
     if (IocsIsButtonEdge(kButtonB)) {
         if ((game->battleRoute & (1 << kDirectionUp)) != 0) {
             game->battleDirection = kDirectionUp;

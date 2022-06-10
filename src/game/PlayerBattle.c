@@ -62,7 +62,7 @@ static const char *playerBattleAnimationNames_Attack[][kPlayerAttackMaximum] = {
 
 // プレイヤアクタを読み込む
 //
-void PlayerBattleActorLoad(int direction)
+void PlayerBattleActorLoad(int x, int y, int direction)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -85,7 +85,8 @@ void PlayerBattleActorLoad(int direction)
         ActorSetTag(&actor->actor, kGameTagPlayer);
 
         // 位置の設定
-        BattleGetStartPosition(direction, &actor->position);
+        actor->position.x = x;
+        actor->position.y = y;
 
         // 向きの設定
         actor->direction = direction ^ 0x01;

@@ -34,6 +34,7 @@ struct Game {
     int dungeonIndex;
     struct Vector dungeonPosition;
     int dungeonDirection;
+    struct Vector dungeonLast;
     int dungeonType;
     int dungeonRest;
 

@@ -123,7 +123,7 @@ extern int PlayerFieldGetEnterCaveIndex(void);
 extern bool PlayerFieldIsEnterCastle(void);
 extern bool PlayerFieldIsEnterShop(void);
 extern int PlayerFieldGetEnterShopIndex(void);
-extern void PlayerBattleActorLoad(int direction);
+extern void PlayerBattleActorLoad(int x, int y, int direction);
 extern int PlayerBattleGetDirection(void);
 extern int PlayerBattleGetEscapeDirection(void);
 extern void PlayerBattleGetPosition(struct Vector *position);
