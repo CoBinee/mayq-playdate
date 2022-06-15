@@ -42,9 +42,6 @@ void PlayerInitialize(void)
 
     // プレイヤの初期化
     {
-        // 攻撃範囲の読み込み
-        AsepriteLoadSpriteJson(&player->battleSprite, "images/attack.json");
-
         // フィールドの設定
         FieldGetStartPosition(&player->fieldPosition);
     }
@@ -62,9 +59,6 @@ void PlayerRelease(void)
 
     // プレイヤの解放
     if (player != NULL) {
-
-        // 攻撃範囲の解放
-        AsepriteUnloadSpriteJson(&player->battleSprite);
 
         // プレイヤの解放
         playdate->system->realloc(player, 0);

@@ -17,10 +17,8 @@
 static void PlayerBattleActorUnload(struct PlayerActor *actor);
 static void PlayerBattleActorDraw(struct PlayerActor *actor);
 static void PlayerBattleActorWalk(struct PlayerActor *actor);
-static void PlayerBattleActorAttack(struct PlayerActor *actor);
 static void PlayerBattleBlink(struct PlayerActor *actor);
-static void PlayerBattleCalcRect(struct PlayerActor *actor);
-static void PlayerBattleControlCrank(struct PlayerActor *actor);
+static void PlayerBattleCalc(struct PlayerActor *actor);
 
 // 内部変数
 //
@@ -35,28 +33,6 @@ static const char *playerBattleAnimationNames_Walk[] = {
     "WalkDown", 
     "WalkLeft", 
     "WalkRight", 
-};
-static const char *playerBattleAnimationNames_Attack[][kPlayerAttackMaximum] = {
-    {
-        "AttackUp1", 
-        "AttackUp2", 
-        "AttackUp3", 
-    }, 
-    {
-        "AttackDown1", 
-        "AttackDown2", 
-        "AttackDown3", 
-    }, 
-    {
-        "AttackLeft1", 
-        "AttackLeft2", 
-        "AttackLeft3", 
-    }, 
-    {
-        "AttackRight1", 
-        "AttackRight2", 
-        "AttackRight3", 
-    }, 
 };
 
 
@@ -93,9 +69,6 @@ void PlayerBattleActorLoad(int x, int y, int direction)
 
         // 点滅の設定
         actor->blink = 0;
-
-        // 矩形の計算
-        PlayerBattleCalcRect(actor);
     }
 }
 
@@ -130,8 +103,8 @@ static void PlayerBattleActorDraw(struct PlayerActor *actor)
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, 0.5f, 0.75f, 1.0f, 1.0f, kDrawModeCopy);
     }
 
-    // 攻撃範囲の描画
-    if (actor->attackRect.left < actor->attackRect.right) {
+    // DEBUG
+    if (actor->attackDirection >= 0) {
         struct Vector view;
         GameGetBattleCameraPosition(actor->attackRect.left, actor->attackRect.top, &view);
         playdate->graphics->setDrawMode(kDrawModeCopy);
@@ -155,8 +128,11 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // クランクの設定
-        actor->crank = 0.0f;
+        // 位置の設定
+        actor->origin = actor->position;
+
+        // 計算
+        PlayerBattleCalc(actor);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames_Walk[actor->direction], true);
@@ -168,18 +144,11 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
     // プレイ中
     if (GameIsPlay()) {
 
-        // クランクの操作
-        PlayerBattleControlCrank(actor);
-
-        // 攻撃
-        if (
-            actor->crank >= 180.0f || 
-            IocsIsButtonEdge(kButtonA)
-        ) {
-            ActorTransition(&actor->actor, (ActorFunction)PlayerBattleActorAttack);
+        // 位置の保存
+        actor->origin = actor->position;
 
         // 移動
-        } else {
+        {
             bool move = false;
             int direction = actor->direction;
             if (IocsIsButtonPush(kButtonUp)) {
@@ -257,72 +226,10 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
 
         // 点滅
         PlayerBattleBlink(actor);
+
+        // 計算
+        PlayerBattleCalc(actor);
     }
-
-    // 矩形の計算
-    PlayerBattleCalcRect(actor);
-
-    // 描画処理の設定
-    ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderCharacter + actor->position.y);
-}
-
-// プレイヤアクタが攻撃する
-//
-static void PlayerBattleActorAttack(struct PlayerActor *actor)
-{
-    // Playdate の取得
-    PlaydateAPI *playdate = IocsGetPlaydate();
-    if (playdate == NULL) {
-        return;
-    }
-
-    // 初期化
-    if (actor->actor.state == 0) {
-
-        // クランクの設定
-        actor->crank = 0.0f;
-
-        // 攻撃の設定
-        actor->attackCount = 0;
-
-        // アニメーションの開始
-        AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames_Attack[actor->direction][actor->attackCount], false);
-
-        // 初期化の完了
-        ++actor->actor.state;
-    }
-
-    // プレイ中
-    if (GameIsPlay()) {
-
-        // クランクの操作
-        PlayerBattleControlCrank(actor);
-
-        // 攻撃の完了
-        if (AsepriteIsSpriteAnimationDone(&actor->animation)) {
-            ++actor->attackCount;
-            if (
-                actor->attackCount < kPlayerAttackMaximum && 
-                (
-                    (
-                        ((actor->attackCount & 1) == 1 && actor->crank <= -180.0f) || 
-                        ((actor->attackCount & 1) == 0 && actor->crank >= 180.0f)
-                    ) || 
-                    IocsIsButtonPush(kButtonA)
-                )
-            ) {
-                AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames_Attack[actor->direction][actor->attackCount], false);
-            } else {
-                ActorTransition(&actor->actor, (ActorFunction)PlayerBattleActorWalk);
-            }
-        }
-
-        // アニメーションの更新
-        AsepriteUpdateSpriteAnimation(&actor->animation);
-    }
-
-    // 矩形の計算
-    PlayerBattleCalcRect(actor);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerBattleActorDraw, kGameOrderCharacter + actor->position.y);
@@ -337,9 +244,9 @@ static void PlayerBattleBlink(struct PlayerActor *actor)
     }
 }
 
-// 矩形を計算する
+// プレイヤを計算する
 //
-static void PlayerBattleCalcRect(struct PlayerActor *actor)
+static void PlayerBattleCalc(struct PlayerActor *actor)
 {
     // 移動の計算
     {
@@ -351,33 +258,41 @@ static void PlayerBattleCalcRect(struct PlayerActor *actor)
 
     // 攻撃の計算
     {
-        int index = AsepriteGetSpriteAnimationPlayFrameIndex(&actor->animation);
-        struct AsepriteSpriteFrame *frame = AsepriteGetSpriteFrame(&player->battleSprite, index);
-        if (frame->spriteSourceSize.w > 1 && frame->spriteSourceSize.h > 1) {
-            int ox = actor->position.x - frame->sourceSize.w / 2;
-            int oy = actor->position.y - frame->sourceSize.h * 3 / 4;
-            actor->attackRect.left = ox + frame->spriteSourceSize.x;
-            actor->attackRect.top = oy + frame->spriteSourceSize.y;
-            actor->attackRect.right = actor->attackRect.left + frame->spriteSourceSize.w - 1;
-            actor->attackRect.bottom = actor->attackRect.top + frame->spriteSourceSize.h - 1;
+        struct Vector v = {
+            actor->position.x - actor->origin.x, 
+            actor->position.y - actor->origin.y, 
+        };
+        if (actor->direction == kDirectionUp && v.y < 0) {
+            actor->attackRect.left = actor->moveRect.left;
+            actor->attackRect.top = actor->moveRect.top;
+            actor->attackRect.right = actor->moveRect.right;
+            actor->attackRect.bottom = actor->moveRect.top - v.y;
+            actor->attackDirection = kDirectionUp;
+        } else if (actor->direction == kDirectionDown && v.y > 0) {
+            actor->attackRect.left = actor->moveRect.left;
+            actor->attackRect.top = actor->moveRect.bottom - v.y;
+            actor->attackRect.right = actor->moveRect.right;
+            actor->attackRect.bottom = actor->moveRect.bottom;
+            actor->attackDirection = kDirectionDown;
+        } else if (actor->direction == kDirectionLeft && v.x < 0) {
+            actor->attackRect.left = actor->moveRect.left;
+            actor->attackRect.top = actor->moveRect.top;
+            actor->attackRect.right = actor->moveRect.left - v.x;
+            actor->attackRect.bottom = actor->moveRect.bottom;
+            actor->attackDirection = kDirectionLeft;
+        } else if (actor->direction == kDirectionRight && v.x > 0) {
+            actor->attackRect.left = actor->moveRect.right - v.x;
+            actor->attackRect.top = actor->moveRect.top;
+            actor->attackRect.right = actor->moveRect.right;
+            actor->attackRect.bottom = actor->moveRect.bottom;
+            actor->attackDirection = kDirectionRight;
         } else {
             actor->attackRect.left = 0;
             actor->attackRect.top = 0;
             actor->attackRect.right = 0;
             actor->attackRect.bottom = 0;
+            actor->attackDirection = -1;
         }
-    }
-}
-
-// クランクを操作する
-//
-static void PlayerBattleControlCrank(struct PlayerActor *actor)
-{
-    float change = IocsGetCrankChange();
-    if (change == 0.0f || (actor->crank < 0.0f && change > 0.0f) || (actor->crank > 0.0f && change < 0.0f)) {
-        actor->crank = change;
-    } else {
-        actor->crank += change;
     }
 }
 

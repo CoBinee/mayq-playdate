@@ -17,7 +17,7 @@ static void PlayerFieldActorUnload(struct PlayerActor *actor);
 static void PlayerFieldActorDraw(struct PlayerActor *actor);
 static void PlayerFieldActorPlay(struct PlayerActor *actor);
 static void PlayerFieldBlink(struct PlayerActor *actor);;
-static void PlayerFieldCalcRect(struct PlayerActor *actor);
+static void PlayerFieldCalc(struct PlayerActor *actor);
 
 // 内部変数
 //
@@ -62,14 +62,8 @@ void PlayerFieldActorLoad(void)
         // 位置の設定
         actor->position = player->fieldPosition;
 
-        // 入るの設定
-        actor->enterLocation = kPlayerEnterNull;
-
         // 点滅の設定
         actor->blink = 0;
-
-        // 矩形の計算
-        PlayerFieldCalcRect(actor);
     }
 }
 
@@ -134,6 +128,12 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
         // ジャンプの設定
         actor->jumpCount = 0;
         actor->jumpStep = 1;
+
+        // 入るの設定
+        actor->enterLocation = kPlayerEnterNull;
+
+        // 計算
+        PlayerFieldCalc(actor);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, "player", playerFieldAnimationNames[actor->direction], true);
@@ -294,10 +294,10 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
 
         // 点滅
         PlayerFieldBlink(actor);
-    }
 
-    // 矩形の計算
-    PlayerFieldCalcRect(actor);
+        // 計算
+        PlayerFieldCalc(actor);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)PlayerFieldActorDraw, kGameOrderPlayer);
@@ -312,9 +312,9 @@ static void PlayerFieldBlink(struct PlayerActor *actor)
     }
 }
 
-// 矩形を計算する
+// プレイヤを計算する
 //
-static void PlayerFieldCalcRect(struct PlayerActor *actor)
+static void PlayerFieldCalc(struct PlayerActor *actor)
 {
     // 移動の計算
     {

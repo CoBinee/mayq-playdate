@@ -23,7 +23,7 @@ static int EnemyFieldGetWalkableDirection(struct EnemyActor *actor);
 static int EnemyFieldGetWalkableRandomDirection(struct EnemyActor *actor);
 static bool EnemyFieldMoveToDestination(struct EnemyActor *actor);
 static bool EnemyFieldBlink(struct EnemyActor *actor);
-static void EnemyFieldCalcRect(struct EnemyActor *actor);
+static void EnemyFieldCalc(struct EnemyActor *actor);
 
 // 内部変数
 //
@@ -79,14 +79,9 @@ void EnemyFieldActorLoad(void)
 
                 // 位置の設定
                 actor->position = enemy->fields[i].position;
-                actor->origin = actor->position;
-                actor->destination = actor->position;
 
                 // 点滅の設定
                 actor->blink = 0;
-
-                // 矩形の計算
-                EnemyFieldCalcRect(actor);
             }
         }
     }
@@ -153,6 +148,9 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
         // 体の向きの設定
         actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
 
+        // 計算
+        EnemyFieldCalc(actor);
+
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
@@ -169,10 +167,10 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-    }
 
-    // 矩形の計算
-    EnemyFieldCalcRect(actor);
+        // 計算
+        EnemyFieldCalc(actor);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
@@ -207,6 +205,9 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
 
         // 移動の設定
         actor->moveSpeed = 0;
+
+        // 計算
+        EnemyFieldCalc(actor);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
@@ -287,10 +288,10 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-    }
 
-    // 矩形の計算
-    EnemyFieldCalcRect(actor);
+        // 計算
+        EnemyFieldCalc(actor);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
@@ -319,6 +320,9 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
         // 体の向きの設定
         actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
 
+        // 計算
+        EnemyFieldCalc(actor);
+
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
@@ -335,10 +339,10 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-    }
 
-    // 矩形の計算
-    EnemyFieldCalcRect(actor);
+        // 計算
+        EnemyFieldCalc(actor);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
@@ -367,6 +371,9 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
         // 体の向きの設定
         actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
 
+        // 計算
+        EnemyFieldCalc(actor);
+
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);
 
@@ -383,10 +390,10 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-    }
 
-    // 矩形の計算
-    EnemyFieldCalcRect(actor);
+        // 計算
+        EnemyFieldCalc(actor);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyFieldActorDraw, kGameOrderEnemy);
@@ -497,7 +504,7 @@ static bool EnemyFieldBlink(struct EnemyActor *actor)
 
 // 矩形を計算する
 //
-static void EnemyFieldCalcRect(struct EnemyActor *actor)
+static void EnemyFieldCalc(struct EnemyActor *actor)
 {
     // 移動の計算
     {

@@ -23,7 +23,6 @@ struct Player {
 
     // バトル
     struct Vector battlePosition;
-    struct AsepriteSprite battleSprite;
 
 };
 
@@ -86,11 +85,8 @@ struct PlayerActor {
     int enterIndex;
 
     // 攻撃
-    int attackCount;
     struct Rect attackRect;
-
-    // クランク
-    float crank;
+    int attackDirection;
 
     // 点滅
     int blink;

@@ -26,7 +26,7 @@ static int EnemyBattleForward(struct EnemyActor *actor);
 static void EnemyBattleSetDamage(struct EnemyActor *actor, int direction, int point);
 static bool EnemyBattleDamage(struct EnemyActor *actor);
 static void EnemyBattleBlink(struct EnemyActor *actor);
-static void EnemyBattleCalcRect(struct EnemyActor *actor);
+static void EnemyBattleCalc(struct EnemyActor *actor);
 
 // 内部変数
 //
@@ -80,14 +80,11 @@ void EnemyBattleActorLoad(int type, int rest, int direction)
             // 位置の設定
             BattleGetEnemyPosition(i, &actor->position);
 
-            // ダメージの設定
-            actor->damagePoint = 0;
-
             // 点滅の設定
             actor->blink = 0;
 
-            // 矩形の計算
-            EnemyBattleCalcRect(actor);
+            // 計算
+            EnemyBattleCalc(actor);
         }
     }
 }
@@ -191,8 +188,8 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
         }
     }
 
-    // 矩形の計算
-    EnemyBattleCalcRect(actor);
+    // 計算
+    EnemyBattleCalc(actor);
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDrawCharacter, kGameOrderCharacter + actor->position.y);
@@ -220,6 +217,12 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
         // 移動の設定
         actor->moveSpeed = 0;
         actor->moveParams[0] = actor->data->battleMoveBase + (IocsGetRandomNumber(NULL) % actor->data->battleMoveRange);
+
+        // ダメージの設定
+        actor->damagePoint = 0;
+
+        // 計算
+        EnemyBattleCalc(actor);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyBattleAnimationNames_Walk[actor->face], true);
@@ -268,10 +271,10 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-    }
 
-    // 矩形の計算
-    EnemyBattleCalcRect(actor);
+        // 計算
+        EnemyBattleCalc(actor);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDrawCharacter, kGameOrderCharacter + actor->position.y);
@@ -442,9 +445,9 @@ static void EnemyBattleBlink(struct EnemyActor *actor)
     }
 }
 
-// 矩形を計算する
+// エネミーを計算する
 //
-static void EnemyBattleCalcRect(struct EnemyActor *actor)
+static void EnemyBattleCalc(struct EnemyActor *actor)
 {
     // 移動の計算
     {

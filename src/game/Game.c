@@ -266,7 +266,8 @@ static void GamePlayField(struct Game *game)
     }
 
     // プレイの監視
-    {
+    if (game->play) {
+
         // エネミーとの接触
         if (game->transition == NULL) {
             if (!PlayerFieldIsBlink()) {
@@ -462,20 +463,24 @@ static void GamePlayDungeon(struct Game *game)
         ++game->state;
     }
 
-    // ヒット判定
-    GameHit();
+    // プレイの監視
+    if (game->play) {
 
-    // ダンジョンの監視
-    {
-        // エネミーの数の取得
-        game->dungeonRest = EnemyBattleGetRest(game->dungeonType);
+        // ヒット判定
+        GameHit();
 
-        // 逃げる方向の取得
-        game->dungeonDirection = PlayerBattleGetEscapeDirection();
+        // ダンジョンの監視
+        {
+            // エネミーの数の取得
+            game->dungeonRest = EnemyBattleGetRest(game->dungeonType);
 
-        // 逃げた
-        if (game->dungeonDirection >= 0) {
-            GameTransition((GameFunction)GameUnloadDungeon);
+            // 逃げる方向の取得
+            game->dungeonDirection = PlayerBattleGetEscapeDirection();
+
+            // 逃げた
+            if (game->dungeonDirection >= 0) {
+                GameTransition((GameFunction)GameUnloadDungeon);
+            }
         }
     }
 
@@ -674,24 +679,28 @@ static void GamePlayBattle(struct Game *game)
         ++game->state;
     }
 
-    // ヒット判定
-    GameHit();
+    // プレイの監視
+    if (game->play) {
 
-    // バトルの監視
-    {
-        // エネミーの数の取得
-        game->battleRest = EnemyBattleGetRest(game->battleType);
+        // ヒット判定
+        GameHit();
 
-        // 逃げる方向の取得
-        game->battleDirection = PlayerBattleGetEscapeDirection();
+        // バトルの監視
+        {
+            // エネミーの数の取得
+            game->battleRest = EnemyBattleGetRest(game->battleType);
 
-        // エネミーを倒した
-        if (game->battleRest == 0) {
-            GameTransition((GameFunction)GameUnloadBattle);
+            // 逃げる方向の取得
+            game->battleDirection = PlayerBattleGetEscapeDirection();
 
-        // 逃げた
-        } else if (game->battleDirection >= 0) {
-            GameTransition((GameFunction)GameUnloadBattle);
+            // エネミーを倒した
+            if (game->battleRest == 0) {
+                GameTransition((GameFunction)GameUnloadBattle);
+
+            // 逃げた
+            } else if (game->battleDirection >= 0) {
+                GameTransition((GameFunction)GameUnloadBattle);
+            }
         }
     }
 
