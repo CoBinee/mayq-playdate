@@ -63,12 +63,16 @@ void PlayerBattleActorLoad(int x, int y, int direction)
         // 位置の設定
         actor->position.x = x;
         actor->position.y = y;
+        actor->origin = actor->position;
 
         // 向きの設定
         actor->direction = direction ^ 0x01;
 
         // 点滅の設定
         actor->blink = 0;
+
+        // 計算
+        PlayerBattleCalc(actor);
     }
 }
 
@@ -127,12 +131,6 @@ static void PlayerBattleActorWalk(struct PlayerActor *actor)
 
     // 初期化
     if (actor->actor.state == 0) {
-
-        // 位置の設定
-        actor->origin = actor->position;
-
-        // 計算
-        PlayerBattleCalc(actor);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, "player", playerBattleAnimationNames_Walk[actor->direction], true);
@@ -334,7 +332,7 @@ int PlayerBattleGetEscapeDirection(void)
     return direction;
 }
 
-// 矩形を取得する
+// 移動を取得する
 //
 void PlayerBattleGetMoveRect(struct Rect *rect)
 {
@@ -343,11 +341,19 @@ void PlayerBattleGetMoveRect(struct Rect *rect)
         *rect = actor->moveRect;
     }
 }
+
+// 攻撃を取得する
+//
 void PlayerBattleGetAttackRect(struct Rect *rect)
 {
     struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
     if (actor != NULL) {
         *rect = actor->attackRect;
     }
+}
+int PlayerBattleGetAttackDirection(void)
+{
+    struct PlayerActor *actor = (struct PlayerActor *)ActorFindWithTag(kGameTagPlayer);
+    return actor != NULL ? actor->attackDirection : -1;
 }
 

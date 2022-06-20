@@ -79,6 +79,7 @@ void EnemyBattleActorLoad(int type, int rest, int direction)
 
             // 位置の設定
             BattleGetEnemyPosition(i, &actor->position);
+            actor->origin = actor->position;
 
             // 点滅の設定
             actor->blink = 0;
@@ -119,6 +120,14 @@ static void EnemyBattleActorDrawCharacter(struct EnemyActor *actor)
         GameGetBattleCameraPosition(actor->position.x, actor->position.y, &view);
         int drawmode = actor->damagePoint > 0 ? kDrawModeInverted : kDrawModeCopy;
         AsepriteDrawRotatedSpriteAnimation(&actor->animation, view.x, view.y, 0.0f, actor->data->centerX, actor->data->centerY, 1.0f, 1.0f, drawmode);
+    }
+
+    // DEBUG
+    if (actor->attackDirection >= 0) {
+        struct Vector view;
+        GameGetBattleCameraPosition(actor->attackRect.left, actor->attackRect.top, &view);
+        playdate->graphics->setDrawMode(kDrawModeCopy);
+        playdate->graphics->drawRect(view.x, view.y, actor->attackRect.right - actor->attackRect.left + 1, actor->attackRect.bottom - actor->attackRect.top + 1, kColorWhite);
     }
 
     // クリップの解除
@@ -186,10 +195,10 @@ void EnemyBattleActorIdle(struct EnemyActor *actor)
             // アニメーションの更新
             AsepriteUpdateSpriteAnimation(&actor->animation);
         }
-    }
 
-    // 計算
-    EnemyBattleCalc(actor);
+        // 計算
+        EnemyBattleCalc(actor);
+    }
 
     // 描画処理の設定
     ActorSetDraw(&actor->actor, (ActorFunction)EnemyBattleActorDrawCharacter, kGameOrderCharacter + actor->position.y);
@@ -233,6 +242,9 @@ void EnemyBattleActorWalkRandom(struct EnemyActor *actor)
 
     // プレイ中
     if (GameIsPlay()) {
+
+        // 位置の保存
+        actor->origin = actor->position;
 
         // ダメージ
         if (EnemyBattleDamage(actor)) {
@@ -408,8 +420,8 @@ static int EnemyBattleForward(struct EnemyActor *actor)
 //
 static void EnemyBattleSetDamage(struct EnemyActor *actor, int direction, int point)
 {
-    if (actor->damagePoint == 0) {
-        actor->damagePoint = point;
+    if (actor->blink == 0) {
+        actor->damagePoint += point;
         actor->damageDirection = direction;
         actor->damageSpeed = kEnemyDamageSpeed;
     }
@@ -422,7 +434,7 @@ static bool EnemyBattleDamage(struct EnemyActor *actor)
             if (--actor->damageSpeed == 0) {
                 actor->life -= actor->damagePoint;
                 if (actor->life > 0) {
-                    actor->blink = kEnemyBlinkDamage;
+                    // actor->blink = kEnemyBlinkDamage;
                 } else {
                     ActorTransition(&actor->actor, (ActorFunction)EnemyBattleActorDeath);
                 }
@@ -456,23 +468,44 @@ static void EnemyBattleCalc(struct EnemyActor *actor)
         actor->moveRect.right = actor->position.x + actor->data->rect.right;
         actor->moveRect.bottom = actor->position.y + actor->data->rect.bottom;
     }
-}
 
-// エネミーにヒットするかどうかを判定する
-//
-void EnemyBattleIsHitThenDamage(struct Rect *rect, int x, int y, int point)
-{
-    struct EnemyActor *actor = (struct EnemyActor *)ActorFindWithTag(kGameTagEnemy);
-    while (actor != NULL) {
-        if (actor->moveRect.left > rect->right || actor->moveRect.right < rect->left || actor->moveRect.top > rect->bottom || actor->moveRect.bottom < rect->top) {
-            ;
-        } else if (actor->damagePoint == 0 && actor->blink == 0) {
-            int dx = actor->position.x - x;
-            int dy = actor->position.y - y;
-            int direction = abs(dy) > abs(dx) ? (dy <= 0 ? kDirectionUp : kDirectionDown) : (dx <= 0 ? kDirectionLeft : kDirectionRight);
-            EnemyBattleSetDamage(actor, direction, point);
+    // 攻撃の計算
+    {
+        struct Vector v = {
+            actor->position.x - actor->origin.x, 
+            actor->position.y - actor->origin.y, 
+        };
+        if (actor->direction == kDirectionUp && v.y < 0) {
+            actor->attackRect.left = actor->moveRect.left;
+            actor->attackRect.top = actor->moveRect.top;
+            actor->attackRect.right = actor->moveRect.right;
+            actor->attackRect.bottom = actor->moveRect.top - v.y;
+            actor->attackDirection = kDirectionUp;
+        } else if (actor->direction == kDirectionDown && v.y > 0) {
+            actor->attackRect.left = actor->moveRect.left;
+            actor->attackRect.top = actor->moveRect.bottom - v.y;
+            actor->attackRect.right = actor->moveRect.right;
+            actor->attackRect.bottom = actor->moveRect.bottom;
+            actor->attackDirection = kDirectionDown;
+        } else if (actor->direction == kDirectionLeft && v.x < 0) {
+            actor->attackRect.left = actor->moveRect.left;
+            actor->attackRect.top = actor->moveRect.top;
+            actor->attackRect.right = actor->moveRect.left - v.x;
+            actor->attackRect.bottom = actor->moveRect.bottom;
+            actor->attackDirection = kDirectionLeft;
+        } else if (actor->direction == kDirectionRight && v.x > 0) {
+            actor->attackRect.left = actor->moveRect.right - v.x;
+            actor->attackRect.top = actor->moveRect.top;
+            actor->attackRect.right = actor->moveRect.right;
+            actor->attackRect.bottom = actor->moveRect.bottom;
+            actor->attackDirection = kDirectionRight;
+        } else {
+            actor->attackRect.left = 0;
+            actor->attackRect.top = 0;
+            actor->attackRect.right = 0;
+            actor->attackRect.bottom = 0;
+            actor->attackDirection = -1;
         }
-        actor = (struct EnemyActor *)ActorNextWithTag(&actor->actor);
     }
 }
 
@@ -490,4 +523,20 @@ int EnemyBattleGetRest(int type)
     }
     return rest;
 }
+
+// エネミーにヒットするかどうかを判定する
+//
+void EnemyBattleIsHitThenDamage(struct Rect *rect, int direction, int point)
+{
+    struct EnemyActor *actor = (struct EnemyActor *)ActorFindWithTag(kGameTagEnemy);
+    while (actor != NULL) {
+        if (actor->moveRect.left > rect->right || actor->moveRect.right < rect->left || actor->moveRect.top > rect->bottom || actor->moveRect.bottom < rect->top) {
+            ;
+        } else {
+            EnemyBattleSetDamage(actor, direction, point);
+        }
+        actor = (struct EnemyActor *)ActorNextWithTag(&actor->actor);
+    }
+}
+
 

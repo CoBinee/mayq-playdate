@@ -790,14 +790,15 @@ static void GameHit(void)
     // ゲームの取得
     struct Game *game = (struct Game *)SceneGetUserdata();
 
-    // プレイヤの攻撃の判定
+    // プレイヤの攻撃の取得
     {
-        struct Rect rect;
-        PlayerBattleGetAttackRect(&rect);
-        if (rect.left < rect.right) {
-            struct Vector position;
-            PlayerBattleGetPosition(&position);
-            EnemyBattleIsHitThenDamage(&rect, position.x, position.y, 1);
+        int direction = PlayerBattleGetAttackDirection();
+        if (direction >= 0) {
+            struct Rect rect;
+            PlayerBattleGetAttackRect(&rect);
+            if (rect.left < rect.right) {
+                EnemyBattleIsHitThenDamage(&rect, direction, 1);
+            }
         }
     }
 }

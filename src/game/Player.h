@@ -125,6 +125,7 @@ extern int PlayerBattleGetEscapeDirection(void);
 extern void PlayerBattleGetPosition(struct Vector *position);
 extern void PlayerBattleGetMoveRect(struct Rect *rect);
 extern void PlayerBattleGetAttackRect(struct Rect *rect);
+extern int PlayerBattleGetAttackDirection(void);
 
 // 外部参照変数
 //

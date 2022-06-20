@@ -202,6 +202,8 @@ struct EnemyActor {
     struct Rect moveRect;
 
     // 攻撃
+    struct Rect attackRect;
+    int attackDirection;
 
     // ダメージ
     int damagePoint;
@@ -229,8 +231,8 @@ extern void EnemyFieldActorLoad(void);
 extern int EnemyFieldGetHitIndex(struct Rect *rect);
 extern void EnemyFieldSetEscapeBlink(int index);
 extern void EnemyBattleActorLoad(int type, int rest, int direction);
-extern void EnemyBattleIsHitThenDamage(struct Rect *rect, int x, int y, int point);
 extern int EnemyBattleGetRest(int type);
+extern void EnemyBattleIsHitThenDamage(struct Rect *rect, int direction, int point);
 
 // 外部参照変数
 //

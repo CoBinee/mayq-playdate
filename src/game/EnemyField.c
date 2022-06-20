@@ -79,9 +79,14 @@ void EnemyFieldActorLoad(void)
 
                 // 位置の設定
                 actor->position = enemy->fields[i].position;
+                actor->origin = actor->position;
+                actor->destination = actor->position;
 
                 // 点滅の設定
                 actor->blink = 0;
+                
+                // 計算
+                EnemyFieldCalc(actor);
             }
         }
     }
@@ -138,10 +143,6 @@ void EnemyFieldActorIdle(struct EnemyActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 位置の設定
-        actor->origin = actor->position;
-        actor->destination = actor->position;
-
         // 向きの設定
         actor->direction = kDirectionDown;
 
@@ -188,10 +189,6 @@ void EnemyFieldActorWalk(struct EnemyActor *actor)
 
     // 初期化
     if (actor->actor.state == 0) {
-
-        // 位置の設定
-        actor->origin = actor->position;
-        actor->destination = actor->position;
 
         // 向きの設定
         actor->direction = EnemyFieldGetWalkableRandomDirection(actor);
@@ -310,17 +307,13 @@ void EnemyFieldActorFree(struct EnemyActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 位置の設定
-        actor->origin = actor->position;
-        actor->destination = actor->position;
-
         // 向きの設定
         actor->direction = kDirectionDown;
 
         // 体の向きの設定
         actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
 
-        // 計算
+        // 一度、計算する
         EnemyFieldCalc(actor);
 
         // アニメーションの開始
@@ -361,18 +354,11 @@ void EnemyFieldActorStep(struct EnemyActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 位置の設定
-        actor->origin = actor->position;
-        actor->destination = actor->position;
-
         // 向きの設定
         actor->direction = kDirectionDown;
 
         // 体の向きの設定
         actor->face = IocsGetRandomBool(NULL) ? kEnemyFaceLeft : kEnemyFaceRight;
-
-        // 計算
-        EnemyFieldCalc(actor);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, actor->data->sprite, enemyFieldAnimationNames_Walk[actor->face], true);

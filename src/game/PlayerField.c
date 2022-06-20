@@ -15,7 +15,7 @@
 //
 static void PlayerFieldActorUnload(struct PlayerActor *actor);
 static void PlayerFieldActorDraw(struct PlayerActor *actor);
-static void PlayerFieldActorPlay(struct PlayerActor *actor);
+static void PlayerFieldActorWalk(struct PlayerActor *actor);
 static void PlayerFieldBlink(struct PlayerActor *actor);;
 static void PlayerFieldCalc(struct PlayerActor *actor);
 
@@ -46,7 +46,7 @@ void PlayerFieldActorLoad(void)
     }
 
     // アクタの登録
-    struct PlayerActor *actor = (struct PlayerActor *)ActorLoad((ActorFunction)PlayerFieldActorPlay, kGamePriorityPlayer);
+    struct PlayerActor *actor = (struct PlayerActor *)ActorLoad((ActorFunction)PlayerFieldActorWalk, kGamePriorityPlayer);
     if (actor == NULL) {
         playdate->system->error("%s: %d: player actor is not loaded.", __FILE__, __LINE__);
     }
@@ -61,9 +61,14 @@ void PlayerFieldActorLoad(void)
 
         // 位置の設定
         actor->position = player->fieldPosition;
+        actor->origin = actor->position;
+        actor->destination = actor->position;
 
         // 点滅の設定
         actor->blink = 0;
+
+        // 計算
+        PlayerFieldCalc(actor);
     }
 }
 
@@ -105,9 +110,9 @@ static void PlayerFieldActorDraw(struct PlayerActor *actor)
     FieldClearClip();
 }
 
-// プレイヤアクタがプレイする
+// プレイヤアクタが歩く
 //
-static void PlayerFieldActorPlay(struct PlayerActor *actor)
+static void PlayerFieldActorWalk(struct PlayerActor *actor)
 {
     // Playdate の取得
     PlaydateAPI *playdate = IocsGetPlaydate();
@@ -118,10 +123,6 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
     // 初期化
     if (actor->actor.state == 0) {
 
-        // 位置の設定
-        actor->origin = actor->position;
-        actor->destination = actor->position;
-
         // 向きの設定
         actor->direction = kDirectionDown;
 
@@ -131,9 +132,6 @@ static void PlayerFieldActorPlay(struct PlayerActor *actor)
 
         // 入るの設定
         actor->enterLocation = kPlayerEnterNull;
-
-        // 計算
-        PlayerFieldCalc(actor);
 
         // アニメーションの開始
         AsepriteStartSpriteAnimation(&actor->animation, "player", playerFieldAnimationNames[actor->direction], true);
