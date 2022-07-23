@@ -31,10 +31,12 @@ enum {
     kDirectionDown, 
     kDirectionLeft, 
     kDirectionRight, 
-    kDirectionUpLeft, 
-    kDirectionUpRight, 
-    kDirectionDownLeft, 
-    kDirectionDownRight, 
+    kDirectionSize, 
+};
+enum {
+    kFaceLeft = 0, 
+    kFaceRight, 
+    kFaceSize, 
 };
 
 

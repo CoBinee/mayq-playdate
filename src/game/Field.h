@@ -13,6 +13,10 @@
 #include "Maze.h"
 
 
+// フィールド関数
+//
+typedef bool (*FieldIsFunction)(int x, int y);
+
 // 迷路
 //
 enum {
@@ -45,6 +49,7 @@ enum {
     kFieldMapSolid, 
     kFieldMapChecker, 
     kFieldMapLadder, 
+    kFieldMapLadderGround, 
     kFieldMapIcicle, 
     kFieldMapPole, 
     kFieldMapCave00, 
@@ -185,6 +190,7 @@ enum {
     kFieldAnimationSolid, 
     kFieldAnimationChecker, 
     kFieldAnimationLadder, 
+    kFieldAnimationLadderGround, 
     kFieldAnimationIcicle, 
     kFieldAnimationPole, 
     kFieldAniamtionCave00, 
@@ -259,20 +265,15 @@ extern void FieldRelease(void);
 extern void FieldActorLoad(void);
 extern unsigned char FieldGetMap(int x, int y);
 extern bool FieldIsSpace(int x, int y);
-extern bool FieldIsBlock(int x, int y);
+extern bool FieldIsFall(int x, int y);
 extern bool FieldIsLadder(int x, int y);
 extern bool FieldIsCave(int x, int y);
 extern bool FieldIsCastle(int x, int y);
 extern bool FieldIsShop(int x, int y);
-extern bool FieldIsLand(int x, int y);
-extern bool FieldIsFall(int x, int y);
-extern bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall);
-extern bool FieldWalk(int x, int y, int direction, bool jump, bool fall, struct Vector *to);
-extern void FieldAdjustMovePosition(struct Vector *from, struct Vector *to);
+extern int FieldMove(int x, int y, int direction, int distance, FieldIsFunction is, struct Vector *to);
+extern int FieldMoveRect(struct Rect *from, int direction, int distance, FieldIsFunction is, struct Rect *to);
 extern void FieldGetStartPosition(struct Vector *position);
 extern void FieldGetEnemyPosition(struct Vector *position, bool land);
-extern void FieldGetDirectinalPosition(int x, int y, int direction, struct Vector *position);
-extern int FieldGetBattleRoute(int x, int y);
 extern int FieldGetCaveIndex(int x, int y);
 extern void FieldGetCavePosition(int index, struct Vector *position);
 extern int FieldGetShopIndex(int x, int y);

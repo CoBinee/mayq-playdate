@@ -42,8 +42,8 @@ void PlayerInitialize(void)
 
     // プレイヤの初期化
     {
-        // フィールドの設定
-        FieldGetStartPosition(&player->fieldPosition);
+        // 位置の設定
+        FieldGetStartPosition(&player->position);
     }
 }
 
@@ -66,21 +66,21 @@ void PlayerRelease(void)
     }
 }
 
-// フィールド上にいるプレイヤの位置を取得する
+// プレイヤの位置を取得する
 //
-void PlayerGetFieldPosition(struct Vector *position)
+void PlayerGetPosition(struct Vector *position)
 {
     if (player != NULL) {
-        *position = player->fieldPosition;
+        *position = player->position;
     }
 }
 
-// フィールド上にいるプレイヤの位置を設定する
+// プレイヤの位置を設定する
 //
-void PlayerSetFieldPosition(int x, int y)
+void PlayerSetPosition(int x, int y)
 {
     if (player != NULL) {
-        player->fieldPosition.x = x;
-        player->fieldPosition.y = y;
+        player->position.x = x;
+        player->position.y = y;
     }
 }

@@ -29,12 +29,8 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
         .name = "SKELETON", 
         .type = kEnemyTypeSkeleton, 
         .life = 3, 
-        .fieldAction = kEnemyFieldActionWalk, 
-        .fieldSpeed = kEnemyFieldSpeed_0_5, 
-        .battleAction = kEnemyBattleActionWalkRandom, 
-        .battleSpeed = kEnemyBattleSpeed_0_5, 
-        .battleMoveBase = 72, 
-        .battleMoveRange = 96, 
+        .action = kEnemyActionIdle, 
+        .speed = kEnemySpeed_0_5, 
         .rect.left = -12, 
         .rect.top = -23, 
         .rect.right = 11, 
@@ -47,8 +43,8 @@ const struct EnemyData enemyDatas[kEnemyTypeSize] = {
 
 // フィールドプール
 //
-const struct EnemyPool enemyPoolFields[kEnemyPoolFieldSize] = {
-    {.type = kEnemyTypeSkeleton, .rest = 1, }, 
+const struct EnemyPool enemyPools[kEnemyPoolSize] = {
+    {.type = kEnemyTypeSkeleton, }, 
 };
 
 

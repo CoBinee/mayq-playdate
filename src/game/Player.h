@@ -15,45 +15,60 @@
 //
 struct Player {
 
-    // フィールド
-    struct Vector fieldPosition;
+    // 位置
+    struct Vector position;
 
-    // ダンジョン
-    struct Vector dungeonPosition;
+};
 
-    // バトル
-    struct Vector battlePosition;
+// 行動
+//
+enum {
+    kPlayerActionIdle = 0, 
+    kPlayerActionWalk, 
+    kPlayerActionJump, 
+    kPlayerActionFall, 
+    kPlayerActionClimb, 
+    kPlayerActionAttack, 
+    kPlayerActionSize, 
+};
 
+// 移動
+//
+enum {
+    kPlayerMoveOne = 0x0100, 
+    kPlayerMoveShift = 8, 
+    kPlayerMoveMask = 0xff, 
+    kPlayerMoveWalkStart = 0x0100, 
+    kPlayerMoveWalkMaximum = 0x0400, 
+    kPlayerMoveWalkAccel = 0x0100, 
+    kPlayerMoveWalkBrake = 0x0100, 
+    kPlayerMoveJumpStart = 0x0800, 
+    kPlayerMoveJumpBoost = 0x0a00, 
+    kPlayerMoveFallStart = 0x0100, 
+    kPlayerMoveFallMaximum = 0x0800, 
+    kPlayerMoveGravity = 0x0100, 
+    kPlayerMoveClimbStart = 0x0100, 
+    kPlayerMoveClimbMaximum = 0x0400, 
+    kPlayerMoveClimbAccel = 0x0100, 
+    kPlayerMoveClimbBrake = 0x0100, 
+    kPlayerMoveAttackBrake = 0x0100, 
 };
 
 // ジャンプ
 //
 enum {
-    kPlayerJumpMaximum = 2, 
-};
-
-// 入る
-//
-enum {
-    kPlayerEnterNull = 0, 
-    kPlayerEnterCave, 
-    kPlayerEnterCastle, 
-    kPlayerEnterShop, 
+    kPlayerJumpCount = 2, 
 };
 
 // 攻撃
 //
 enum {
-    kPlayerAttackMaximum = 3, 
-};
-enum {
-    kPlayerAttackFrameSize = 4, 
+    kPlayerAttackCount = 3, 
 };
 
 // 点滅
 //
 enum {
-    kPlayerBlinkEscape = 30, 
     kPlayerBlinkDamage = 30, 
     kPlayerBlinkInterval = 0x02, 
 };
@@ -67,26 +82,25 @@ struct PlayerActor {
 
     // 位置
     struct Vector position;
-    struct Vector origin;
-    struct Vector destination;
 
     // 向き
-    int direction;
+    int face;
+
+    // 行動
+    int action;
+
+    // クランク
+    float crank;
 
     // 移動
+    struct Vector moveVector;
     struct Rect moveRect;
 
     // ジャンプ
     int jumpCount;
-    int jumpStep;
-
-    // 入る
-    int enterLocation;
-    int enterIndex;
 
     // 攻撃
-    struct Rect attackRect;
-    int attackDirection;
+    int attackCount;
 
     // 点滅
     int blink;
@@ -96,36 +110,17 @@ struct PlayerActor {
 
 };
 
-// 移動
-//
-enum {
-    kPlayerSpeedField = 4, 
-    kPlayerSpeedBattle = 2, 
-};
-
 // 外部参照関数
 //
 extern void PlayerInitialize(void);
 extern void PlayerRelease(void);
-extern void PlayerGetFieldPosition(struct Vector *position);
-extern void PlayerSetFieldPosition(int x, int y);
-extern void PlayerFieldActorLoad(void);
-extern void PlayerFieldGetPosition(struct Vector *position);
-extern void PlayerFieldGetMoveRect(struct Rect *rect);
-extern bool PlayerFieldIsBlink(void);
-extern void PlayerFieldSetEscapeBlink(void);
-extern bool PlayerFieldIsEnterCave(void);
-extern int PlayerFieldGetEnterCaveIndex(void);
-extern bool PlayerFieldIsEnterCastle(void);
-extern bool PlayerFieldIsEnterShop(void);
-extern int PlayerFieldGetEnterShopIndex(void);
-extern void PlayerBattleActorLoad(int x, int y, int direction);
-extern int PlayerBattleGetDirection(void);
-extern int PlayerBattleGetEscapeDirection(void);
-extern void PlayerBattleGetPosition(struct Vector *position);
-extern void PlayerBattleGetMoveRect(struct Rect *rect);
-extern void PlayerBattleGetAttackRect(struct Rect *rect);
-extern int PlayerBattleGetAttackDirection(void);
+extern void PlayerGetPosition(struct Vector *position);
+extern void PlayerSetPosition(int x, int y);
+extern void PlayerActorLoad(void);
+extern void PlayerActorGetPosition(struct Vector *position);
+extern void PlayerActorGetMoveRect(struct Rect *rect);
+extern bool PlayerActorIsBlink(void);
+extern void PlayerActorSetDamageBlink(void);
 
 // 外部参照変数
 //

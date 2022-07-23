@@ -28,9 +28,9 @@ SRC = \
 	src/title/Title.c \
 	src/game/Game.c \
 	src/game/Maze.c \
-	src/game/Field.c src/game/Dungeon.c src/game/Battle.c \
-	src/game/Player.c src/game/PlayerField.c src/game/PlayerBattle.c \
-	src/game/Enemy.c src/game/EnemyTable.c src/game/EnemyField.c src/game/EnemyBattle.c
+	src/game/Field.c \
+	src/game/Player.c src/game/PlayerActor.c \
+	src/game/Enemy.c src/game/EnemyTable.c src/game/EnemyActor.c
 
 # List all user directories here
 UINCDIR = src src/title src/game
@@ -61,7 +61,7 @@ tool:
 	@g++ -o tools/chr2png -lpng -std=c++11 -Wno-format-security -I/opt/homebrew/include -L/opt/homebrew/lib tools/src/chr2png.cpp
 
 # Build resource
-resource:	font image sound launcher
+resource:	font image sound json launcher
 
 font:
 	@tools/ttf2fnt -w=16 -h=16 -x=1 -y=1 -k=1 -white -o Source/fonts/misaki_gothic.fnt res/fonts/misaki_ttf_2021-05-05/misaki_gothic.ttf
@@ -76,6 +76,9 @@ sound:
 	ffmpeg -y -i $$f -acodec adpcm_ima_wav $${f%.aif}.wav; \
 	done
 	@cp res/sounds/*.wav Source/sounds/
+
+json:
+	@cp res/jsons/*.json Source/jsons/
 
 launcher:
 	@cp res/launcher/*.png Source/launcher/

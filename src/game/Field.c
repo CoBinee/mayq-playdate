@@ -23,12 +23,16 @@ static void FieldDigLocation(int location);
 static void FieldActorUnload(struct FieldActor *actor);
 static void FieldActorDraw(struct FieldActor *actor);
 static void FieldActorLoop(struct FieldActor *actor);
+static int FieldAdjustX(int x);
+static int FieldAdjustY(int x);
 static int FieldGetMapX(int x);
 static int FieldGetMapY(int x);
 static bool FieldIsMapBack(unsigned char map);
 static bool FieldIsMapBlock(unsigned char map);
 static bool FieldIsMapLadder(unsigned char map);
 static bool FieldIsMapLock(unsigned char map);
+static bool FieldIsMapSpace(unsigned char map);
+static bool FieldIsMapFall(unsigned char map);
 
 // 内部変数
 //
@@ -40,6 +44,7 @@ static const char *fieldAnimationNames[kFieldAnimationSize] = {
     "Block", 
     "Solid", 
     "Checker", 
+    "Ladder", 
     "Ladder", 
     "Icicle", 
     "Pole", 
@@ -524,6 +529,29 @@ static void FieldBuildMap(void)
         }
     }
 
+    // 着地できる梯子を設定する
+    for (int y = 1; y < kFieldSizeY; y++) {
+        for (int x = 0; x < kFieldSizeX; x++) {
+            if (field->maps[y][x] == kFieldMapLadder) {
+                int x_l = x > 0 ? x - 1 : kFieldSizeX - 1;
+                int x_r = x < kFieldSizeX - 1 ? x + 1 : 0;
+                if (
+                    (
+                        !FieldIsMapLadder(field->maps[y - 1][x])
+                    ) || (
+                        FieldIsMapBlock(field->maps[y - 0][x_l]) && 
+                        FieldIsMapSpace(field->maps[y - 1][x_l])
+                    ) || (
+                        FieldIsMapBlock(field->maps[y - 0][x_r]) && 
+                        FieldIsMapSpace(field->maps[y - 1][x_r])
+                    )
+                ) {
+                    field->maps[y][x] = kFieldMapLadderGround;
+                }
+            }
+        }
+    }
+
     // 柱を立てる
     for (int y = 1; y < kFieldSizeY - 1; y++) {
         for (int x = 1; x < kFieldSizeX - 1; x++) {
@@ -553,12 +581,14 @@ static void FieldBuildMap(void)
     // つららを立てる
     for (int y = 0; y < kFieldSizeY - 1; y++) {
         for (int x = 0; x < kFieldSizeX; x++) {
+            int x_l = x > 0 ? x - 1 : kFieldSizeX - 1;
+            int x_r = x < kFieldSizeX - 1 ? x + 1 : 0;
             if (
                 (y == 0 || FieldIsMapBlock(field->maps[y - 1][x])) && 
                 (FieldIsMapLock(field->maps[y + 0][x + 0]) || FieldIsMapBack(field->maps[y + 0][x + 0])) && 
                 (FieldIsMapLock(field->maps[y + 1][x + 0]) || FieldIsMapBack(field->maps[y + 1][x + 0])) && 
-                !FieldIsMapBlock(field->maps[y + 1][x - 1]) && 
-                !FieldIsMapBlock(field->maps[y + 1][x + 1])
+                !FieldIsMapBlock(field->maps[y + 1][x_l]) && 
+                !FieldIsMapBlock(field->maps[y + 1][x_r])
             ) {
                 field->maps[y][x] = kFieldMapIcicle;
             }
@@ -791,6 +821,23 @@ static void FieldActorLoop(struct FieldActor *actor)
     ActorSetDraw(&actor->actor, (ActorFunction)FieldActorDraw, kGameOrderField);
 }
 
+// 位置を取得する
+//
+static int FieldAdjustX(int x)
+{
+    while (x < 0) {
+        x += kFieldSizeX * kFieldSizePixel;
+    }
+    while (x >= kFieldSizeX * kFieldSizePixel) {
+        x -= kFieldSizeX * kFieldSizePixel;
+    }
+    return x;
+}
+static int FieldAdjustY(int y)
+{
+    return y;
+}
+
 // マップを取得する
 //
 unsigned char FieldGetMap(int x, int y)
@@ -807,11 +854,11 @@ unsigned char FieldGetMap(int x, int y)
 }
 static int FieldGetMapX(int x)
 {
-    return (x < 0 ? x + kFieldSizeX * kFieldSizePixel : (x >= kFieldSizeX * kFieldSizePixel ? x - kFieldSizeX * kFieldSizePixel : x)) / kFieldSizePixel;
+    return FieldAdjustX(x) / kFieldSizePixel;
 }
 static int FieldGetMapY(int y)
 {
-    return y / kFieldSizePixel;
+    return FieldAdjustY(y) / kFieldSizePixel;
 }
 
 // フィールドマップを判定する
@@ -826,11 +873,19 @@ static bool FieldIsMapBlock(unsigned char map)
 }
 static bool FieldIsMapLadder(unsigned char map)
 {
-    return map == kFieldMapLadder ? true : false;
+    return map == kFieldMapLadder || map == kFieldMapLadderGround ? true : false;
 }
 static bool FieldIsMapLock(unsigned char map)
 {
     return map == kFieldMapLock ? true : false;
+}
+static bool FieldIsMapSpace(unsigned char map)
+{
+    return !FieldIsMapBlock(map) && map != kFieldMapIcicle ? true : false;
+}
+static bool FieldIsMapFall(unsigned char map)
+{
+    return FieldIsMapSpace(map) && map != kFieldMapLadderGround ? true : false;
 }
 
 // フィールドが空いているかどうかを判定する
@@ -838,14 +893,23 @@ static bool FieldIsMapLock(unsigned char map)
 bool FieldIsSpace(int x, int y)
 {
     unsigned char m = FieldGetMap(x, y);
-    return !FieldIsMapBlock(m) && m != kFieldMapIcicle ? true : false;
+    return FieldIsMapSpace(m);
+}
+
+// フィールドが落下できるかどうかを判定する
+//
+bool FieldIsFall(int x, int y)
+{
+    unsigned char m = FieldGetMap(x, y);
+    return FieldIsMapFall(m);
 }
 
 // フィールドが梯子かどうかを判定する
 //
 bool FieldIsLadder(int x, int y)
 {
-    return FieldIsMapLadder(FieldGetMap(x, y));
+    unsigned char m = FieldGetMap(x, y);
+    return FieldIsMapLadder(m);
 }
 
 // フィールドが洞窟かどうかを判定する
@@ -869,181 +933,161 @@ bool FieldIsShop(int x, int y)
     return FieldGetMap(x, y) == kFieldMapShopEntrance ? true : false;
 }
 
-// フィールドで落下するかどうかを判定する
+// フィールド上を移動する
 //
-bool FieldIsLand(int x, int y)
+int FieldMove(int x, int y, int direction, int distance, FieldIsFunction is, struct Vector *to)
 {
-    return !FieldIsSpace(x, y + kFieldSizePixel) || FieldIsLadder(x, y) || FieldIsLadder(x, y + kFieldSizePixel) ? true : false;
-}
-bool FieldIsFall(int x, int y)
-{
-    return !FieldIsLand(x, y);
-}
-
-// フィールドを指定した方向に移動する
-//
-bool FieldIsWalk(int x, int y, int direction, bool jump, bool fall)
-{
-    return FieldWalk(x, y, direction, jump, fall, NULL);
-}
-bool FieldWalk(int x, int y, int direction, bool jump, bool fall, struct Vector *to)
-{
-    bool result = false;
+    int result = 0;
     if (direction == kDirectionUp) {
-        if (
-            FieldIsSpace(x, y - kFieldSizePixel) && 
-            (
-                jump || 
-                FieldIsLadder(x, y)
-            )
-        ) {
-            if (to != NULL) {
-                to->x = x;
-                to->y = y - kFieldSizePixel;
+        int origin = y;
+        while (distance > 0) {
+            int d = distance >= kFieldSizePixel ? kFieldSizePixel : distance;
+            distance -= d;
+            y -= d;
+            if (!(*is)(x, y)) {
+                y = FieldGetMapY(y + kFieldSizePixel) * kFieldSizePixel;
+                break;
             }
-            result = true;
         }
-    } else if (direction == kDirectionUpLeft) {
-        if (
-            FieldIsSpace(x - kFieldSizePixel, y) &&
-            FieldIsSpace(x, y - kFieldSizePixel) && 
-            (
-                (
-                    jump && 
-                    FieldIsSpace(x - kFieldSizePixel, y - kFieldSizePixel) 
-                ) || 
-                (
-                    FieldIsLadder(x, y) &&
-                    FieldIsLadder(x - kFieldSizePixel, y - kFieldSizePixel) 
-                )
-            )
-        ) {
-            if (to != NULL) {
-                to->x = x - kFieldSizePixel;
-                to->y = y - kFieldSizePixel;
-            }
-            result = true;
+        if (to != NULL) {
+            to->x = x;
+            to->y = y;
         }
-    } else if (direction == kDirectionUpRight) {
-        if (
-            FieldIsSpace(x + kFieldSizePixel, y) && 
-            FieldIsSpace(x, y - kFieldSizePixel) && 
-            (
-                (
-                    jump && 
-                    FieldIsSpace(x + kFieldSizePixel, y - kFieldSizePixel)
-                ) || 
-                (
-                    FieldIsLadder(x, y) && 
-                    FieldIsLadder(x + kFieldSizePixel, y - kFieldSizePixel)
-                )
-            )
-        ) {
-            if (to != NULL) {
-                to->x = x + kFieldSizePixel;
-                to->y = y - kFieldSizePixel;
-            }
-            result = true;
-        }
+        result = origin - y;
     } else if (direction == kDirectionDown) {
-        if (
-            (
-                fall && 
-                FieldIsSpace(x, y + kFieldSizePixel)
-            ) || 
-            FieldIsLadder(x, y + kFieldSizePixel)
-        ) {
-            if (to != NULL) {
-                to->x = x;
-                to->y = y + kFieldSizePixel;
+        int origin = y;
+        while (distance > 0) {
+            int d = distance >= kFieldSizePixel ? kFieldSizePixel : distance;
+            distance -= d;
+            y += d;
+            if (!(*is)(x, y)) {
+                y = FieldGetMapY(y - kFieldSizePixel) * kFieldSizePixel + (kFieldSizePixel - 1);
+                break;
             }
-            result = true;
         }
-    } else if (direction == kDirectionDownLeft) {
-        if (
-            FieldIsSpace(x - kFieldSizePixel, y) && 
-            FieldIsSpace(x, y + kFieldSizePixel) && 
-            (
-                (
-                    fall &&
-                    FieldIsSpace(x - kFieldSizePixel, y + kFieldSizePixel)
-                ) || 
-                (
-                    FieldIsLadder(x, y) && 
-                    FieldIsLadder(x - kFieldSizePixel, y + kFieldSizePixel)
-                )
-            )
-        ) {
-            if (to != NULL) {
-                to->x = x - kFieldSizePixel;
-                to->y = y + kFieldSizePixel;
-            }
-            result = true;
+        if (to != NULL) {
+            to->x = x;
+            to->y = y;
         }
-    } else if (direction == kDirectionDownRight) {
-        if (
-            FieldIsSpace(x + kFieldSizePixel, y) && 
-            FieldIsSpace(x, y + kFieldSizePixel) && 
-            (
-                (
-                    fall && 
-                    FieldIsSpace(x + kFieldSizePixel, y + kFieldSizePixel)
-                ) || 
-                (
-                    FieldIsLadder(x, y) && 
-                    FieldIsLadder(x + kFieldSizePixel, y + kFieldSizePixel)
-                )
-            )
-        ) {
-            if (to != NULL) {
-                to->x = x + kFieldSizePixel;
-                to->y = y + kFieldSizePixel;
-            }
-            result = true;
-        }
+        result = y - origin;
     } else if (direction == kDirectionLeft) {
-        if (
-            FieldIsSpace(x - kFieldSizePixel, y) && 
-            (
-                fall || 
-                FieldIsLand(x - kFieldSizePixel, y)
-            )
-        ) {
-            if (to != NULL) {
-                to->x = x - kFieldSizePixel;
-                to->y = y;
+        int origin = x;
+        while (distance > 0) {
+            int d = distance >= kFieldSizePixel ? kFieldSizePixel : distance;
+            distance -= d;
+            x -= d;
+            if (!(*is)(x, y)) {
+                x = FieldGetMapX(x + kFieldSizePixel) * kFieldSizePixel;
+                break;
             }
-            result = true;
         }
+        if (to != NULL) {
+            to->x = x;
+            to->y = y;
+        }
+        result = origin >= x ? origin - x : origin + kFieldSizeX * kFieldSizePixel - x;
     } else if (direction == kDirectionRight) {
-        if (
-            FieldIsSpace(x + kFieldSizePixel, y) && 
-            (
-                fall || 
-                FieldIsLand(x + kFieldSizePixel, y)
-            )
-        ) {
-            if (to != NULL) {
-                to->x = x + kFieldSizePixel;
-                to->y = y;
+        int origin = x;
+        while (distance > 0) {
+            int d = distance >= kFieldSizePixel ? kFieldSizePixel : distance;
+            distance -= d;
+            x += d;
+            if (!(*is)(x, y)) {
+                x = FieldGetMapX(x - kFieldSizePixel) * kFieldSizePixel + (kFieldSizePixel - 1);
+                break;
             }
-            result = true;
         }
+        if (to != NULL) {
+            to->x = x;
+            to->y = y;
+        }
+        result = x >= origin ? x - origin : x + kFieldSizeX * kFieldSizePixel - origin;
     }
     return result;
 }
 
-// 移動する位置を調整する
+// フィールド上を矩形で移動する
 //
-void FieldAdjustMovePosition(struct Vector *from, struct Vector *to)
+int FieldMoveRect(struct Rect *from, int direction, int distance, FieldIsFunction is, struct Rect *to)
 {
-    if (to->x < 0) {
-        to->x += kFieldSizeX * kFieldSizePixel;
-        from->x += kFieldSizeX * kFieldSizePixel;
-    } else if (to->x >= kFieldSizeX * kFieldSizePixel) {
-        to->x -= kFieldSizeX * kFieldSizePixel;
-        from->x -= kFieldSizeX * kFieldSizePixel;
+    struct Vector vector = {
+        .x = 0, 
+        .y = 0, 
+    };
+    if (direction == kDirectionUp) {
+        int x = from->left;
+        while (x < from->right && distance > 0) {
+            int d = FieldMove(x, from->top, kDirectionUp, distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+            x += kFieldSizePixel;
+        }
+        if (distance > 0) {
+            int d = FieldMove(from->right, from->top, kDirectionUp, distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+        }
+        vector.y = -distance;
+    } else if (direction == kDirectionDown) {
+        int x = from->left;
+        while (x < from->right && distance > 0) {
+            int d = FieldMove(x, from->bottom, kDirectionDown, distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+            x += kFieldSizePixel;
+        }
+        if (distance > 0) {
+            int d = FieldMove(from->right, from->bottom, kDirectionDown, distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+        }
+        vector.y = distance;
+    } else if (direction == kDirectionLeft) {
+        int y = from->top;
+        while (y < from->bottom && distance > 0) {
+            int d = FieldMove(from->left, y, kDirectionLeft,  distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+            y += kFieldSizePixel;
+        }
+        if (distance > 0) {
+            int d = FieldMove(from->left, from->bottom, kDirectionLeft, distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+        }
+        vector.x = -distance;
+    } else if (direction == kDirectionRight) {
+        int y = from->top;
+        while (y < from->bottom && distance > 0) {
+            int d = FieldMove(from->right, y, kDirectionRight, distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+            y += kFieldSizePixel;
+        }
+        if (distance > 0) {
+            int d = FieldMove(from->right, from->bottom, kDirectionRight, distance, is, NULL);
+            if (distance > d) {
+                distance = d;
+            }
+        }
+        vector.x = distance;
     }
+    if (to != NULL) {
+        int x = FieldAdjustX(from->left + vector.x);
+        int y = FieldAdjustY(from->top + vector.y);
+        to->right = x + (from->right - from->left);
+        to->bottom = y + (from->bottom - from->top);
+        to->left = x;
+        to->top = y;
+    }
+    return vector.x != 0 ? abs(vector.x) : abs(vector.y);
 }
 
 // 開始位置を取得する
@@ -1088,45 +1132,6 @@ void FieldGetEnemyPosition(struct Vector *position, bool land)
     if (field->locationEnemy >= kFieldLocationSize) {
         field->locationEnemy = kFieldLocationEnemy;
     }
-}
-
-// 指定された方向の位置を取得する
-//
-void FieldGetDirectinalPosition(int x, int y, int direction, struct Vector *position)
-{
-    if (direction == kDirectionUp) {
-        position->x = x;
-        position->y = y - kFieldSizePixel;
-    } else if (direction == kDirectionDown) {
-        position->x = x;
-        position->y = y + kFieldSizePixel;
-    } else if (direction == kDirectionLeft) {
-        position->x = x - kFieldSizePixel;
-        position->y = y;
-    } else if (direction == kDirectionRight) {
-        position->x = x + kFieldSizePixel;
-        position->y = y;
-    }
-}
-
-// バトルの経路を取得する
-//
-int FieldGetBattleRoute(int x, int y)
-{
-    int route = 0;
-    if (FieldIsSpace(x, y - kFieldSizePixel)) {
-        route |= (1 << kDirectionUp);
-    }
-    if (FieldIsSpace(x, y + kFieldSizePixel)) {
-        route |= (1 << kDirectionDown);
-    }
-    if (FieldIsSpace(x - kFieldSizePixel, y)) {
-        route |= (1 << kDirectionLeft);
-    }
-    if (FieldIsSpace(x + kFieldSizePixel, y)) {
-        route |= (1 << kDirectionRight);
-    }
-    return route;
 }
 
 // 洞窟のインデックスを取得する
